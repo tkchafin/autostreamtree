@@ -33,213 +33,6 @@ import autostreamtree.report_refs as ref
 import autostreamtree.aggregators as agg
 import autostreamtree.Mantel as Mantel
 
-#
-# 	#for ia,ib in itertools.combinations(range(0,len(popmap)),2):
-# 	#	print(popmap.keys()[ia])
-# 	#	print(popmap.keys()[ib])
-#
-# 	#EXTRACT SUBGRAPH
-# 	if params.run != "GENDIST":
-# 		K = parseSubgraphFromPoints(params, point_coords, pop_coords, G)
-#
-#
-# 	#calculate pairwise observed stream distances and indence matrix
-# 	#calculate incidence matrix X, which takes the form:
-# 	#nrows = rows in column vector form of D
-# 	#ncols = number of collapsed branches in stream network K
-# 	if params.run in ["STREAMDIST", "DISTANCES", "STREAMTREE", "IBD", "ALL", "RUNLOCI"]:
-# 		if params.pop or params.geopop or params.clusterpop:
-# 			points=pop_coords
-# 			gen=pop_gen
-# 		else:
-# 			points=point_coords
-#
-# 		#calculate stream distances and incidence matrix
-# 		(sdist, inc) = getStreamMats(points, K, params.length_col)
-# 		print("\nStream distances:")
-# 		print(sdist)
-# 		sDF = pd.DataFrame(sdist, columns=list(points.keys()), index=list(points.keys()))
-# 		sDF.to_csv((str(params.out) + ".streamDistMat.txt"), sep="\t", index=True)
-# 		del sDF
-# 		if params.run == "STREAMDIST":
-# 			sys.exit(0)
-#
-#
-# 		#if user requested testing isolation-by-distance:
-# 		if params.run in ['ALL', 'IBD']:
-# 			#HERE: Implement the IBD calculations and plots
-# 			print("\nTesting for isolation-by-distance using Mantel test with",params.permutations,"permutations")
-# 			testIBD(gen, sdist, params.out, params.permutations)
-#
-# 			#plot geographic x genetic DISTANCES
-# 			genetic_distance=get_lower_tri(gen)
-# 			geographic_distance=get_lower_tri(sdist)
-# 			sns.jointplot(geographic_distance, genetic_distance, kind="reg", stat_func=r2)
-# 			plt.savefig((str(params.out)+".isolationByDistance.pdf"))
-# 			del geographic_distance
-# 			del genetic_distance
-# 			# sns.jointplot(gn, np.log(go), kind="reg", stat_func=r2)
-# 			# plt.savefig((str(params.out)+".genXlngeo.pdf"))
-#
-# 			#if log request, re-do with logged geographic distances
-# 			if params.and_log:
-# 				print("\nTesting for isolation-by-distance with log geographic distances using Mantel test with",params.permutations,"permutations")
-# 				out=params.out+".log"
-# 				testIBD(gen, sdist, out, params.permutations, log=True)
-#
-# 				genetic_distance=get_lower_tri(gen)
-# 				geographic_distance=get_lower_tri(sdist)
-# 				geographic_distance=replaceZeroes(geographic_distance)
-# 				log_geo=np.log(geographic_distance)
-# 				sns.jointplot(log_geo, genetic_distance, kind="reg", stat_func=r2)
-# 				plt.savefig((str(out)+".isolationByDistance.pdf"))
-# 				del geographic_distance
-# 				del genetic_distance
-# 				del log_geo
-#
-#
-# 	if params.run in ["STREAMTREE", "ALL", "RUNLOCI"]:
-# 		if params.pop or params.geopop or params.clusterpop:
-# 			gen=pop_gen
-# 		print("\nIncidence matrix:")
-# 		print(inc)
-# 		ofh=params.out+".incidenceMatrix.txt"
-# 		with np.printoptions(precision=0, suppress=True):
-# 			np.savetxt(ofh, inc, delimiter="\t")
-# 		print("Incidence matrix dimensions:")
-# 		print(inc.shape)
-#
-# 		#fit least-squares branch lengths
-# 		if params.run != "RUNLOCI":
-# 			print()
-# 			R = fitLeastSquaresDistances(gen, inc.astype(int), params.iterative, params.out,params.weight)
-# 			print("\nFitted least-squares distances:")
-# 			print(R)
-# 		else:
-# 			print()
-# 			if params.pop or params.geopop or params.clusterpop:
-# 				genlist=popgenlist
-# 			print("Fitting StreamTree distances on per-locus matrices...")
-# 			Rlist = list()
-# 			blockPrint()
-# 			for gen in genlist:
-# 				r = fitLeastSquaresDistances(gen, inc.astype(int), params.iterative, params.out,params.weight)
-# 				Rlist.append(r)
-# 			enablePrint()
-#
-# 			#aggregate locus distances (mean)
-# 			print("\nCalculating average fitted distances across loci using:",params.loc_agg)
-# 			averageR = np.array([agg.aggregateDist(params.loc_agg, col) for col in zip(*Rlist)])
-# 			print(averageR)
-#
-# 			#get standard-deviation locus distances as well
-# 			print("\nCalculating standard-deviation of fitted distances across loci using:",params.loc_agg)
-# 			sdR = np.array([agg.aggregateDist("SD", col) for col in zip(*Rlist)])
-# 			print(sdR)
-#
-#
-#
-# 		#check observed versus fitted distances:
-# 		if params.run == "RUNLOCI":
-# 			R=averageR
-# 		pred=getFittedD(points, gen, inc, R)
-# 		print("\nComparing observed versus predicted genetic distances:")
-# 		print(pred)
-# 		pred.to_csv((str(params.out)+".obsVersusFittedD.txt"), sep="\t", index=False)
-# 		sns.jointplot("observed_D", "predicted_D", data=pred, kind="reg", stat_func=r2)
-# 		plt.savefig((str(params.out)+".obsVersusFittedD.pdf"))
-# 		del pred
-# 		#plt.show()
-#
-# 		#sys.exit()
-#
-# 		#Now, annotate originate geoDF with dissolved reach IDs
-# 		#also, need to collect up the stream tree fitted D to each dissolved reach
-# 		#finally, could add residuals of fitting D vs LENGTH_KM?
-# 		#maybe include logDxlength, DxlogLength, logDxlogLength as well?
-#
-# 		#get list of all REACHIDs to extract from geoDF
-# 		#edge_data = nx.get_edge_attributes(K,params.reachid_col)
-# 		reach_to_edge = dict()
-# 		i=0
-# 		edges = list()
-# 		#print("K:",len(K.edges())
-# 		for e in K.edges():
-# 			edge_data = K[e[0]][e[1]][params.reachid_col]
-# 			#print(edge_data)
-# 			for r in edge_data:
-# 				reach_to_edge[r] = str(i)
-# 			edges.append(i)
-# 			i+=1
-# 		#print("edges:",edges)
-# 		#print(len(edges))
-# 		del edge_data
-#
-# 		#save reach_to_edge table to file
-# 		r2eDF = pd.DataFrame(list(reach_to_edge.items()), columns=[params.reachid_col,'EDGE_ID'])
-# 		r2eDF.to_csv((str(params.out)+".reachToEdgeTable.txt"), sep="\t", index=False)
-#
-# 		#read in original shapefile as geoDF and subset it
-# 		print("\nExtracting attributes from original dataframe...")
-# 		geoDF = gpd.read_file(params.shapefile)
-# 		mask = geoDF[params.reachid_col].isin(list(reach_to_edge.keys()))
-# 		temp = geoDF.loc[mask]
-# 		del mask
-# 		del reach_to_edge
-#
-# 		#join EDGE_ID to geoDF
-# 		geoDF = temp.merge(r2eDF, on=params.reachid_col)
-# 		del temp
-# 		del r2eDF
-#
-# 		#plot by edge ID
-# 		base = geoDF.plot(column="EDGE_ID", cmap = "prism")
-# 		coords = clust.coordsToDataFrame(points)
-# 		geo_coords = gpd.GeoDataFrame(coords, geometry=gpd.points_from_xy(coords.long, coords.lat))
-# 		geo_coords.plot(ax=base, marker='o', color='black', markersize=10, zorder=10)
-#
-# 		plt.title("Stream network colored by EDGE_ID")
-# 		plt.savefig((str(params.out)+".streamsByEdgeID.pdf"))
-#
-# 		#add in fitted distances & plot
-# 		print("\nPlotting StreamTree fitted distances and writing new shapefile...")
-#
-# 		if params.run == "RUNLOCI":
-# 			fittedD = pd.DataFrame({'EDGE_ID':list(edges), 'fittedD':R})
-# 			sdD = pd.DataFrame({'EDGE_ID':list(edges), 'stdevD':sdR})
-# 			i=1
-# 			for locfit in Rlist:
-# 				name="locD_" + str(i)
-# 				fittedD[name] = locfit
-# 				i+=1
-# 		else:
-# 			fittedD = pd.DataFrame({'EDGE_ID':list(edges), 'fittedD':R})
-# 		geoDF['EDGE_ID'] = geoDF['EDGE_ID'].astype(int)
-# 		geoDF = geoDF.merge(fittedD, on='EDGE_ID')
-# 		if params.run == "RUNLOCI":
-# 			geoDF = geoDF.merge(sdD, on='EDGE_ID')
-# 			geoDF.plot(column="stdevD", cmap = "RdYlGn_r", legend=True)
-# 			plt.title("Stream network colored by standard deviation of StreamTree fitted distances")
-# 			plt.savefig((str(params.out)+".streamsBystdevD.pdf"))
-# 		geoDF.plot(column="fittedD", cmap = "RdYlGn_r", legend=True)
-# 		plt.title("Stream network colored by StreamTree fitted distances")
-# 		plt.savefig((str(params.out)+".streamsByFittedD.pdf"))
-#
-# 		#output a final annotated stream network layer
-# 		geoDF.to_csv((str(params.out)+".streamTree.txt"), sep="\t", index=False)
-#
-# 		if geoDF.shape[1] > 2045:
-# 			print("Too many columns to write shapefile (hard limit of 2046 columns). Only writing first 2046 columns to shapefile attribute table; full output can be left-joined from $out.streamtree.txt.")
-# 			geoDF.to_file((str(params.out)+".streamTree.shp"))
-# 		else:
-# 			geoDF.iloc[:, : 2045].to_file((str(params.out)+".streamTree.shp"))
-#
-# 	refs = ref.fetch_references(params)
-# 	print(refs)
-#
-# 	print("\nDone!\n")
-
-
 
 # read vcf file
 def read_vcf(vcf, concat="none", popmap=None):
@@ -266,7 +59,6 @@ def read_vcf(vcf, concat="none", popmap=None):
 	for record in bcf_in.fetch():
 		for i, sample in enumerate(record.samples):
 			if concat=="all":
-				print(dat[sample][0])
 				loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts, as_list=True)
 				dat[sample][-1][0]=dat[sample][-1][0]+loc[0]
 				dat[sample][-1][1]=dat[sample][-1][1]+loc[1]
@@ -509,7 +301,6 @@ def processSamples(params, points, G):
 	for idx, row in points.iterrows():
 		name = None
 		data = None
-		print(row)
 		if params.run == "GENDIST":
 			name = row[0]
 			data = tuple([row[3], row[2]])
@@ -662,6 +453,20 @@ def getFittedD(points, genmat, inc, r):
 	D=pd.DataFrame(rows, columns=['from','to','observed_D', 'predicted_D', 'abs_diff'])
 	return(D)
 
+def plotGenByGeo(gen, sdist, out, log=False):
+	genetic_distance=get_lower_tri(gen)
+	geographic_distance=get_lower_tri(sdist)
+	if not log:
+		sns.jointplot(geographic_distance, genetic_distance, kind="reg")
+		plt.savefig(str(out)+".isolationByDistance.pdf")
+	else:
+		geographic_distance=replaceZeroes(geographic_distance)
+		log_geo=np.log(geographic_distance)
+		sns.jointplot(log_geo, genetic_distance, kind="reg")
+		plt.savefig(str(out)+".isolationByDistance.pdf")
+		del log_geo
+	del geographic_distance
+	del genetic_distance
 
 #function to calculate great circle distances
 #returns in units of KILOMETERS
@@ -707,7 +512,12 @@ def testIBD(gen, geo, out, perms, log=False):
 	ibd.to_csv((str(out) + ".isolationByDistance.txt"), sep="\t", index=False)
 	print()
 
-
+def outputFittedD(pred, out):
+	pred.to_csv((str(out)+".obsVersusFittedD.txt"), sep="\t", index=False)
+	sns.jointplot("observed_D", "predicted_D", data=pred, kind="reg")
+	plt.savefig((str(out)+".obsVersusFittedD.pdf"))
+	del pred
+	#plt.show()
 
 #only necessary for later
 #eventually will add capacity to handle phased loci and msats
@@ -841,8 +651,9 @@ def getStreamMats(points, graph, len_col):
 
 	#function to calculate weights for Dijkstra's shortest path algorithm
 	#i just invert the distance, so the shortest distance segments are favored
-	def dijkstra_weight(attributes):
-		return(attributes[len_col]*-1)
+	def dijkstra_weight(left, right, attributes):
+		#print(attributes[len_col])
+		return(10000000-attributes[len_col])
 
 	#for each combination, get shortest path and sum the lengths
 	index=0
@@ -891,8 +702,9 @@ def pathSubgraph(graph, nodes, method, id_col, len_col):
 
 	#function to calculate weights for Dijkstra's shortest path algorithm
 	#i just invert the distance, so the shortest distance segments are favored
-	def dijkstra_weight(attributes):
-		return(attributes[len_col]*-1)
+	def dijkstra_weight(left, right, attributes):
+		#print(attributes[len_col])
+		return(10000000-attributes[len_col])
 
 	p1 = list(nodes.values())[0]
 	for p2 in list(nodes.values())[1:]:
@@ -947,6 +759,8 @@ def extractMinimalSubgraph(subgraph, graph, nodelist, id_col, len_col, path):
 				subgraph.add_node(first)
 		#add path attributes to current edge
 		dat=graph.get_edge_data(first, second)
+		#print(dat)
+
 		curr_edge[id_col].extend([dat[id_col]] if not isinstance(dat[id_col], list) else dat[id_col])
 		curr_edge[len_col]=float(curr_edge[len_col])+float(dat[len_col])
 

@@ -1,14 +1,14 @@
-# DENdriscape
-A collection of software tools for examining spatial patterns of diversity and differentiation in dendritic ecological networks (=DENs). Note that the contents of this directory are a work in progress. 
+# autostreamtree
 
-### Table of Contents: 
+Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
+
+### Table of Contents:
 1. [Installation](#installation)
     1. [Installation with conda](#conda)
     2. [Installation with pyenv](#pyenv)
     3. [Troubleshooting PyJulia](#pyjulia)
     4. [Singlurity/ Docker](#sing)
-2. [Summary of Programs](#programs)
-3. [DistNet - Fitting distances to stream networks](#ast)
+2. [autostreamtree - Fitting distances to stream networks](#ast)
     1. [Program Description](#ast_desc)
         1. [StreamTree Background](#ast_background)
     2. [Usage](#usage)
@@ -19,50 +19,19 @@ A collection of software tools for examining spatial patterns of diversity and d
         5. [Genetic Distance Methods](#gen)
         6. [Defining Populations](#pops)
     3. [Example Workflows](#ast_workflow)
-        1. [Single-marker dataset](#ast_example1)
-        2. [Large SNP datasets](#ast_example2)
-        3. [Microsatellites](#ast_example3)
+        1. [Large SNP datasets](#ast_example2)
+        2. [Microhaplotypes](#ast_example3)
     4. [Runtimes and Benchmarking](#ast_benchmark)
     5. [References](#ast_refs)
-4. [ResistNet - Optimizing effective resistance networks](#rscape)
-    1. [Program Description](#rscape_desc)
-        1. [Genetic Algorithms](#rscape_background)
-        2. [Resistance Models](#rscape_background2)
-    2. [Usage](#rscape_usage)
-        1. [Options and Help Menu](#rscape_help)
-        2. [Input Files](#rscape_inputs)
-        3. [Output files](#rscape_output)
-        4. [Parallel execution](#rscape_parallel)
-        5. [Genetic Algorithm Options](#rscape_ga) 
-        6. [Model Selection/ Optimization](#rscape_model)
-        7. [Circuitscape Options](#rscape_cs)
-        8. [Model-averaging and multi-model importance](#rscape_modavg)
-    3. [Runtimes and Benchmarking](#rscape_benchmark)
-    4. [Example Workflows](#rscape_workflow)
-5. [Scripts and Other Tools](#tools)
+3. [Scripts and Other Tools](#tools)
+	1. [File format conversion](#tt1)
+	2. [Data filtering and subsetting](#tt2)
+	3. [Fitting arbitrary (e.g., non-genetic) distance matrices](#tt3)
 
 
 ### Installation <a name="installation"></a>
 
-Because of the number of dependencies, I recommend setting up a virtual environment to prevent any conflicts with your system Python environment. 
-
-If you are planning on using ResistNet, [PyJulia](https://pyjulia.readthedocs.io/en/latest/), which forms the necessary interface for Python to access Circuitscape (a Julia program), a complication is that PyJulia cannot use a Python distribution that is statically linked to libpython (such as that installed by Ubuntu or conda, or Debian-based Linux distributions). 
-
-To check if this is a problem, you can use the following commands on Linux and Mac. If nothing prints to the screen, your Python is statically linked and will require a workaround:
-```
-#get full path to python3
-which python3
-
-#on linux
-ldd </full/path/to/python3 | grep libpython
-
-#on Mac
-otools -L </full/path/to/python3> | grep libpython
-```
-
-If something along the lines of "libpython3.7m.so.1.0 => /usr/lib/libpython3.7m.so.1.0 (0x00007f10ef116000)" printed out, you are good to go to install the dependencies using the pip or conda instructions below (depending on your system). 
-
-These installation instructions should work in Linux (or Windows Linux subsystem) or Mac, although Mac users can substitute homebrew commands where suggested. Note that these instructions are also comprehensive, including steps such as compiling and installing R from source -- many users will likely already have R installed on their system, and thus can skip some steps. 
+<fill in>
 
 #### Installation using conda <a name="conda"></a>
 
@@ -135,18 +104,18 @@ ldd ~/.pyenv/versions/3.6.6/bin/python3.6 | grep libpython
 #if nothing prints, something didn't work
 
 #check that the right python is in your path:
-which python3 
+which python3
 which pip3
 #output should be something like /home/USER/.pyenv/*/python3; if not, either add the correct path to .bashrc or use absolute path in the python3 and pip3 calls below
 
-#upgrade pip and make sure venv is installed 
+#upgrade pip and make sure venv is installed
 pip3 install --upgrade pip
 ```
 
 After Python finishes building, we can set up our python virtual environment:
- 
+
 ```
-#cd to the directory you want to build your virtual environment in. Here I will just use the home directory 
+#cd to the directory you want to build your virtual environment in. Here I will just use the home directory
 cd ~
 
 #make a directory to store python virtual environments in:
@@ -172,7 +141,7 @@ make
 ln -s ~/python_venv/riverscape/julia/bin/julia ~/python_venv/riverscape/bin/.
 
 #follow a similar set up for R, selecting a binary or source from https://cran.r-project.org/ depending on your system
-#here, I will be compiling it from source 
+#here, I will be compiling it from source
 wget https://cran.r-project.org/src/base/R-4/R-4.0.2.tar.gz
 tar -xvzf R-4.0.2.tar.gz
 cd R-4.0.2
@@ -200,7 +169,7 @@ pip3 install --upgrade pip
 pip3 install numpy scipy networkx seaborn matplotlib pandas deap sortedcontainers julia geopy geopandas shapely scikit-learn rpy2
 
 #installing rpy2 (Python-R interface) on Mac required that I provide a path to gcc compiler:
-#which gcc 
+#which gcc
 #this will output the path you need to set to 'CC' below
 #env CC=/usr/bin/gcc pip3 install rpy2
 ```
@@ -218,49 +187,23 @@ R
 > install.packages("lme4")
 ```
 
-#### Troubleshooting PyJulia <a name="pyjulia"></a>
 
-As noted above, PyJulia won't work with statically-linked Python. There are several workarounds in the PyJulia [documentation](https://pyjulia.readthedocs.io/en/latest/troubleshooting.html). 
+#### Using Docker <a name="sing"></a>
+Coming soon...
 
-One of the easiest workarounds is to turn off the Julia compiled cache, which you can do by passing ResistNet the '--no_compiled_modules' (boolean) argument. This might slow down loading Julia a little bit, but is one of the fastest ways to get up and running if you are getting PyJulia errors. 
-
-Another option is to create a custom Julia system image, which can be passed to ResistNet using the --sys_image argument:
-
-```
-python3 -m julia.sysimage sys.so
-```
-
-#### Using Singularity/ Docker <a name="sing"></a>
-Coming soon... I will at some point generate a Singularity image for the package -- if you need it in a hurry open and Issue so I will know to prioritize it
-
-### Programs <a name="programs"></a>
-- *DistNet.py* : This package calculates genetic and stream-distances by snapping sampling points to a network provided using an input shapefile and calculating a minimal sub-network, tests for isolation-by-distance, and fits genetic distances to stream segments using the Stream-tree algorithm by Kalinowski et al. 2008. 
-- *ResistNet.py* : This package implements a genetic algorithm to optimize multi-variable resistance models on networks in Circuitscape. This is somewhat similar to the way in which ResistanceGA accomplishes this for raster datasets, but with some critical algorithmic differences (see below)
-- *FormatNet.py* : (Coming soon) Integrates the network extraction functions of autoStreamTree with various pre-processing steps such as joining non-contiguous segments, merging redundant paths (e.g., for a braided stream) -- Not yet added
-- *SimNet.py* : (Coming soon) Performs forward-simulations on a given stream network, given environmental 'resistance' variables (and optional weights) -- Not yet added
-- *BGR_pipeline.py* : (Coming soon) Pipeline for applying BGR model given a set or covariates or resistance model
-- tools/ 
-	* *autoFetcher.py* : Python interface for NCBI entrez API; can be used to automatically download and parse queries
-	* *clusterPopsDB.py* : Distance-based clustering of points using the DBSCAN algorithm
-	* *fasta2phylip.py* : Converting between FASTA and PHYLIP formats
-	* *fasta2table.py* : Converting between FASTA and autoStreamTree Table formats
-	* *nremover.pl* : Filtering FASTA and PHYLIP files of concatenated SNPs
-	* *plotStreamTree.py* : Re-making DistNet fitted distance plot with some additional options
-	* *modelParser.py* : Parse model outputs of RiverscapeGA.py to generate and select transformed datasets (Coming soon)
-	* [tkchafin/scripts](https://github.com/tkchafin/scripts) : For more useful file formatting and filtering scripts
-	* [stevemussmann/Streamtree_arcpy](https://github.com/stevemussmann/StreamTree_arcpy) : Code for generating inputs for the original StreamTree program by Kalinowski et al.
-
-## DistNet <a name="ast"></a>
+## autostreamtree <a name="ast"></a>
 
 ### Software Description <a name="ast_desc"></a>
-DistNet is a Python software package providing various analyses aimed at analyzing patterns of genetic differentiation among aquatic stream-dwelling organisms. The intention is to take what was previously a tedious process involving multiple discrete steps and to integrate these all in one place. 
+autostreamtree is a Python software package providing various analyses aimed at analyzing patterns of genetic differentiation among aquatic stream-dwelling organisms. The intention is to take what was previously a tedious process involving multiple discrete steps and to integrate these all in one place.
 
-Currently, DistNet provides a companion library of functions for calculating various measures of genetic distances among individuals or populations, including model-corrected p-distances (e.g. Jukes-Cantor 1969, Kimura 2-parameter, Tamura-Nei 1993) as well as those based on allele frequencies (e.g. Theta-ST, linearized Fst, Jost's D -- full list of available distance models below). It also includes integrated functions for parsing an input vector shapefile of streams (see below 'Requirements for input shapefiles') for easy calculation of pairwise stream distances between sites, as well as the ordinary or weighted least-squares fitting of reach-wise genetic distances according to the "stream tree" model of Kalinowski et al. (2008). Various plotting functions are also provided for downstream analysis, including looking at patterns of isolation-by-distance. Outputs should also be directly importable into R, with additional outputs with annotated streamtree fitted distances provided for analysis in your GIS suite of choice. 
+Currently, it provides a companion library of functions for calculating various measures of genetic distances among individuals or populations, including model-corrected p-distances (e.g. Jukes-Cantor 1969, Kimura 2-parameter, Tamura-Nei 1993) as well as those based on allele frequencies (e.g. Theta-ST, linearized Fst, Jost's D -- full list of available distance models below). It also includes integrated functions for parsing an input vector shapefile of streams (see below 'Requirements for input shapefiles') for easy calculation of pairwise stream distances between sites, as well as the ordinary or weighted least-squares fitting of reach-wise genetic distances according to the "stream tree" model of Kalinowski et al. (2008). Various plotting functions are also provided for downstream analysis, including looking at patterns of isolation-by-distance. Outputs should also be directly importable into R, with additional outputs with annotated streamtree fitted distances provided for analysis in your GIS suite of choice.
 
 If you use this package for analysis of fitted distances using the streamtree model, please cite the following:
 * Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760).
 
 #### StreamTree background <a name="ast_background"></a>
+
+<fill in>
 
 ### Usage <a name="ast_usage"></a>
 
@@ -325,7 +268,7 @@ Description: Computes stream distances and genetic distances for georeferenced D
 			  GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
 			  LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
 			  JOST			: Jost's (2008) D
-			  NEI72			: Nei's (1972) standard genetic distance 
+			  NEI72			: Nei's (1972) standard genetic distance
 			  NEI83			: Nei and Chesser (1983) Da
 			  EUCLID		: Euclidean distance
 			  CHORD			: Cavalli-Sforza and Edwards (1967) chord distance
@@ -340,13 +283,13 @@ Description: Computes stream distances and genetic distances for georeferenced D
 		--het		: [Boolean] Count partial differences [e.g. ind1=T, ind2=W]
 		--snp		: [Boolean] Data represent concatenated SNPs
 		--msat		: xxx[Boolean] Data represent msat alleles [not yet implemented]
-		--global_het	: Estimate Ht using global frequencies (default is averaged over pops) 
-	
+		--global_het	: Estimate Ht using global frequencies (default is averaged over pops)
+
 	DBSCAN options (only when --clusterpop):
 		--min_samples	: Minimum samples per cluster [default=1]
 		--epsilon		: Maximum distance (in km) within a cluster [default=20]
-		
-	Aggregation options: 
+
+	Aggregation options:
 		-P,--pop_agg	: Define aggregator function for certain genetic distances in pop samples
 		-L,--loc_agg	: Define aggregator function for aggregating locus-wise distances
 			All of these can take the following options:
@@ -375,9 +318,9 @@ Description: Computes stream distances and genetic distances for georeferenced D
 
 I highly recommend using the existing global stream datasets provided by the [HydroLab group](https://wp.geog.mcgill.ca/hydrolab/) at McGill University, specifically the [HydroAtlas](https://www.hydrosheds.org/page/hydroatlas) or [free-flowing rivers dataset](https://wp.geog.mcgill.ca/hydrolab/free-flowing-rivers/) as these are already properly formatted for use, and the additional variables included will make downstream analysis very easy. Because of their size, I would recommend clipping them to the relevant scale first (e.g. the drainage encompassing all of your samples).
 
-Note that a valid path is required between all sites in order to calculate pairwise stream distances. Thus, if you are analyzing data from multiple drainages which only share an oceanic connection, you will need to augment the shapefile. For example this could be accomplished by adding a vector representing the coastline to create an artificial connection among drainages. 
+Note that a valid path is required between all sites in order to calculate pairwise stream distances. Thus, if you are analyzing data from multiple drainages which only share an oceanic connection, you will need to augment the shapefile. For example this could be accomplished by adding a vector representing the coastline to create an artificial connection among drainages.
 
-If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) REACH_ID (case sensitive) must provide a unique identifier to each stream reach; and 2) LENGTH_KM should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in ArcMAP later, but for now there are some scripts in our complementary package that can help with these steps using the ArcPy API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so. 
+If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) REACH_ID (case sensitive) must provide a unique identifier to each stream reach; and 2) LENGTH_KM should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in ArcMAP later, but for now there are some scripts in our complementary package that can help with these steps using the ArcPy API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so.
 
 #### Input file format <a name="ast_table"></a>
 
@@ -385,14 +328,14 @@ Coordinates do not need to exactly match nodes in the input shapefile, as points
 
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/example.snapDistances.png)
 
-#### DistNet Outputs <a name="ast_outputs"></a>
+#### Outputs <a name="ast_outputs"></a>
 
 The first thing autoStreamTree will do upon reading your input shapefile is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an EDGE_ID attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
 
 The reduced sub-network will be plotted for you in a file called $OUT.subGraph.pdf:
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/example.subGraph.png)
 
-Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as $out.streamsByEdgeID.pdf: 
+Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as $out.streamsByEdgeID.pdf:
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/example.networkByEdgeID.png)
 
 After fitting genetic distances, autoStreamTree will create several other outputs. First, a table called $out.reachToEdgeTable.txt will give a tab-delimited map of how REACH_ID attributes were dissolved into contiguous edges. Second, a tabular and graphical representation of how fitted pairwise distances compare to the raw calculates (or user-provided) pairwise distances: $out.obsVersusFittedD.txt and $out.obsVersusFittedD.pdf
@@ -403,9 +346,9 @@ Finally, the fitted distances per stream edge will be output both as an added co
 
 #### Genetic distance models <a name="gen"></a>
 
-The currently recommended way to run autoStreamTree is to provide a labelled matrix of pairwise genetic distances, as there are many available packages for calculating these. This input matrix is provided using the --genmat argument, and should be tab-delimited with both column and row labels matching your population or individual identifiers. 
+The currently recommended way to run autoStreamTree is to provide a labelled matrix of pairwise genetic distances, as there are many available packages for calculating these. This input matrix is provided using the --genmat argument, and should be tab-delimited with both column and row labels matching your population or individual identifiers.
 
-Built-in genetic distance calculations are currently in beta, meaning they are provided conditionally and still require more extensive external testing. They appear to be by-and-large functioning as written, but I would like to have a much more comprehensive test of whether or not my implementation of each statistic produces identical (or very similar) results to those of other packages such as Arlequin or adegenet. If you use autoStreamTree for your research and have the ability to directly compare your genetic distance matrix with those of other packages, please do so and feel free to let me know how they compare. Please note that I also offer the ability to directly import a genetic distance matrix that has been externally calculated, skipping this step altogether. 
+Built-in genetic distance calculations are currently in beta, meaning they are provided conditionally and still require more extensive external testing. They appear to be by-and-large functioning as written, but I would like to have a much more comprehensive test of whether or not my implementation of each statistic produces identical (or very similar) results to those of other packages such as Arlequin or adegenet. If you use autoStreamTree for your research and have the ability to directly compare your genetic distance matrix with those of other packages, please do so and feel free to let me know how they compare. Please note that I also offer the ability to directly import a genetic distance matrix that has been externally calculated, skipping this step altogether.
 
 Currently I provide options for individual-based distances (p-distance and various substitution-model corrected distances), and population-based distances which use allele frequency data (such as Fst):
 
@@ -425,7 +368,7 @@ Currently I provide options for individual-based distances (p-distance and vario
 			  LINFST		: [default] Rousset's (1997) linearized Fst [=Fst/(1-Fst)]
 			  JOST			: Jost's (2008) D
 			  LINJOST		: 1/1-D, where D=Jost's (2008) D
-			  NEI72			: Nei's (1972) standard genetic distance 
+			  NEI72			: Nei's (1972) standard genetic distance
 			  NEI83			: Nei and Chesser (1983) Da
 			  EUCLID		: Euclidean distance
 			  CHORD			: Cavalli-Sforza and Edwards (1967) chord distance
@@ -434,7 +377,7 @@ Currently I provide options for individual-based distances (p-distance and vario
 Optionally, the user can also opt to aggregate individual-based distance measures (when using a priori population assignments or the --geopop option). This can be provided using the --pop_agg argument, with any of the following options available:
 
 ```
-	Aggregation options: 
+	Aggregation options:
 		--pop_agg	: Define aggregator function for certain genetic distances w/ --pops:
 			All of these can take the following options:
 			  ARITH		: [default] Use arithmetic mean
@@ -446,10 +389,10 @@ Optionally, the user can also opt to aggregate individual-based distance measure
 			  MAX		: Use maximum distance
 ```
 
-For datasets containing multiple non-concatenated loci, note that individual-based distances (e.g. PDIST or JC69) will also need to be aggregated among loci within each pairwise calculation. Any of the above options can again be used here, provided using the --loc_agg argument. 
+For datasets containing multiple non-concatenated loci, note that individual-based distances (e.g. PDIST or JC69) will also need to be aggregated among loci within each pairwise calculation. Any of the above options can again be used here, provided using the --loc_agg argument.
 
 #### Defining populations <a name="pops"></a>
-There are currently three ways in which you can define populations for population-wise analysis. The first (specified using --pop) assumes that the 2nd column in the input file contains population identifiers. These can take any form (e.g., integer or string). The second (--geopop) will group any samples into populations which "snap" to the same stream node (see below). 
+There are currently three ways in which you can define populations for population-wise analysis. The first (specified using --pop) assumes that the 2nd column in the input file contains population identifiers. These can take any form (e.g., integer or string). The second (--geopop) will group any samples into populations which "snap" to the same stream node (see below).
 
 A third option (--clusterpop) will automatically cluster geographically similar individuals using the DBSCAN algorithm in scikit-learn, using great-circle geographic distances (i.e., this is not informed by stream distances calculated as a part of some workflows). Two relevant options are provided for manipulating the DBSCAN results:
 ```
@@ -462,7 +405,7 @@ If using population labels, whether provided in the input file (--pop/--geopop) 
 
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/example.clusteredPoints.png)
 
-In this example, DBSCAN was used (hence population IDs are formatted as "DB_"#). Population centroids, which are ultimately used to "snap" populations to the stream network are shown with an "x". Note that this means that the population will only be represented by a single point on the network! 
+In this example, DBSCAN was used (hence population IDs are formatted as "DB_"#). Population centroids, which are ultimately used to "snap" populations to the stream network are shown with an "x". Note that this means that the population will only be represented by a single point on the network!
 
 
 ### Example workflows <a name="ast_workflow"></a>
@@ -476,8 +419,8 @@ In this example, DBSCAN was used (hence population IDs are formatted as "DB_"#).
 ### Runtimes and benchmarking <a name="ast_benchmark"></a>
 
 ### References <a name="ast_refs"></a>
-#### Citations for DistNet methods 
-Below is a full list of citations for the various methods used in DistNet. Apologies to anyone I missed - feel free to let me know if you notice any discrepancies. 
+#### Citations for DistNet methods
+Below is a full list of citations for the various methods used in DistNet. Apologies to anyone I missed - feel free to let me know if you notice any discrepancies.
 * Beyer WM, Stein M, Smith T, Ulam S. 1974. A molecular sequence metric and evolutionary trees. Mathematical Biosciences. 19: 9-25.
 * Cavalli-Sforza LL, Edwards AWF. 1967. Phylogenetic analysis: model and estimation procedures. American Journal of Human Genetics. 19: 233-257.
 * Ester M, Kriegel HP, Sander J, Xu X. 1996. A density-based algorithm for discovering  clusters in large spatial databases with noise. IN: Simoudis E, Han J, Fayyad UM. (eds.). Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96). AAAI Press. pp. 226–231.
@@ -504,7 +447,7 @@ Below is a full list of citations for the various methods used in DistNet. Apolo
 
 #### Other reading
 Here are some recommended readings and resources:
-* Comte L, Olden JD. 2018. Fish dispersal in flowing waters: A synthesis of movement- and genetic-based studies. Fish and Fisheries. 19(6): 1063-1077. 
+* Comte L, Olden JD. 2018. Fish dispersal in flowing waters: A synthesis of movement- and genetic-based studies. Fish and Fisheries. 19(6): 1063-1077.
 * Comte L, Olden JD. 2018. Evidence for dispersal syndromes in freshwater fishes. Proceedings Royal Society: B. 285(1871):  
 * Grill, G., Lehner, B., Thieme, M. et al. 2019. Mapping the world’s free-flowing rivers. Nature. 569:215–221.
 * Linke S, Lehner B, Ouellet Dallaire C. et al. 2019. Global hydro-environmental sub-basin and river reach characteristics at high spatial resolution. Sci Data 6, 283
@@ -521,7 +464,7 @@ Here are some recommended readings and resources:
 
 #### Genetic algorithm background and similarities to ResistNet
 
-All variables can vary in their model inclusion, but also in the manner by which they are transformed; transformations are the same as those used in ResistNet, and shape parameters are included for each variable in the "chromosome". Note that as shape parameters increase, the more similar the "transformed" values are to the original values, with high values for the shape parameter (e.g., 50-100) resulting in negligable transformation: 
+All variables can vary in their model inclusion, but also in the manner by which they are transformed; transformations are the same as those used in ResistNet, and shape parameters are included for each variable in the "chromosome". Note that as shape parameters increase, the more similar the "transformed" values are to the original values, with high values for the shape parameter (e.g., 50-100) resulting in negligable transformation:
 
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/transforms.png)
 
@@ -541,21 +484,21 @@ Exiting because help menu was called.
 	Input options:
 	  If using DistNet outputs:
 		-p,--prefix	: Prefix for DistNet outputs
-		
+
 	-or-
-	
+
 	  If manually specifying inputs:
 		-g,--genmat	: Genetic distance matrix
-		-n,--network	: Input graph (in pickle'd networkx format)	
+		-n,--network	: Input graph (in pickle'd networkx format)
 		<add the rest later>
-		
+
 	General options:
 		-s,--seed	: Random number seed (default=taken from clock time)
 		-T,--procs	: Number of parallel processors
 		-X,--noPlot	: Turn off plotting
-		-o,--out	: Output file prefix 
+		-o,--out	: Output file prefix
 		-h,--help	: Displays help menu
-	
+
 	Genetic Algorithm Options:
 		-P,--maxPop	: Maximim population size [default = 100]
 		-G,--maxGen	: Maximum number of generations [default = 500]
@@ -565,7 +508,7 @@ Exiting because help menu was called.
 		-i,--indpb	: Probability of mutation per trait [default=0.1]
 		-c,--cxpb	: Probability of being chosen for cross-over [default=0.5]
 		-t,--tourn	: Tournament size [default=10]
-		
+
 	Model optimization/ selection options:
 		-F,--nfail	: Number of generations failing to improve to stop optimization
 		-d,--delt	: Threshold absolute change in fitness [default=0.0]
@@ -579,18 +522,18 @@ Exiting because help menu was called.
 				    NOTE: Case-insensitive
 		-b,--burn	: Number of generations for pre-burnin [default=0]
 		--max_hof_size	: Maximum individuals to track in the Hall of Fame [default=100]
-	
+
 	Circuitscape options:
 		--cholmod	: Turn on CHOLMOD solver
 		-C,--cprocs	: Processors per Circuitscape process [default=1]
 				    NOTE: Total simultaneous processes= <-T> * <-C>
-	
+
 	Genetic distance options:
 		--force		: Use XX attribute from input table as distance metric (e.g. 'fittedD')
 				    NOTE: By default, the average of "locD_" columns will be taken
 		--infer		: Infer pairwise distances from input table (i.e., NOT input matrix)
 		-v,--vars	: Comma-separated list (no spaces) of explanatory attributes to include
-	
+
 	Multi-model inference options:
 		-A,--modavg	: Compute model-averaged resistances
 				    NOTE: This involves re-running Circuitscape for each model
@@ -600,7 +543,7 @@ Exiting because help menu was called.
 
 #### Input files <a name="rscape_input"></a>
 
-For convienience, the inputs for ResistNet follow the formats of the files output by DistNet and FormatNet (not complete yet). 
+For convienience, the inputs for ResistNet follow the formats of the files output by DistNet and FormatNet (not complete yet).
 
 #### Outputs <a name="rscape_output"></a>
 
@@ -669,7 +612,7 @@ In addition to this, ResistNet maintains a "Hall of Fame", tracking the best ind
 | 6619.827623973979  | 1          | -0.1455520926262841 | 6                | 11               | 0          | -                 | -                | -                | 0          | -                 | -                | -                | 0          | -                    | -                | -                | 0          | -                   | -                | -                | 0         | -                   | -               | -               | 1          | 0.34392503912199834 | 2                | 51               | 1          | -0.7752412475467703 | 8                | 60               | 1   | -0.9319860657625789 | 3         | 64        | 1          | 0.5971939266873523  | 4                | 18               | -3305.9138119869895 | 0.19816589207605215 | 6619.827623973979  | 641.6683238153164 | 22.052084283305703 | 8.241683590176287e-06  | 0.9999817670773452 | False |
 | 6620.788954854979  | 1          | -0.1455520926262841 | 6                | 77               | 0          | -                 | -                | -                | 0          | -                 | -                | -                | 0          | -                    | -                | -                | 1          | 0.07949635894691087 | 7                | 18               | 0         | -                   | -               | -               | 1          | 0.34392503912199834 | 2                | 51               | 1          | -0.7752412475467703 | 8                | 60               | 1   | -0.9319860657625789 | 3         | 64        | 1          | -0.6901645609234912 | 2                | 89               | -3306.3944774274896 | 0.19844574255201924 | 6620.788954854979  | 642.5574955984894 | 23.013415164306025 | 5.096424430273501e-06  | 0.9999868635017755 | False |
 
-Other values in the table include whether or not a variable is included in a model ($var, where $var is the variable name), specified as either "1" (=included) or "0" (=excluded), and the transformation type (=$var_trans), transformation shape parameter (=$var_shape), and weight of the parameter when calculating the composite resistance edges (=$var_weight). For the transformation column, the types of transformations are as follows: 0=Not transformed; 1=Ricker; 2=Reverse Ricker; 3=Inverse Ricker; 4=Reverse-Inverse Ricker; 5=Monomolecular; 6=Reverse Monomolecular; 7=Inverse Monomolecular; 8=Reverse-Inverse Monomolecular. In all cases, the larger the shape value, the closer each transformation gets to being linear (=essentially no transformation). 
+Other values in the table include whether or not a variable is included in a model ($var, where $var is the variable name), specified as either "1" (=included) or "0" (=excluded), and the transformation type (=$var_trans), transformation shape parameter (=$var_shape), and weight of the parameter when calculating the composite resistance edges (=$var_weight). For the transformation column, the types of transformations are as follows: 0=Not transformed; 1=Ricker; 2=Reverse Ricker; 3=Inverse Ricker; 4=Reverse-Inverse Ricker; 5=Monomolecular; 6=Reverse Monomolecular; 7=Inverse Monomolecular; 8=Reverse-Inverse Monomolecular. In all cases, the larger the shape value, the closer each transformation gets to being linear (=essentially no transformation).
 
 A plot summarizing among models called $out.ICprofile.pdf will also be produced, which shows several pieces of information: 1) How AIC supports vary among all of the Hall of Fame models (arranged from left to right = 'best' to 'worst'). Points are separated as those which were retained for model-averaging given the <-a,--awsum> cutoff, scaled by marginal R^2 values (i.e., correlation coefficient from the MLPE model), and with a red horizontal bar showing a raw delta-AIC cutoff of 2:
 
@@ -697,15 +640,15 @@ If using the <--report_all> option, these plots will also be produced for every 
 
 #### Parallel execution <a name="rscape_parallel"></a>
 
-There are two parameters for controlling parallel execution: <-T,--procs> controls the spread of individual fitness calculations in the genetic algorithm, using the multiprocessing Python library; and <-C,--cprocs> controls the number of processor cores dedicated per Circuitscape run (which is run for every individual, every generation). <-C> * <-T> should not exceed the number of CPUs on your machine. 
+There are two parameters for controlling parallel execution: <-T,--procs> controls the spread of individual fitness calculations in the genetic algorithm, using the multiprocessing Python library; and <-C,--cprocs> controls the number of processor cores dedicated per Circuitscape run (which is run for every individual, every generation). <-C> * <-T> should not exceed the number of CPUs on your machine.
 
-I've found that each Circuitscape run generally doesn't take too long with moderately sized networks (more below in the [Runtimes and Benchmarking section](#rscape_benchmark)), and that the greatest gains can be gotten by maximizing the <-T> parameter. This allows not only the Circuitscape step to be parallelized, but also the generation and parsing of Circuitscape outputs, and fitting of the MLPE model. However, extremely large networks may benefit from increasing the <-C> parameter. For most users, I wouldn't recommend increasing <-C> unless your machine has twice the number of processors as there are individuals in the GA population, as <-T> will not give any benefit if increasing beyond the population size. For example, if you have a small population size of 24 and are running on a 48-core machine, increasing <-T> beyond T=24 will not increase runtimes, and you may wish to set <-T 24> and <-C 2> in order to best use the cores avaialable. However, for most use cases, the available number of CPUs is unlikely to be larger than the population size. 
+I've found that each Circuitscape run generally doesn't take too long with moderately sized networks (more below in the [Runtimes and Benchmarking section](#rscape_benchmark)), and that the greatest gains can be gotten by maximizing the <-T> parameter. This allows not only the Circuitscape step to be parallelized, but also the generation and parsing of Circuitscape outputs, and fitting of the MLPE model. However, extremely large networks may benefit from increasing the <-C> parameter. For most users, I wouldn't recommend increasing <-C> unless your machine has twice the number of processors as there are individuals in the GA population, as <-T> will not give any benefit if increasing beyond the population size. For example, if you have a small population size of 24 and are running on a 48-core machine, increasing <-T> beyond T=24 will not increase runtimes, and you may wish to set <-T 24> and <-C 2> in order to best use the cores avaialable. However, for most use cases, the available number of CPUs is unlikely to be larger than the population size.
 
 #### Genetic Algorithm options <a name="rscape_ga"></a>
 
-ResistNet provides options for manipulating the relevant parameters of the genetic algorithm. If there are additional parameters you wish to control, just shoot me an email (tylerkchafin@gmail.com) or launch an Issue here and GitHub and I'll add it as soon as I can. 
+ResistNet provides options for manipulating the relevant parameters of the genetic algorithm. If there are additional parameters you wish to control, just shoot me an email (tylerkchafin@gmail.com) or launch an Issue here and GitHub and I'll add it as soon as I can.
 
-The parameters which can be manipulating from the command-line are as follows: 
+The parameters which can be manipulating from the command-line are as follows:
 ```
 	Genetic Algorithm Options:
 		-P,--maxPop	: Maximim population size [default = 100]
@@ -730,25 +673,25 @@ The --posWeight and --fixWeight options are used to either constrain parameter w
 #### Model-averaging and multi-model importance <a name="rscape_modavg"></a>
 
 ### Runtimes and Benchmarking <a name="rscape_benchmark"></a>
-In all of these tests, I used a dataset composed of N=112 network edges (corresponding to N=2,248 contiugous segments in the input shapefile), and N=78 populations. I randomly selected 10 environmental variables, and used a population size of 50. Tests were performed on a Linux computer with 256gb of memory and 16 cores. 
+In all of these tests, I used a dataset composed of N=112 network edges (corresponding to N=2,248 contiugous segments in the input shapefile), and N=78 populations. I randomly selected 10 environmental variables, and used a population size of 50. Tests were performed on a Linux computer with 256gb of memory and 16 cores.
 
-Increasing the <-T> parameter leads to speed increases when <-t> <= population size, although returns are diminishing at higher values, given several added costs: The need for more separate initializations, and the communication cost of sending information between the master and sub-processes. Here, for each generation, the master process has to send a model parameterization (a vector of e.g., [1, 0.89, 7, 16] x number of variables), and the sub-process returns a vector of potential fitness measures (loglik, AIC, marginal r^2, deltaAIC vs. null). Memory increases linearly as you add processors, with the slope determined by the size of the input dataset, since each sub-process maintains a deep copy of the entire graph, pairwise genetic distance matrix, etc. 
+Increasing the <-T> parameter leads to speed increases when <-t> <= population size, although returns are diminishing at higher values, given several added costs: The need for more separate initializations, and the communication cost of sending information between the master and sub-processes. Here, for each generation, the master process has to send a model parameterization (a vector of e.g., [1, 0.89, 7, 16] x number of variables), and the sub-process returns a vector of potential fitness measures (loglik, AIC, marginal r^2, deltaAIC vs. null). Memory increases linearly as you add processors, with the slope determined by the size of the input dataset, since each sub-process maintains a deep copy of the entire graph, pairwise genetic distance matrix, etc.
 
-In this test, I used 1-16 processors to examine N=50 individual models per generation, for 10 generations. The random number seed was fixed, to maintain comparability. Total runtimes varied from 165 minutes for <-T 1> to ~14 minutes for <-T 16>. Runtime increases linearly with number of generations, such that e.g., 200 generations with this same dataset and population size takes ~280 minutes with <-T 16>. A run of the same dataset, with a population size of 200, and 200 generations, took 840 minutes. 
+In this test, I used 1-16 processors to examine N=50 individual models per generation, for 10 generations. The random number seed was fixed, to maintain comparability. Total runtimes varied from 165 minutes for <-T 1> to ~14 minutes for <-T 16>. Runtime increases linearly with number of generations, such that e.g., 200 generations with this same dataset and population size takes ~280 minutes with <-T 16>. A run of the same dataset, with a population size of 200, and 200 generations, took 840 minutes.
 
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/rscape_benchmark.png)
-	
+
 In comparing the gains from parallelization, the <-T> parameter grants the most efficient use of available CPUs:
 
 ![](https://raw.githubusercontent.com/tkchafin/DENdriscape/master/examples/plots/t_vs_c.png)
 
-Here, dedicating all 16 cores to <-T> parallelization, after ~3 minutes spend parsing the input files, each generation took approximately 1 minute of computation. With a population size of 50, this averages out to each CPU core evaluating 3-4 individual models, so about 15-20 seconds per individual model (that includes running Circuitscape, parsing the outputs, and fitting the MLPE model). When setting <-T 8> and <-C 2>, each model evaluation averages to 20-24 seconds each, AND each CPU had to evaluate 6-7 individuals per generation. So not only did we see loss in the number of simultaneous model evaluations at a time, Circuitscape actually got slower -- probably reflecting the cost of passing around data. With much larger networks and a larger number of pairwise evaluations (maybe several hundred samples), this relationship is likely to change. For large datasets with long computation times, I would recommend doing some short runs evaluating whether or not increasing the <-C> parameter is worthwhile for your case. 
+Here, dedicating all 16 cores to <-T> parallelization, after ~3 minutes spend parsing the input files, each generation took approximately 1 minute of computation. With a population size of 50, this averages out to each CPU core evaluating 3-4 individual models, so about 15-20 seconds per individual model (that includes running Circuitscape, parsing the outputs, and fitting the MLPE model). When setting <-T 8> and <-C 2>, each model evaluation averages to 20-24 seconds each, AND each CPU had to evaluate 6-7 individuals per generation. So not only did we see loss in the number of simultaneous model evaluations at a time, Circuitscape actually got slower -- probably reflecting the cost of passing around data. With much larger networks and a larger number of pairwise evaluations (maybe several hundred samples), this relationship is likely to change. For large datasets with long computation times, I would recommend doing some short runs evaluating whether or not increasing the <-C> parameter is worthwhile for your case.
 
 ### Example Workflows <a name="rscape_workflow"></a>
 
 ## Scripts and Tools
 
-#### Re-plotting StreamTree outputs 
+#### Re-plotting StreamTree outputs
 
 The default $out.streamdByFittedD plot may not be exactly what you wanted. To prevent cluttering the help menu of the main program too much, we've provided a separate script for loading up autoStreamTree outputs to re-make the plot, which has some added options for customization: scripts/plotStreamTree.py
 
@@ -761,7 +704,7 @@ Contact: tkchafin@uark.edu
 Description: Script for re-plotting StreamTree results after running DistNet
 
 		-p,--prefix	: Prefix for autoStreamTree output
-		-m,--min	: Minimum genetic distance 
+		-m,--min	: Minimum genetic distance
 		-M,--max	: Maximum genetic distance
 		-c,--cmap	: Colormap (any valit matplotlib cmap value)
 			see: https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html
