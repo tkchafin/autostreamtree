@@ -24,21 +24,16 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 			#print(inds1)
 			genmat[ia,ib] = (agg.aggregateDist(pop_agg, ([indmat[i, j] for i in inds1 for j in inds2])))
 			genmat[ib,ia] = genmat[ia,ib]
-		elif dist == "JOST" or dist == "LINJOST":
+		elif dist == "JOST":
 			results=list()
-			for loc in range(0, len(seqs)):
-				seqs1 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = getAlleles([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = getAlleles([seqs[x][loc] for x in popmap.values()[ib]])
 				if not cleanList(set(seqs1), ["n", "N", "-", "?"]) or not cleanList(set(seqs2), ["n", "N", "-", "?"]):
 					continue
 				results.append(twoPopJostD(seqs1, seqs2, ploidy, global_het))
-			#print(results)
 			if len(results) > 1:
-				if dist=="LINJOST":
-					D = agg.aggregateDist(loc_agg, results)
-					genmat[ia,ib] = genmat[ib,ia] = (1.0/(1.0-float(D)))
-				else:
-					genmat[ia,ib] = genmat[ib,ia] = agg.aggregateDist(loc_agg, results)
+				genmat[ia,ib] = genmat[ib,ia] = agg.aggregateDist(loc_agg, results)
 			elif len(results) < 1:
 				#print("ERROR: population",popmap.values()[ia],"or",popmap.values()[ib],"lacks any data")
 				raise ValueError
@@ -47,9 +42,9 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 		elif dist == "GST" or dist == "GSTPRIME":
 			HT=list()
 			HS=list()
-			for loc in range(0, len(seqs)):
-				seqs1 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = getAlleles([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = getAlleles([seqs[x][loc] for x in popmap.values()[ib]])
 				if not cleanList(set(seqs1), ["n", "N", "-", "?"]) or not cleanList(set(seqs2), ["n", "N", "-", "?"]):
 					continue
 				if dist == "GST" or "GSTPRIME":
@@ -70,9 +65,9 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 		elif dist == "FST" or dist == "LINFST":
 			num = list() #numerator; a
 			denom = list() #denominator; a*b*c
-			for loc in range(0, len(seqs)):
-				seqs1 = cleanInds([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = cleanInds([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = cleanInds([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = cleanInds([seqs[x][loc] for x in popmap.values()[ib]])
 				if not all("/" in x for x in seqs1) or not all("/" in x for x in seqs2):
 					print("ERROR: FST estimates require phased data.")
 					sys.exit(1)
@@ -89,13 +84,16 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 			if dist == "FST":
 				genmat[ia,ib] = genmat[ib,ia] = theta
 			elif dist == "LINFST":
-				genmat[ia,ib] = genmat[ib,ia] = (theta / (1-theta))
+				if theta != 1.0:
+					genmat[ia,ib] = genmat[ib,ia] = (theta / (1-theta))
+				else:
+					genmat[ia,ib] = genmat[ib,ia] = theta
 		elif dist == "NEI83":
 			results = list()
 			loci = 0.0
-			for loc in range(0, len(seqs)):
-				seqs1 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = getAlleles([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = getAlleles([seqs[x][loc] for x in popmap.values()[ib]])
 				if not cleanList(set(seqs1), ["n", "N", "-", "?"]) or not cleanList(set(seqs2), ["n", "N", "-", "?"]):
 					#print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
 					continue
@@ -105,9 +103,9 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 			genmat[ia,ib] = genmat[ib,ia] = Da
 		elif dist == "EUCLID":
 			results = list()
-			for loc in range(0, len(seqs)):
-				seqs1 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = getAlleles([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = getAlleles([seqs[x][loc] for x in popmap.values()[ib]])
 				if not cleanList(set(seqs1), ["n", "N", "-", "?"]) or not cleanList(set(seqs2), ["n", "N", "-", "?"]):
 					#print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
 					continue
@@ -117,9 +115,9 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 		elif dist == "CHORD":
 			num = list()
 			denom = list()
-			for loc in range(0, len(seqs)):
-				seqs1 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ia]])
-				seqs2 = seq.getAlleles([seqs[loc][x] for x in popmap.values()[ib]])
+			for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+				seqs1 = getAlleles([seqs[x][loc] for x in popmap.values()[ia]])
+				seqs2 = getAlleles([seqs[x][loc] for x in popmap.values()[ib]])
 				if not cleanList(set(seqs1), ["n", "N", "-", "?"]) or not cleanList(set(seqs2), ["n", "N", "-", "?"]):
 					#print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
 					continue
@@ -156,9 +154,9 @@ def getGenMat(dist, points, seqs, ploidy, het, loc_agg):
 	#for each combination, calc jukes-cantor corrected distance
 	for ia, ib in itertools.combinations(range(0,len(points)),2):
 		results=list()
-		for loc in range(0, len(seqs)):
-			seq1 = seqs[loc][points.keys()[ia]]
-			seq2 = seqs[loc][points.keys()[ib]]
+		for loc in range(0, len(seqs[points.keys()[ia]])):
+			seq1 = seqs[points.keys()[ia]][loc]
+			seq2 = seqs[points.keys()[ib]][loc]
 			if "/" in seq1:
 				seq1 = seq.DNAconsensus(seq1)
 			if "/" in seq2:
@@ -190,13 +188,11 @@ def jukes_cantor_distance(seq1, seq2, het=False):
 		obs=p_distance(seq1, seq2, trans=False)
 	else:
 		obs=hamming_distance(seq1, seq2, trans=False)
-	#print(obs)
 	#print(1.0 - ((4.0*obs)/3.0))
-	if obs > 0.75:
-		obs = 0.75
-	dist=-0.75*np.log(1.0 - ((4.0*obs)/3.0))
-	#print(dist)
-	if dist <= 0.0:
+	if obs >= 0.75:
+		obs = 0.74999
+	dist=-0.75*np.log(1.0 - ((4.0/3.0)*obs))
+	if not dist > 0.0:
 		return(0.0)
 	return(dist)
 
@@ -490,6 +486,8 @@ def twoPopWeirCockerhamFst(s1, s2):
 		pbar = (ac1+ac2) / (float(len(alleles1)) + float(len(alleles2)))
 		ssquare = ((np.sum( [ (n1* (np.square(p1 - pbar)) ), (n2* (np.square(p2 - pbar))) ])) / ((r-1.0)*nbar))
 		hbar = ((h1+h2) / (r * nbar))
+		# print(nbar)
+		# print(hbar)
 		a = ((nbar/nC) *
 			(ssquare -
 			((1.0 / (nbar-1.0)) *

@@ -12,6 +12,7 @@ import geopandas as gpd
 import numpy as np
 import networkx as nx
 import seaborn as sns
+from pysam import VariantFile
 from scipy import stats
 from os import listdir
 from os.path import isfile, join
@@ -26,98 +27,12 @@ import pickle
 from math import radians, degrees, sin, cos, asin, acos, sqrt
 
 import autostreamtree.cluster_pops as clust
+import autostreamtree.sequence as seq
+import autostreamtree.genetic_distances as gendist
+import autostreamtree.report_refs as ref
+import autostreamtree.aggregators as agg
+import autostreamtree.Mantel as Mantel
 
-# import riverscape.genetic_distances as gendist
-# import riverscape.cluster_pops as clust
-# import riverscape.report_refs as ref
-# from riverscape.ast_menu import parseArgs
-# import riverscape.aggregators as agg
-# import riverscape.Mantel as Mantel
-
-
-#TODO: Currently assumes all points can be reached by all other points. Add option to check this first, and delete any points that are unreachable
-
-# def main():
-#
-# 	params = parseArgs()
-#
-# 	print("Starting...\n")
-#
-# 	if params.network:
-# 		print("Reading network from saved file: ", params.network)
-# 		G=nx.OrderedGraph(nx.read_gpickle(params.network).to_undirected())
-# 		#print("G:",len(G.edges()))
-# 	else:
-# 		print("Building network from shapefile:",params.shapefile)
-# 		print("WARNING: This can take a while with very large files!")
-# 		G=nx.OrderedGraph(nx.read_shp(params.shapefile, simplify=True, strict=True).to_undirected())
-#
-#
-# 	#parse dataset
-# 	points = pd.read_csv(params.geodb, sep="\t", header="infer")
-# 	(point_coords, pop_coords, popmap, seqs) = processSamples(params, points, G)
-#
-#
-# 	#traverse graph to fill: streamdists, gendists, and incidence matrix
-# 	#calculate genetic distance matrix -- right now that is a JC69-corrected Hamming distance
-# 	#D
-# 	if params.run != "STREAMDIST" and params.run != "RUNLOCI":
-# 		gen=None
-# 		print("\nCalculating genetic distances...")
-# 		if not params.genmat:
-# 			(gen, pop_gen) = getPopGenMats(params, point_coords, popmap, seqs)
-# 		else:
-# 			print("\nReading genetic distances from provided matrix:", params.genmat)
-# 			inmat = pd.read_csv(params.genmat, header=0, index_col=0, sep="\t")
-# 			(gen, pop_gen) = parseInputGenMat(params, inmat, point_coords, popmap)
-#
-# 		reportPopGenMats(params, gen, pop_gen, point_coords, pop_coords)
-#
-# 		if params.run == "GENDIST":
-# 			sys.exit(0)
-#
-# 	#IMPORTANT NOTE: This function will silently skip any loci for which calculations aren't possible (e.g., population having no data)
-# 	if params.run == "RUNLOCI":
-# 		genlist=list()
-# 		popgenlist=list()
-# 		if not params.locmatdir:
-# 			for i in seqs:
-# 				try:
-# 					(gen, pop_gen) = getPopGenMats(params, point_coords, popmap, [i])
-# 					genlist.append(gen)
-# 					popgenlist.append(pop_gen)
-# 				except Exception:
-# 					pass
-# 		else:
-# 			locmats = [f for f in listdir(params.locmatdir) if isfile(join(params.locmatdir, f))]
-# 			locmats = sorted(locmats, key = lambda x: int(x.split(".")[-1]))
-# 			print("\nReading per-locus genetic distances from provided directory:", params.locmatdir)
-#
-# 			for locmat in locmats:
-# 				inmat = pd.read_csv(join(params.locmatdir, locmat), header=0, index_col=0, sep="\t")
-# 				#print(inmat)
-# 				(gen, pop_gen) = parseInputGenMat(params, inmat, point_coords, popmap)
-# 				genlist.append(gen)
-# 				popgenlist.append(pop_gen)
-#
-# 		#get "observed" gen dist matrix, either as a provided matrix
-# 		if not params.genmat:
-# 			print("\nCalculating average of locus-wise genetic distance matrices...")
-# 			if genlist[0] is not None:
-# 				gen = np.mean(genlist, axis=0)
-# 			else:
-# 				gen = genlist[0]
-# 			if popgenlist[0] is not None:
-# 				popgen = np.mean(popgenlist, axis=0)
-# 			else:
-# 				popgen = popgenlist[0]
-# 		else:
-# 			print("\nReading genetic distances from provided matrix:", params.genmat)
-# 			inmat = pd.read_csv(params.genmat, header=0, index_col=0, sep="\t")
-# 			(gen, pop_gen) = parseInputGenMat(params, inmat, point_coords, popmap)
-# 		#print(genlist)
-# 		#print(popgenlist)
-# 		#sys.exit()
 #
 # 	#for ia,ib in itertools.combinations(range(0,len(popmap)),2):
 # 	#	print(popmap.keys()[ia])
@@ -324,6 +239,57 @@ import autostreamtree.cluster_pops as clust
 #
 # 	print("\nDone!\n")
 
+
+
+# read vcf file
+def read_vcf(vcf, concat="none", popmap=None):
+	bcf_in = VariantFile(vcf)
+
+	# set up data dict
+	dat=dict()
+	samples = list((bcf_in.header.samples))
+	for s in samples:
+		if concat == "all":
+			dat[s] = list()
+			dat[s].append(["",""])
+		else:
+			dat[s] = list()
+
+	# if popmap, make list of samples to drop that aren't in a pop
+	if popmap:
+		keep = list()
+		for pop in popmap:
+			keep.extend(popmap[pop])
+		bcf_in.subset_samples(keep)
+
+	chrom="FIRST"
+	for record in bcf_in.fetch():
+		for i, sample in enumerate(record.samples):
+			if concat=="all":
+				print(dat[sample][0])
+				loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts, as_list=True)
+				dat[sample][-1][0]=dat[sample][-1][0]+loc[0]
+				dat[sample][-1][1]=dat[sample][-1][1]+loc[1]
+			elif concat=="loc":
+				if record.chrom != chrom:
+					dat[sample].append(["",""])
+				loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts, as_list=True)
+				dat[sample][-1][0]=dat[sample][-1][0]+loc[0]
+				dat[sample][-1][1]=dat[sample][-1][1]+loc[1]
+			else:
+				loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts)
+				dat[sample].append(loc)
+		chrom=record.chrom
+	if concat != "none":
+		for sample in dat:
+			dat[sample] = ["/".join(x) for x in dat[sample]]
+	for sample in dat.keys():
+		if len(dat[sample]) < 1:
+			del dat[sample]
+		elif len(dat[sample]) == 1 and dat[sample][0][0] == "":
+			del dat[sample]
+	return(dat)
+
 # read network
 def read_network(network, shapefile):
 	if network:
@@ -417,6 +383,35 @@ def reportPopGenMats(params, gen, pop_gen, point_coords, pop_coords):
 		pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()), index=list(pop_coords.keys()))
 		pop_genDF.to_csv((str(params.out) + ".popGenDistMat.txt"), sep="\t", index=True)
 		del pop_genDF
+
+def getLocData(seqs):
+	for loc in range(0, len(seqs[list(seqs.keys())[0]])):
+		d=dict()
+		for ind in seqs.keys():
+			d[ind] = [seqs[ind][loc]]
+		yield(d)
+
+#print and write genmats to file
+def reportPopGenMatsList(params, genlist, popgenlist, point_coords, pop_coords):
+	dir = str(params.out)+"_locmats"
+	os.mkdir(dir)
+	i=0
+	for gen in genlist:
+		if gen is not None:
+			#write individual genetic distances to file
+			ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()), index=list(point_coords.keys()))
+			ind_genDF.to_csv((str(dir) + "/loc_" + str(i) + ".indGenDistMat.txt"), sep="\t", index=True)
+			del ind_genDF
+			i+=1
+	j=0
+	for pop_gen in popgenlist:
+		if pop_gen is not None:
+			#write population genetic distances to file
+			#print(list(pop_coords.keys()))
+			pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()), index=list(pop_coords.keys()))
+			pop_genDF.to_csv((str(dir) + "/loc_" + str(j) + ".popGenDistMat.txt"), sep="\t", index=True)
+			del pop_genDF
+			j+=1
 
 # Disable
 def blockPrint():
@@ -623,7 +618,7 @@ def processSamples(params, points, G):
 	return(point_coords, pop_coords, popmap)
 
 #returns population genetic distance matrices
-def getPopGenMats(params, point_coords, popmap, seqs):
+def getGenDistMats(params, point_coords, popmap, seqs):
 	gen = None
 	pop_gen = None
 	if params.dist in ["PDIST", "TN84", "TN93", "K2P", "JC69"]:

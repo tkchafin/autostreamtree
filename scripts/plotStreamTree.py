@@ -9,23 +9,23 @@ import matplotlib.pyplot as plt
 
 def main():
 	params = parseArgs()
-	
+
 	s=str(params.prefix) + ".streamTree.shp"
 	print("Reading shapefile:",s)
 	gdf = gpd.read_file(s)
-	
+
 	if params.maxD:
 		gdf.loc[gdf.fittedD > params.maxD, 'fittedD']=params.maxD
 	if params.minD:
 		gdf.loc[gdf.fittedD < params.minD, 'fittedD']=params.minD
-		
+
 	gdf.plot(column="fittedD", cmap = params.cmap, legend=True)
 	plt.title("Stream network colored by StreamTree fitted distances")
 	o=(str(params.out)+".streamsByFittedD.pdf")
 	plt.savefig(o)
 	print("New plot can be found at:",o)
-	
-	
+
+
 
 #Object to parse command-line arguments
 class parseArgs():
@@ -90,7 +90,7 @@ class parseArgs():
 		print ("Description: Script for re-plotting StreamTree results after running autoStreamTree")
 		print("""
 		-p,--prefix	: Prefix for autoStreamTree output
-		-m,--min	: Minimum genetic distance 
+		-m,--min	: Minimum genetic distance
 		-M,--max	: Maximum genetic distance
 		-c,--cmap	: Colormap (any valit matplotlib cmap value)
 			see: https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html

@@ -1,17 +1,41 @@
 import os
 import sys
 
+# returns a decoded genotype given relevant vcf fields
+def decode(gt, ref, alts, as_iupac=False, as_tuple=False, as_list=False):
+	ret=[None, None]
+	if gt[0] is None or gt[1] is None:
+		ret = ["N","N"]
+	else:
+		if gt[0] == 0:
+			ret[0] = ref
+		else:
+			ret[0] = alts[gt[0]-1]
+		if gt[1] == 0:
+			ret[1] = ref
+		else:
+			ret[1] = alts[gt[1]-1]
+
+	if as_iupac:
+		return(DNAconsensus("/".join(ret)))
+	elif as_tuple:
+		return(tuple(ret))
+	elif as_list:
+		return(ret)
+	else:
+		return("/".join(ret))
+
 #function to compute nucleotide frequencies
 #if ploidy = 1, ambiguities will be skipped
 #if ploidy = 2, ambiguities will be resolved
-def getNucFreqs(alns, ploidy):
+def getNucFreqs(seqs, ploidy):
 	freqs = list()
-	for aln in alns:
+	for loc in range(0, len(seqs[list(seqs.keys())[0]])):
 		temp = dict()
 		allnucs = ""
-		for samp in aln.keys():
-			allnucs = allnucs + aln[samp].lower()
-		badchars = ["?", "-", "N"]
+		for samp in seqs.keys():
+			allnucs = allnucs + DNAconsensus(seqs[samp][loc]).lower()
+		badchars = ["?", "-", "n"]
 		if ploidy == 1:
 			badchars = ["?", "-", "n", "r", "y", "s", "w", "k", "m", "b", "d", "h", "v"]
 		for char in badchars:

@@ -7,14 +7,14 @@ class parseArgs():
 	def __init__(self):
 		#Define options
 		try:
-			options, remainder = getopt.getopt(sys.argv[1:], 'hs:i:r:p:d:a:lw:o:gP:L:Scn:G:v:', \
+			options, remainder = getopt.getopt(sys.argv[1:], 'hs:i:r:p:d:a:lw:o:gP:L:Scn:G:v:C:', \
 			["shp=", "help", "input=", "run=", "pop=", "popmap=","dist=", "agg_method=",
 			"het", "genmat=", "snp", "snps", "msat", "msats", "log", "and_log", "iterative",
 			"weight=", "out=", "method=", "plots", "plot","perm=", "phased", "median",
 			"diploid", "geopop", "geopops", "global_het", "haploid", "loc_agg=",
 			"pop_agg=", "sdist_agg=", "clusterpop", "epsilon=", "min_samples=", "sclusterpop",
 			"network=", "overwrite", "reachid_col=", "length_col=", "coercemat", "locmatdir=",
-			"vcf="])
+			"vcf=", "concat="])
 		except getopt.GetoptError as err:
 			print(err)
 			self.display_help("\nExiting because getopt returned non-zero exit status.")
@@ -24,6 +24,7 @@ class parseArgs():
 		self.locmatdir = None
 		self.geodb = None
 		self.vcf = None
+		self.concat = "none"
 		self.run = "ALL"
 		self.network = None
 		self.pop = False
@@ -74,6 +75,11 @@ class parseArgs():
 				pass
 			elif opt == 'i' or opt == 'coords':
 				self.geodb = arg
+			elif opt == "C" or opt == "concat":
+				if str(arg).lower() in ["none", "all", "loc"]:
+					self.concat = str(arg).lower()
+				else:
+					self.display_help("Invalid option "+str(arg).lower()+" for option <--concat>")
 			elif opt == 'v' or opt == 'vcf':
 				self.vcf = arg
 			elif opt == 'r' or opt == 'run':
@@ -198,6 +204,7 @@ Mandatory arguments:
 
 General options:
 	-o,--out	: Output prefix [default="out"]
+	-C,--concat	: Concatenate all SNPs ("all"), by locus ("loc"), or not at all ("none")
 	-n,--network	: Provide an already optimized network output from a previous run
 		This will be the $out.network file written by autoStreamTree
 	--overwrite	: Overwrite an input network (Only relevant with --network)
@@ -223,13 +230,13 @@ Genetic distance options:
 		  PDIST			: Uncorrected p-distances [# Differences / Length]
 		  JC69 			: [default] Jukes-Cantor (1969) corrected p-distances
 		  K2P			: Kimura 2-parameter distances
-		  TN84			: Tajima and Nei's (1984) distance
-		  TN93			: Tamura and Nei's (1993) distance
+		  *TN84			: Tajima and Nei's (1984) distance
+		  *TN93			: Tamura and Nei's (1993) distance
 		Frequency models (when using --pop):
-		  FST			: Weir and Cockerham's Fst formulation (=THETAst)
-		  GST			: Hedrick's (2005) correction of Nei (1987) Gst [=G'st]
-		  GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
-		  LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
+		  *FST			: Weir and Cockerham's Fst formulation (=THETAst)
+		  *GST			: Hedrick's (2005) correction of Nei (1987) Gst [=G'st]
+		  *GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
+		  *LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
 		  JOST			: Jost's (2008) D
 		  NEI72			: Nei's (1972) standard genetic distance
 		  NEI83			: Nei and Chesser (1983) Da
@@ -272,6 +279,8 @@ StreamTree (see Kaliowski et al. 2008) options:
 		  FM67			: Fitch and Margoliash (1967) [w = 1/D^2]
 		  BEYER74		: Beyer et al. (1974) weights [w = 1/D]
 		  CSE67			: [default] Cavalli-Sforza and Edwards (1967) [w = 1]
+
+*Experimental features (still in development)
 """)
 		print()
 		sys.exit()
