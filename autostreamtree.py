@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import autostreamtree.functions as ast
 from autostreamtree.params import parseArgs
 import autostreamtree.cluster_pops as clust
+import autostreamtree.report_refs as ref
 
 def main():
 
@@ -247,7 +248,7 @@ def main():
 		geoDF['EDGE_ID'] = geoDF['EDGE_ID_x'].astype(int)
 		geoDF.drop(columns=["EDGE_ID_x", "EDGE_ID_y"], inplace=True)
 		geoDF = geoDF.merge(fittedD, on='EDGE_ID')
-		print(geoDF)
+		#print(geoDF)
 		if params.run == "RUNLOCI":
 			geoDF = geoDF.merge(sdD, on='EDGE_ID')
 			geoDF.plot(column="stdevD_y", cmap = "RdYlGn_r", legend=True)
@@ -262,9 +263,9 @@ def main():
 
 		if geoDF.shape[1] > 2045:
 			print("Too many columns to write shapefile (hard limit of 2046 columns). Only writing first 2046 columns to shapefile attribute table; full output can be left-joined from $out.streamtree.txt.")
-			geoDF.to_file((str(params.out)+".streamTree.shp"))
-		else:
 			geoDF.iloc[:, : 2045].to_file((str(params.out)+".streamTree.shp"))
+		else:
+			geoDF.to_file((str(params.out)+".streamTree.shp"))
 
 	refs = ref.fetch_references(params)
 	print(refs)
