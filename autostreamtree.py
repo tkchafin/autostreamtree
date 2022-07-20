@@ -33,9 +33,10 @@ def main():
 	# Optional: Calculate separately for each locus
 	#########################################################
 
+	gen=None
+	pop_gen=None
 	# calculate genetic distance matrix
 	if params.run != "STREAMDIST" and params.run != "RUNLOCI":
-		gen=None
 		if not params.genmat:
 			print("\nCalculating genetic distances...")
 			(gen, pop_gen) = ast.getGenDistMats(params, point_coords, popmap, seqs)
