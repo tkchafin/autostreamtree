@@ -225,7 +225,7 @@ def main():
 		del r2eDF
 
 		#plot by edge ID
-		base = geoDF.plot(column="EDGE_ID_x", cmap = "prism")
+		base = geoDF.plot(column="EDGE_ID", cmap = "prism")
 		coords = clust.coordsToDataFrame(points)
 		geo_coords = gpd.GeoDataFrame(coords, geometry=gpd.points_from_xy(coords.long, coords.lat))
 		geo_coords.plot(ax=base, marker='o', color='black', markersize=10, zorder=10)
@@ -246,16 +246,16 @@ def main():
 				i+=1
 		else:
 			fittedD = pd.DataFrame({'EDGE_ID':list(edges), 'fittedD':R})
-		geoDF['EDGE_ID'] = geoDF['EDGE_ID_x'].astype(int)
-		geoDF.drop(columns=["EDGE_ID_x", "EDGE_ID_y"], inplace=True)
+		geoDF['EDGE_ID'] = geoDF['EDGE_ID'].astype(int)
+		#geoDF.drop(columns=["EDGE_ID_x", "EDGE_ID_y"], inplace=True)
 		geoDF = geoDF.merge(fittedD, on='EDGE_ID')
 		#print(geoDF)
 		if params.run == "RUNLOCI":
 			geoDF = geoDF.merge(sdD, on='EDGE_ID')
-			geoDF.plot(column="stdevD_y", cmap = "RdYlGn_r", legend=True)
+			geoDF.plot(column="stdevD", cmap = "RdYlGn_r", legend=True)
 			plt.title("Stream network colored by standard deviation of StreamTree fitted distances")
 			plt.savefig((str(params.out)+".streamsBystdevD.pdf"))
-		geoDF.plot(column="fittedD_y", cmap = "RdYlGn_r", legend=True)
+		geoDF.plot(column="fittedD", cmap = "RdYlGn_r", legend=True)
 		plt.title("Stream network colored by StreamTree fitted distances")
 		plt.savefig((str(params.out)+".streamsByFittedD.pdf"))
 

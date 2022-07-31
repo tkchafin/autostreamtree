@@ -303,7 +303,7 @@ def processSamples(params, points, G):
 		data = None
 		if params.run == "GENDIST":
 			name = row[0]
-			data = tuple([row[3], row[2]])
+			data = tuple([row[2], row[1]])
 		else:
 			if not params.pop and not params.clusterpop:
 				#print(tuple([row[3], row[2]]))
