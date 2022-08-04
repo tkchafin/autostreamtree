@@ -7,6 +7,7 @@ import traceback
 import math
 import getopt
 import scipy
+import momepy
 import pandas as pd
 import geopandas as gpd
 import numpy as np
@@ -86,11 +87,12 @@ def read_vcf(vcf, concat="none", popmap=None):
 def read_network(network, shapefile):
 	if network:
 		print("Reading network from saved file: ", network)
-		G=nx.OrderedGraph(nx.read_gpickle(network).to_undirected())
+		G=nx.Graph(nx.read_gpickle(network).to_undirected())
 	else:
 		print("Building network from shapefile:",shapefile)
 		print("WARNING: This can take a while with very large files!")
-		G=nx.OrderedGraph(nx.read_shp(shapefile, simplify=True, strict=True).to_undirected())
+		rivers = gpd.read_file(shapefile)
+		G=momepy.gdf_to_nx(rivers, approach="primal", directed=False, multigraph=False)
 	return(G)
 
 #get subgraph from inputs
@@ -698,7 +700,7 @@ def path_edge_attributes(graph, path, attribute):
 
 #find and extract paths between points from a graph
 def pathSubgraph(graph, nodes, method, id_col, len_col):
-	k=nx.OrderedGraph()
+	k=nx.Graph()
 
 	#function to calculate weights for Dijkstra's shortest path algorithm
 	#i just invert the distance, so the shortest distance segments are favored
