@@ -486,22 +486,23 @@ def twoPopWeirCockerhamFst(s1, s2):
 		pbar = (ac1+ac2) / (float(len(alleles1)) + float(len(alleles2)))
 		ssquare = ((np.sum( [ (n1* (np.square(p1 - pbar)) ), (n2* (np.square(p2 - pbar))) ])) / ((r-1.0)*nbar))
 		hbar = ((h1+h2) / (r * nbar))
-		# print(nbar)
-		# print(hbar)
-		a = ((nbar/nC) *
-			(ssquare -
-			((1.0 / (nbar-1.0)) *
-			((pbar * (1.0-pbar)) -
-			((r - 1.0) * ssquare / r) -
-			(hbar / 4.0)))))
-		b = ((nbar / (nbar-1.0)) *
-			((pbar * (1.0 - pbar)) -
-			((r - 1.0) * ssquare / r) -
-			(((2.0 * nbar) - 1.0) * hbar / (4.0 * nbar))))
-		c = hbar/2.0
-		d = a+b+c
-		num += a
-		denom += d
+		#print(nbar)
+		#print(hbar)
+		if nbar != 1.0:
+			a = ((nbar/nC) *
+				(ssquare -
+				((1.0 / (nbar-1.0)) *
+				((pbar * (1.0-pbar)) -
+				((r - 1.0) * ssquare / r) -
+				(hbar / 4.0)))))
+			b = ((nbar / (nbar-1.0)) *
+				((pbar * (1.0 - pbar)) -
+				((r - 1.0) * ssquare / r) -
+				(((2.0 * nbar) - 1.0) * hbar / (4.0 * nbar))))
+			c = hbar/2.0
+			d = a+b+c
+			num += a
+			denom += d
 	return(num, denom)
 
 
