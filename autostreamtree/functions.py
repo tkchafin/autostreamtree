@@ -188,7 +188,7 @@ def getLocData(seqs):
 #print and write genmats to file
 def reportPopGenMatsList(params, genlist, popgenlist, point_coords, pop_coords):
 	dir = str(params.out)+"_locmats"
-	os.mkdir(dir)
+	os.makedirs(dir, exist_ok=True)
 	i=0
 	for gen in genlist:
 		if gen is not None:

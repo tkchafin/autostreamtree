@@ -9,6 +9,7 @@ import autostreamtree.functions as ast
 from autostreamtree.params import parseArgs
 import autostreamtree.cluster_pops as clust
 import autostreamtree.report_refs as ref
+import autostreamtree.aggregators as agg
 
 def main():
 
@@ -164,6 +165,7 @@ def main():
 			print("\nCalculating average fitted distances across loci using:",params.loc_agg)
 			averageR = np.array([agg.aggregateDist(params.loc_agg, col) for col in zip(*Rlist)])
 			print(averageR)
+			#sys.exit()
 
 			#get standard-deviation locus distances as well
 			print("\nCalculating standard-deviation of fitted distances across loci using:",params.loc_agg)

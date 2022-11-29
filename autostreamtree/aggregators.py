@@ -5,6 +5,7 @@ import scipy
 
 
 def aggregateDist(method, stuff):
+
 	if method == "HARM":
 		try:
 			return(scipy.stats.hmean(stuff))

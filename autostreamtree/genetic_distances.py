@@ -77,10 +77,18 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 				(n, d) = twoPopWeirCockerhamFst(seqs1, seqs2)
 				num.append(n)
 				denom.append(d)
+
+			#if either population lacking data, set value to nan
 			if len(num) <= 0 or len(denom) <= 0:
 				#print("ERROR (twoPopWeirCockerhamFst): No data for pops "+ia+" and "+ib+".")
-				raise ValueError
-			theta = np.sum(num) / np.sum(denom)
+				np.nan
+			#if denominator is 0, set Fst to 0
+			elif np.sum(denom) == 0.0:
+				theta = 0.0
+			#otherwise, calculate as normal 
+			else:
+				theta = np.sum(num) / np.sum(denom)
+
 			if dist == "FST":
 				genmat[ia,ib] = genmat[ib,ia] = theta
 			elif dist == "LINFST":
