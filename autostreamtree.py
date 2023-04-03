@@ -23,11 +23,12 @@ def main():
 	G = ast.read_network(params.network, params.shapefile)
 
 	# read point coordinate data
-	points = pd.read_csv(params.geodb, sep="\t", header=None)
+	points = pd.read_csv(params.geodb, sep="\t", header=0)
 	(point_coords, pop_coords, popmap) = ast.processSamples(params, points, G)
 
 	# read genetic data from VCF
-	seqs = ast.read_vcf(params.vcf, concat=params.concat, popmap=popmap)
+	if params.run != "STREAMDIST":
+		seqs = ast.read_vcf(params.vcf, concat=params.concat, popmap=popmap)
 
 	#########################################################
 	# Step 2: Calculating genetic distance matrix(-ces)
@@ -221,7 +222,12 @@ def main():
 		del reach_to_edge
 
 		#join EDGE_ID to geoDF
-		geoDF = temp.merge(r2eDF, on=params.reachid_col)
+		geoDF = temp.merge(r2eDF, on=params.reachid_col, how='left')
+		for col in geoDF.columns:
+			if col.endswith('_x'):
+				geoDF.drop(col, axis=1, inplace=True)
+			elif col.endswith('_y'):
+				geoDF.rename(columns={col: col.rstrip('_y')}, inplace=True)
 		print(geoDF)
 		del temp
 		del r2eDF
@@ -250,7 +256,12 @@ def main():
 			fittedD = pd.DataFrame({'EDGE_ID':list(edges), 'fittedD':R})
 		geoDF['EDGE_ID'] = geoDF['EDGE_ID'].astype(int)
 		#geoDF.drop(columns=["EDGE_ID_x", "EDGE_ID_y"], inplace=True)
-		geoDF = geoDF.merge(fittedD, on='EDGE_ID')
+		geoDF = geoDF.merge(fittedD, on='EDGE_ID', how="left")
+		for col in geoDF.columns:
+			if col.endswith('_x'):
+				geoDF.drop(col, axis=1, inplace=True)
+			elif col.endswith('_y'):
+				geoDF.rename(columns={col: col.rstrip('_y')}, inplace=True)
 		#print(geoDF)
 		if params.run == "RUNLOCI":
 			geoDF = geoDF.merge(sdD, on='EDGE_ID')

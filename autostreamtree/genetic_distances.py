@@ -85,7 +85,7 @@ def getPopGenMat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARIT
 			#if denominator is 0, set Fst to 0
 			elif np.sum(denom) == 0.0:
 				theta = 0.0
-			#otherwise, calculate as normal 
+			#otherwise, calculate as normal
 			else:
 				theta = np.sum(num) / np.sum(denom)
 
@@ -245,10 +245,10 @@ def tn93_distance(seq1, seq2, freqs, het=False):
 	P1=0.0
 	P2=0.0
 	if het:
-		D=p_distance(seq1, seq2, trans=False, transSplit=False)
+		#D=p_distance(seq1, seq2, trans=False, transSplit=False)
 		(P1,P2,Q)=p_distance(seq1, seq2, trans=False, transSplit=True)
 	else:
-		D=hamming_distance(seq1, seq2, trans=False, transSplit=False)
+		#D=hamming_distance(seq1, seq2, trans=False, transSplit=False)
 		(P1,P2,Q)=hamming_distance(seq1, seq2, trans=False, transSplit=True)
 
 	gR = float(freqs['g'] + freqs['a'])

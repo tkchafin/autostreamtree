@@ -76,7 +76,7 @@ def read_vcf(vcf, concat="none", popmap=None):
 	if concat != "none":
 		for sample in dat:
 			dat[sample] = ["/".join(x) for x in dat[sample]]
-	for sample in dat.keys():
+	for sample in list(dat.keys()):
 		if len(dat[sample]) < 1:
 			del dat[sample]
 		elif len(dat[sample]) == 1 and dat[sample][0][0] == "":
@@ -116,7 +116,7 @@ def parseSubgraphFromPoints(params, point_coords, pop_coords, G):
 	#second pass to simplify subgraph and collapse redundant nodes
 	print("\nMerging redundant paths...\n")
 	K=pathSubgraph(ktemp, points, extractMinimalSubgraph, params.reachid_col, params.length_col)
-	del ktemp
+	#del ktemp
 
 	#grab real coordinates as node positions for plotting
 	pos=dict()
@@ -142,18 +142,18 @@ def parseSubgraphFromPoints(params, point_coords, pop_coords, G):
 	nx.draw_networkx_edge_labels(K, pos, edge_labels=edge_labels, font_size=6)
 
 	#save minimized network to file (unless we already read from one)
-	if not params.network:
+	if not params.network or params.overwrite:
 		net_out=str(params.out) + ".network"
 		nx.write_gpickle(K, net_out, pickle.HIGHEST_PROTOCOL)
-	elif params.overwrite:
-		net_out=str(params.out) + ".network"
-		nx.write_gpickle(K, net_out, pickle.HIGHEST_PROTOCOL)
+		net_full_out=str(params.out) + ".full.network"
+		nx.write_gpickle(ktemp, net_full_out, pickle.HIGHEST_PROTOCOL)
 	else:
 		print("NOTE: Not over-writing existing network. To change this, use --overwrite")
 
 	network_plot=str(params.out) + ".subGraph.pdf"
 	plt.savefig(network_plot)
 
+	del ktemp
 	return(K)
 
 #print and write genmats to file
@@ -300,9 +300,17 @@ def processSamples(params, points, G):
 	first=True
 	if params.pop:
 		popmap_temp=read_popmap(params.pop)
+
+		# Create a boolean mask that is True for rows you want to keep
+		mask = points[points.columns[0]].isin(popmap_temp)
+
+		# Apply the mask to the DataFrame to keep only the rows where mask is True
+		points = points[mask]
 	for idx, row in points.iterrows():
 		name = None
 		data = None
+		row[1] = float(row[1])
+		row[2] = float(row[2])
 		if params.run == "GENDIST":
 			name = row[0]
 			data = tuple([row[2], row[1]])
@@ -385,6 +393,7 @@ def processSamples(params, points, G):
 			else:
 				for p in pop_temp:
 					node = snapToNode(G, pop_temp[p])
+					#print(node[0], node[1], pop_temp[p][0], pop_temp[p][1])
 					snapDists[p] = great_circle(node[0], node[1], pop_temp[p][0], pop_temp[p][1])
 					pop_coords[p]=node
 		#write popmap to file
@@ -472,11 +481,14 @@ def plotGenByGeo(gen, sdist, out, log=False):
 
 #function to calculate great circle distances
 #returns in units of KILOMETERS
-def great_circle(lon1, lat1, lon2, lat2):
-	lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-	return 6371 * (
-		acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2))
-	)
+def great_circle(lon1, lat1, lon2, lat2, thresh=0.0000001):
+	if (abs(lon1 - lon2)) < thresh and (abs(lat1 - lat2)) < thresh:
+		return(0.0)
+	else:
+		lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+		return 6371 * (
+			acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2))
+		)
 
 def get_lower_tri(mat):
 	n=mat.shape[0]
@@ -783,7 +795,7 @@ def extractMinimalSubgraph(subgraph, graph, nodelist, id_col, len_col, path):
 #Input: Tuple of [x,y] coordinates
 #output: Closest node to those coordinates
 def snapToNode(graph, pos):
-	#rint("closest_node call:",pos)
+	#print("closest_node call:",pos)
 	nodes = np.array(graph.nodes())
 	node_pos = np.argmin(np.sum((nodes - pos)**2, axis=1))
 	#print(nodes)

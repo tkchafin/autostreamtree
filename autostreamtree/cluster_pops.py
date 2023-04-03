@@ -61,14 +61,15 @@ def getClusterCentroid(coords, popmap, out=None):
 	if out:
 		ofh=out+".clusterCentroids.txt"
 	log=""
-	for pop in popmap.keys():
+	for i, pop in enumerate(list(popmap.keys())):
 		cluster=getPopCoordsMatrix(coords, popmap[pop])
+		print(cluster)
 		if len(cluster)<1:
 			print("ERROR: getClusterCentroid(): No coordinates in cluster:",pop)
 			sys.exit(1)
 		
 		#add cluster to logfile (if provided)
-		log=log+"Population="+pop+"\n"
+		log=log+"Population="+str(i)+"\n"
 		log=log+str(cluster)+"\n"
 		
 		#get centroid point
