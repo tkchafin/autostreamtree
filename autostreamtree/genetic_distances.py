@@ -191,20 +191,34 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     np.fill_diagonal(genmat, 0.0)
     return(genmat)
 
-#function to return JC69-corrected p-distance
-def jukes_cantor_distance(seq1, seq2, het=False):
+def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
+    """
+    Description: This function calculates the JC69-corrected p-distance between two DNA sequences.
+
+    Args:
+    - seq1 (str): The first DNA sequence.
+    - seq2 (str): The second DNA sequence.
+    - het (bool): Whether to use the Jukes-Cantor correction for heterozygous sites (True) or for all sites (False). Default is False.
+
+    Returns:
+    - dist (float): The JC69-corrected p-distance between the two sequences.
+    """
     obs = 0.0
+    # calculate the observed distance
     if het:
-        obs=p_distance(seq1, seq2, trans=False)
+        obs = p_distance(seq1, seq2, trans=False)
     else:
-        obs=hamming_distance(seq1, seq2, trans=False)
-    #print(1.0 - ((4.0*obs)/3.0))
+        obs = hamming_distance(seq1, seq2, trans=False)
+
+    # apply the JC69 correction
     if obs >= 0.75:
         obs = 0.74999
-    dist=-0.75*np.log(1.0 - ((4.0/3.0)*obs))
+    dist = -0.75 * np.log(1.0 - ((4.0/3.0) * obs))
+
+    # ensure distance is not negative and return
     if not dist > 0.0:
-        return(0.0)
-    return(dist)
+        return 0.0
+    return dist
 
 #function to return Kimura 2-parameter distances
 def k2p_distance(seq1, seq2, het=False):
