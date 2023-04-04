@@ -233,10 +233,10 @@ Genetic distance options:
 		  *TN84			: Tajima and Nei's (1984) distance
 		  *TN93			: Tamura and Nei's (1993) distance
 		Frequency models (when using --pop):
-		  *FST			: Weir and Cockerham's Fst formulation (=THETAst)
+		  FST			: Weir and Cockerham's Fst formulation (=THETAst)
 		  *GST			: Hedrick's (2005) correction of Nei (1987) Gst [=G'st]
 		  *GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
-		  *LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
+		  LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
 		  JOST			: Jost's (2008) D
 		  NEI72			: Nei's (1972) standard genetic distance
 		  NEI83			: Nei and Chesser (1983) Da

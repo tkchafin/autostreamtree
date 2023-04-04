@@ -465,17 +465,23 @@ def getFittedD(points, genmat, inc, r):
 	return(D)
 
 def plotGenByGeo(gen, sdist, out, log=False):
-	genetic_distance=get_lower_tri(gen)
-	geographic_distance=get_lower_tri(sdist)
+	genetic_distance = get_lower_tri(gen)
+	geographic_distance = get_lower_tri(sdist)
+
+	# Create a DataFrame from the geographic_distance and genetic_distance arrays
+	data = pd.DataFrame({'Geographic Distance': geographic_distance, 'Genetic Distance': genetic_distance})
+
 	if not log:
-		sns.jointplot(geographic_distance, genetic_distance, kind="reg")
-		plt.savefig(str(out)+".isolationByDistance.pdf")
+		sns.jointplot(data=data, x='Geographic Distance', y='Genetic Distance', kind="reg")
+		plt.savefig(str(out) + ".isolationByDistance.pdf")
 	else:
-		geographic_distance=replaceZeroes(geographic_distance)
-		log_geo=np.log(geographic_distance)
-		sns.jointplot(log_geo, genetic_distance, kind="reg")
-		plt.savefig(str(out)+".isolationByDistance.pdf")
-		del log_geo
+		geographic_distance = replaceZeroes(geographic_distance)
+		log_geo = np.log(geographic_distance)
+		data['Log Geographic Distance'] = log_geo
+
+		sns.jointplot(data=data, x='Log Geographic Distance', y='Genetic Distance', kind="reg")
+		plt.savefig(str(out) + ".isolationByDistance.pdf")
+
 	del geographic_distance
 	del genetic_distance
 
