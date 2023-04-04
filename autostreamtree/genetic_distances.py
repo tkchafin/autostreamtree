@@ -152,7 +152,7 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     #for models which relax equal nuc frequencies, get global frequencies for each locus
     #freqs will be a list of loci, with each locus as a dist of freqs
     if dist in ["TN84", "TN93"]:
-        freqs = seq.getNucFreqs(seqs, ploidy)
+        freqs = seq.get_nuc_freqs(seqs, ploidy)
         index = 1
         for f in freqs:
             print("Empirical base frequencies for locus",index, end=": [ ")
@@ -168,9 +168,9 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
             seq1 = seqs[points.keys()[ia]][loc]
             seq2 = seqs[points.keys()[ib]][loc]
             if "/" in seq1:
-                seq1 = seq.DNAconsensus(seq1)
+                seq1 = seq.dna_consensus(seq1)
             if "/" in seq2:
-                seq2 = seq.DNAconsensus(seq2)
+                seq2 = seq.dna_consensus(seq2)
             if dist == "JC69":
                 results.append(jukes_cantor_distance(seq1, seq2, het))
             elif dist == "K2P":

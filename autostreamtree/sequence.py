@@ -38,7 +38,7 @@ def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False, as_tuple: bo
 
     # apply optional formatting
     if as_iupac:
-        return DNAconsensus("/".join(ret))
+        return dna_consensus("/".join(ret))
     elif as_tuple:
         return tuple(ret)
     elif as_list:
@@ -47,7 +47,7 @@ def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False, as_tuple: bo
         return "/".join(ret)
 
 
-def getNucFreqs(seqs: dict, ploidy: int) -> list:
+def get_nuc_freqs(seqs: dict, ploidy: int) -> list:
     """
     Compute the nucleotide frequencies of a set of DNA sequences.
 
@@ -63,7 +63,7 @@ def getNucFreqs(seqs: dict, ploidy: int) -> list:
         temp = dict()
         allnucs = ""
         for samp in seqs.keys():
-            allnucs += DNAconsensus(seqs[samp][loc]).lower()
+            allnucs += dna_consensus(seqs[samp][loc]).lower()
         badchars = ["?", "-", "n"]
         if ploidy == 1:
             badchars += ["r", "y", "s", "w", "k", "m", "b", "d", "h", "v"]
@@ -85,7 +85,7 @@ def getNucFreqs(seqs: dict, ploidy: int) -> list:
         freqs.append(counts)
     return freqs
 
-def DNAconsensus(seq: str) -> str:
+def dna_consensus(seq: str) -> str:
     """
     Make a consensus DNA sequence from alleles separated by a "/" character.
 
@@ -108,7 +108,7 @@ def DNAconsensus(seq: str) -> str:
             nucs = ""
             for a in alleles:
                 nucs += a[i]
-            temp = listToSortUniqueString(nucs.upper())
+            temp = list_to_sort_unique_string(nucs.upper())
             consens += reverse_iupac_case(temp)
     return consens
 
@@ -159,7 +159,7 @@ def reverse_iupac_case(char: str) -> str:
     }
     return iupac[char]
 
-def listToSortUniqueString(l: list) -> str:
+def list_to_sort_unique_string(l: list) -> str:
     """
     Convert a list of characters to a sorted, unique string.
 
