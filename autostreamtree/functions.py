@@ -744,7 +744,7 @@ def test_ibd(gen, geo, out, perms, log=False):
 
 def output_fitted_d(pred, out):
     pred.to_csv((str(out)+".obsVersusFittedD.txt"), sep="\t", index=False)
-    sns.jointplot("observed_D", "predicted_D", data=pred, kind="reg")
+    sns.jointplot(x="observed_D", y="predicted_D", data=pred, kind="reg")
     plt.savefig((str(out)+".obsVersusFittedD.pdf"))
     del pred
     #plt.show()
