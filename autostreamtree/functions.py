@@ -157,6 +157,8 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
 
     # First pass extracts a subgraph from the master shapefile graph
     print("\nExtracting full subgraph...")
+    print(params.reachid_col)
+    sys.exit()
     ktemp = path_subgraph(G, points, extract_full_subgraph, params.reachid_col, params.length_col)
     del G
 
