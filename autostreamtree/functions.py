@@ -135,6 +135,7 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
     """
     Extracts a subgraph from a given graph based on input points.
 
+    Args:
         params: A custom object containing various input parameters.
         point_coords: A list of point coordinates to use for extracting the subgraph.
         pop_coords: A list of population coordinates to use for extracting the subgraph.
@@ -1018,6 +1019,7 @@ def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
         # Add the edge between the nodes with the corresponding edge data
         dat = graph.get_edge_data(first, second)
         subgraph.add_edge(first, second, **dat)
+
 def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
     """
     Extracts a simplified subgraph from paths, keeping only terminal and junction nodes.
@@ -1026,7 +1028,7 @@ def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
         subgraph (NetworkX Graph): The subgraph to be modified.
         graph (NetworkX Graph): The input graph.
         nodelist (list): The list of nodes.
-        id_col (str): The column name for node ID.
+        id_col (str): The column name for edge ID.
         len_col (str): The column name for edge length.
         path (list): The path between nodes.
     """
@@ -1053,6 +1055,46 @@ def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
             subgraph.add_edge(curr_start, second, **curr_edge)
             # Empty edge attributes and set current second to curr_start
             curr_edge = {id_col: list(), len_col: 0}
+            curr_start = second
+        else:
+            # Otherwise, continue building the current edge
+            continue
+
+def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col, path):
+    """
+    Extracts a simplified subgraph from paths, keeping only terminal and junction nodes.
+
+    Args:
+        subgraph (NetworkX Graph): The subgraph to be modified.
+        graph (NetworkX Graph): The input graph.
+        nodelist (list): The list of nodes.
+        id_col (str): The column name for edge ID.
+        dist_col (str): Column name for dist attribute 
+        path (list): The path between nodes.
+    """
+    curr_edge = {id_col: list(), dist_col: 0}
+    curr_start = None
+
+    # Iterate through each pair of nodes in the path
+    for first, second in zip(path, path[1:]):
+        if not curr_start:
+            curr_start = first
+            if first in nodelist or len(graph[first]) > 2:
+                subgraph.add_node(first)
+
+        # Add path attributes to current edge
+        dat = graph.get_edge_data(first, second)
+        curr_edge[id_col] = dat[id_col]
+        curr_edge[dist_col] = dat[dist_col]
+
+        # If the second node is a STOP node (in nodelist or is a junction)
+        if second in nodelist or len(graph[second]) > 2:
+            # Add node to subgraph
+            subgraph.add_node(second)
+            # Link current attribute data
+            subgraph.add_edge(curr_start, second, **curr_edge)
+            # Empty edge attributes and set current second to curr_start
+            curr_edge = {id_col: list(), dist_col: 0}
             curr_start = second
         else:
             # Otherwise, continue building the current edge
