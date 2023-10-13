@@ -21,6 +21,11 @@ def main():
 
     print("Running autostream tree", params.run, "workflow\n")
     G = ast.read_network(params.network, params.shapefile)
+    # prune graph if list of edges passed 
+    if params.edge_list:
+        df = pd.read_csv(params.edge_list, sep='\t')
+        edge_list = df[params.reachid_col].tolist()
+        G = ast.prune_graph(G, edge_list, params.reachid_col)
 
     # read point coordinate data
     points = pd.read_csv(params.geodb, sep="\t", header=0)

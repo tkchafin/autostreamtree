@@ -102,6 +102,39 @@ def read_vcf(vcf, concat="none", popmap=None):
             del dat[sample]
     return(dat)
 
+def prune_graph(G, edge_list, reachid_col):
+    """
+    Prunes a graph to only retain edges whose 'reachid_col' matches values in 'edge_list'.
+
+    Args:
+        G: The input NetworkX Graph.
+        edge_list: A list of values to filter edges.
+        reachid_col: The edge attribute to be checked against 'edge_list'.
+
+    Returns:
+        A pruned NetworkX Graph.
+    """
+    for u, v in G.edges():
+        data = G.get_edge_data(u, v)
+        print(f"Edge ({u}, {v}): {data}")
+    # Get edges to be retained using get_edge_data method
+    edges_to_keep = [(u, v) for u, v in G.edges() if G.get_edge_data(u, v).get(reachid_col) in edge_list]
+    print(edges_to_keep)
+
+    # Check if there are no edges to keep
+    if not edges_to_keep:
+        raise ValueError("There are no edges to retain based on the given edge list and attribute.")
+    
+    # Create a new graph with only the edges to be retained
+    pruned_G = G.edge_subgraph(edges_to_keep).copy()
+
+    # Remove isolated nodes
+    isolated_nodes = list(nx.isolates(pruned_G))
+    pruned_G.remove_nodes_from(isolated_nodes)
+
+    return pruned_G
+
+
 def read_network(network, shapefile):
     """
     Reads a network from a saved file or builds a network from a shapefile.
@@ -126,6 +159,7 @@ def read_network(network, shapefile):
         print("WARNING: This can take a while with very large files!")
         # Read the shapefile
         rivers = gpd.read_file(shapefile)
+        print(rivers.head())
         # Convert the GeoDataFrame to a NetworkX Graph object
         G = momepy.gdf_to_nx(rivers, approach="primal", directed=False, multigraph=False)
 

@@ -14,7 +14,7 @@ class parseArgs():
 			"diploid", "geopop", "geopops", "global_het", "haploid", "loc_agg=",
 			"pop_agg=", "sdist_agg=", "clusterpop", "epsilon=", "min_samples=", "sclusterpop",
 			"network=", "overwrite", "reachid_col=", "length_col=", "coercemat", "locmatdir=",
-			"vcf=", "concat="])
+			"vcf=", "concat=", "edge_list="])
 		except getopt.GetoptError as err:
 			print(err)
 			self.display_help("\nExiting because getopt returned non-zero exit status.")
@@ -42,6 +42,7 @@ class parseArgs():
 		self.permutations = 1000
 		self.coercemat = False
 		self.method = "PEARSON"
+		self.edge_list=None
 		self.plots=False
 		self.out="out"
 		self.median=False
@@ -110,6 +111,8 @@ class parseArgs():
 				self.and_log = True
 			elif opt == "iterative":
 				self.iterative = True
+			elif opt == "edge_list":
+				self.edge_list = arg
 			elif opt=="clusterpop" or opt=="c":
 				self.clusterpop=True
 			elif opt=="epsilon":
