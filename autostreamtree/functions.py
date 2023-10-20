@@ -8,6 +8,7 @@ import math
 import getopt
 import scipy
 import momepy
+import pyogrio
 import pandas as pd
 import geopandas as gpd
 import numpy as np
@@ -158,8 +159,9 @@ def read_network(network, shapefile):
         print("Building network from shapefile:", shapefile)
         print("WARNING: This can take a while with very large files!")
         # Read the shapefile
-        rivers = gpd.read_file(shapefile)
-        print(rivers.head())
+        #rivers = gpd.read_file(shapefile)
+        rivers = pyogrio.read_dataframe(shapefile)
+        #print(rivers.head())
         # Convert the GeoDataFrame to a NetworkX Graph object
         G = momepy.gdf_to_nx(rivers, approach="primal", directed=False, multigraph=False)
 
