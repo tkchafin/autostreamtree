@@ -26,6 +26,7 @@ from networkx import NetworkXNoPath
 import matplotlib.pyplot as plt
 from geopy.distance import geodesic
 import pickle
+import mantel
 from math import radians, degrees, sin, cos, asin, acos, sqrt
 
 import autostreamtree.cluster_pops as clust
@@ -33,7 +34,6 @@ import autostreamtree.sequence as seq
 import autostreamtree.genetic_distances as gendist
 import autostreamtree.report_refs as ref
 import autostreamtree.aggregators as agg
-import autostreamtree.Mantel as Mantel
 
 from typing import List, Tuple, Dict, Any, Union, Optional
 
@@ -764,13 +764,13 @@ def test_ibd(gen, geo, out, perms, log=False):
         geo=np.log(geo)
 
     #non-log pearson
-    res=list(Mantel.test(geo, gen, perms=int(perms), method='pearson'))
+    res=mantel.test(geo, gen, perms=int(perms), method='pearson')
     rows=list()
-    rows.append(['genXgeo','pearson', str(perms), res[0], res[1], res[2]])
+    rows.append(['genXgeo','pearson', str(perms), res.r, res.p, res.z])
 
     #non-log spearman
-    res=list(Mantel.test(geo, gen, perms=int(perms), method='spearman'))
-    rows.append(['genXgeo','spearman', str(perms), res[0], res[1], res[2]])
+    res=mantel.test(geo, gen, perms=int(perms), method='spearman')
+    rows.append(['genXgeo','spearman', str(perms), res.r, res.p, res.z])
 
     #print(rows)
     ibd=pd.DataFrame(rows,  columns=['test', 'method', 'perms', 'r', 'p' ,'z'])
