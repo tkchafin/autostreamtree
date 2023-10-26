@@ -4,12 +4,8 @@ Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
 
 ### Table of Contents:
 1. [Installation](#installation)
-    1. [Installation with conda](#conda)
-    2. [Installation with pyenv](#pyenv)
-    3. [Troubleshooting PyJulia](#pyjulia)
-    4. [Singlurity/ Docker](#sing)
-2. [autostreamtree - Fitting distances to stream networks](#ast)
-    1. [Program Description](#ast_desc)
+2. [Description](#ast)
+    1. [Method](#ast_desc)
         1. [StreamTree Background](#ast_background)
     2. [Usage](#usage)
         1. [Options and Help Menu](#ast_help)
@@ -23,24 +19,65 @@ Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
         2. [Microhaplotypes](#ast_example3)
     4. [Runtimes and Benchmarking](#ast_benchmark)
     5. [References](#ast_refs)
-3. [Scripts and Other Tools](#tools)
-	1. [File format conversion](#tt1)
-	2. [Data filtering and subsetting](#tt2)
-	3. [Fitting arbitrary (e.g., non-genetic) distance matrices](#tt3)
+3. [Scripts and Other Useful Features](#tools)
+4. [Incorporating autoStreamTree into automated workflows](#snakemake)
+5. [Contributing Guidelines](#contributing)
 
 
-### Installation <a name="installation"></a>
+## 1. Installation <a name="installation"></a>
 
-<fill in>
+autoStreamTree is a Python package which relies upon a number of packages:
 
-#### Installation using conda <a name="conda"></a>
+```
+- pandas
+- numpy 
+- geopandas
+- geopy
+- pyogrio
+- matplotlib
+- seaborn
+- shapely
+- pyproj
+- networkx
+- scikit-learn
+- momepy
+- mantel
+- sortedcontainers
+```
+
+The recommended method of installation is with conda or mamba. First, create and activate a new conda environment:
+```
+conda create -n streamtree_test python=3.10
+conda activate streamtree_test
+```
+
+Then install the dependencies:
+```
+# most dependencies installable via conda/mamba
+mamba install -c conda-forge -c bioconda pandas numpy geopandas geopy pyogrio matplotlib seaborn shapely pyproj networkx scikit-learn momepy pysam sortedcontainers
+
+# then finally install mantel
+pip install mantel
+```
+
+Note that if you are running Mac ARM, pysam will need to be installed via pip, so you can use:
+```
+# most dependencies installable via conda/mamba
+mamba install -c conda-forge -c bioconda pandas numpy geopandas geopy pyogrio matplotlib seaborn shapely pyproj networkx scikit-learn momepy sortedcontainers
+
+# then finally install mantel and pysam
+pip install mantel pysam
+```
+
+autoStreamTree also uses code from 
+http://jwcarr.github.io/MantelTest/
+ResistanceGA
+
+And methodology described in Kalinowski et al. 2008
+
+### Dependencies <a name="conda"></a>
 
 
-#### Installation using pyenv and manually compiled Julia/R <a name="pyenv"></a>
-
-
-#### Using Docker <a name="sing"></a>
-Coming soon...
 
 ## autostreamtree <a name="ast"></a>
 

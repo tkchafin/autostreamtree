@@ -1152,3 +1152,16 @@ def snap_to_node(graph, pos):
     return tuple(nodes[node_pos])
 
 
+def write_geodataframe(gdf, output_prefix, output_driver):
+    extension = {
+        "SHP": ".shp",
+        "GPKG": ".gpkg",
+        "GDB": ".gdb"  
+    }.get(output_driver.upper(), ".gpkg")  # Default to .gpkg
+
+    output_path = f"{output_prefix}{extension}"
+
+    if output_driver == 'GDB' and not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    gdf.to_file(output_path, driver=output_driver)

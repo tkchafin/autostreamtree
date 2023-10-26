@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 import geopandas as gpd
+import pyogrio
 import matplotlib.pyplot as plt
 
 import autostreamtree.functions as ast
@@ -220,7 +221,8 @@ def main():
 
         #read in original shapefile as geoDF and subset it
         print("\nExtracting attributes from original dataframe...")
-        geoDF = gpd.read_file(params.shapefile)
+        #geoDF = gpd.read_file(params.shapefile)
+        geoDF = pyogrio.read_dataframe(params.shapefile)
         mask = geoDF[params.reachid_col].isin(list(reach_to_edge.keys()))
         temp = geoDF.loc[mask]
         del mask
@@ -279,12 +281,7 @@ def main():
 
         #output a final annotated stream network layer
         geoDF.to_csv((str(params.out)+".streamTree.txt"), sep="\t", index=False)
-
-        if geoDF.shape[1] > 2045:
-            print("Too many columns to write shapefile (hard limit of 2046 columns). Only writing first 2046 columns to shapefile attribute table; full output can be left-joined from $out.streamtree.txt.")
-            geoDF.iloc[:, : 2045].to_file((str(params.out)+".streamTree.shp"))
-        else:
-            geoDF.to_file((str(params.out)+".streamTree.shp"))
+        ast.write_geodataframe(geoDF, (str(params.out)+".streamTree"), params.output_driver)
 
     refs = ref.fetch_references(params)
     print(refs)
