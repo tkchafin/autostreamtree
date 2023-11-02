@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from sklearn.cluster import DBSCAN
-from geopy.distance import great_circle
 from shapely.geometry import MultiPoint
 from sortedcontainers import SortedDict
 
@@ -188,7 +187,7 @@ def plot_histogram(dat, out):
     sns.set(style="ticks")
     
     x = pd.Series(dat, name="Snap distance (km)")
-    dp = sns.distplot(x, kde=True, rug=True)
+    dp = sns.displot(x, kde=True, rug=True)
     plt.savefig(of)
     plt.clf()
 
