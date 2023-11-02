@@ -1,12 +1,13 @@
 
 import sys
 import os
-import geopy
+
+os.environ['USE_PYGEOS'] = '0'
+
 import itertools
 import traceback
 import math
 import getopt
-import scipy
 import momepy
 import pyogrio
 import pandas as pd
@@ -20,11 +21,8 @@ from os import listdir
 from os.path import isfile, join
 from sortedcontainers import SortedDict
 from sklearn.linear_model import LinearRegression
-from shapely.geometry import LineString, point, Point
 from networkx import NodeNotFound
-from networkx import NetworkXNoPath
 import matplotlib.pyplot as plt
-from geopy.distance import geodesic
 import pickle
 import mantel
 from math import radians, degrees, sin, cos, asin, acos, sqrt
@@ -36,6 +34,16 @@ import autostreamtree.report_refs as ref
 import autostreamtree.aggregators as agg
 
 from typing import List, Tuple, Dict, Any, Union, Optional
+
+# suppress irrelevant warning from momepy
+import warnings
+def custom_warn_handler(message, category, filename, lineno, file=None, line=None):
+    if "momepy/utils.py" in filename and issubclass(category, UserWarning):
+        return
+    return original_showwarning(message, category, filename, lineno, file, line)
+
+original_showwarning = warnings.showwarning
+warnings.showwarning = custom_warn_handler
 
 def read_vcf(vcf, concat="none", popmap=None):
     """
@@ -117,10 +125,10 @@ def prune_graph(G, edge_list, reachid_col):
     """
     for u, v in G.edges():
         data = G.get_edge_data(u, v)
-        print(f"Edge ({u}, {v}): {data}")
+        #print(f"Edge ({u}, {v}): {data}")
     # Get edges to be retained using get_edge_data method
     edges_to_keep = [(u, v) for u, v in G.edges() if G.get_edge_data(u, v).get(reachid_col) in edge_list]
-    print(edges_to_keep)
+    #print(edges_to_keep)
 
     # Check if there are no edges to keep
     if not edges_to_keep:
@@ -525,8 +533,8 @@ def process_samples(params, points, G):
             popmap=clust.dbscan_cluster(point_coords, params.epsilon, params.min_samples)
             num_clusters=len(popmap.keys())
             print("Found",str(num_clusters),"clusters!")
-            print(popmap)
-            print("\n")
+            #print(popmap)
+            #print("\n")
 
             #calculate centroids for clusters
             pop_temp=clust.get_cluster_centroid(point_coords, popmap, params.out)

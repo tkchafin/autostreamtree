@@ -5,7 +5,7 @@ Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
 ### Table of Contents:
 1. [Installation](#installation)
 2. [Description](#ast)
-    1. [Method](#ast_desc)
+    1. [Methodology](#ast_desc)
         1. [StreamTree Background](#ast_background)
     2. [Usage](#usage)
         1. [Options and Help Menu](#ast_help)
@@ -32,11 +32,9 @@ autoStreamTree is a Python package which relies upon a number of packages:
 - pandas
 - numpy 
 - geopandas
-- geopy
 - pyogrio
 - matplotlib
 - seaborn
-- shapely
 - pyproj
 - networkx
 - scikit-learn
@@ -54,7 +52,7 @@ conda activate streamtree_test
 Then install the dependencies:
 ```
 # most dependencies installable via conda/mamba
-mamba install -c conda-forge -c bioconda pandas numpy geopandas geopy pyogrio matplotlib seaborn shapely pyproj networkx scikit-learn momepy pysam sortedcontainers
+mamba install -c conda-forge -c bioconda pandas numpy geopandas pyogrio matplotlib seaborn pyproj networkx scikit-learn momepy pysam sortedcontainers
 
 # then finally install mantel
 pip install mantel
@@ -63,35 +61,42 @@ pip install mantel
 Note that if you are running Mac ARM, pysam will need to be installed via pip, so you can use:
 ```
 # most dependencies installable via conda/mamba
-mamba install -c conda-forge -c bioconda pandas numpy geopandas geopy pyogrio matplotlib seaborn shapely pyproj networkx scikit-learn momepy sortedcontainers
+mamba install -c conda-forge -c bioconda pandas numpy geopandas pyogrio matplotlib seaborn pyproj networkx scikit-learn momepy sortedcontainers
 
 # then finally install mantel and pysam
 pip install mantel pysam
 ```
 
-autoStreamTree also uses code from 
-http://jwcarr.github.io/MantelTest/
-ResistanceGA
+Once your environment is set up, you can download autoStreamTree from GitHub:
 
-And methodology described in Kalinowski et al. 2008
+```
+git clone https://github.com/tkchafin/autostreamtree.git
+```
 
-### Dependencies <a name="conda"></a>
+You're now ready to go!
+
+--
+
+autoStreamTree also uses methodology described in [Kalinowski et al. 2008](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf), if you use this software you should cite: 
+```
+Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
+```
 
 
+## 2. Description <a name="ast"></a>
 
-## autostreamtree <a name="ast"></a>
-
-### Software Description <a name="ast_desc"></a>
+### Methodology <a name="ast_desc"></a>
 autostreamtree is a Python software package providing various analyses aimed at analyzing patterns of genetic differentiation among aquatic stream-dwelling organisms. The intention is to take what was previously a tedious process involving multiple discrete steps and to integrate these all in one place.
 
 Currently, it provides a companion library of functions for calculating various measures of genetic distances among individuals or populations, including model-corrected p-distances (e.g. Jukes-Cantor 1969, Kimura 2-parameter, Tamura-Nei 1993) as well as those based on allele frequencies (e.g. Theta-ST, linearized Fst, Jost's D -- full list of available distance models below). It also includes integrated functions for parsing an input vector shapefile of streams (see below 'Requirements for input shapefiles') for easy calculation of pairwise stream distances between sites, as well as the ordinary or weighted least-squares fitting of reach-wise genetic distances according to the "stream tree" model of Kalinowski et al. (2008). Various plotting functions are also provided for downstream analysis, including looking at patterns of isolation-by-distance. Outputs should also be directly importable into R, with additional outputs with annotated streamtree fitted distances provided for analysis in your GIS suite of choice.
 
-If you use this package for analysis of fitted distances using the streamtree model, please cite the following:
-* Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760).
+For a description of the package, please refer to our pre-print:
 
-#### StreamTree background <a name="ast_background"></a>
+[Chafin TK, Mussmann SM, Douglas MR, Douglas ME. autoStreamTree: Genomic variant data fitted to geospatial networks](https://www.biorxiv.org/content/10.1101/2023.05.27.542562.abstract)
 
-<fill in>
+And more importntly, see the original algorithm description:
+
+[Kalinowski ST, Meeuwig MH, Narum SR, Taper ML. 2008. Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Can. J. Fish. Aquat. Sci. 65: 2752–2760](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf)
 
 ### Usage <a name="ast_usage"></a>
 

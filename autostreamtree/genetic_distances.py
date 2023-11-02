@@ -153,13 +153,13 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     #freqs will be a list of loci, with each locus as a dist of freqs
     if dist in ["TN84", "TN93"]:
         freqs = seq.get_nuc_freqs(seqs, ploidy)
-        index = 1
-        for f in freqs:
-            print("Empirical base frequencies for locus",index, end=": [ ")
-            for n in f:
-                print(f'{n}={f[n]:.3f} ', end="")
-            print("]")
-            index = index + 1
+        # index = 1
+        # for f in freqs:
+        #     print("Empirical base frequencies for locus",index, end=": [ ")
+        #     for n in f:
+        #         print(f'{n}={f[n]:.3f} ', end="")
+        #     print("]")
+        #     index = index + 1
 
     #for each combination, calc jukes-cantor corrected distance
     for ia, ib in itertools.combinations(range(0,len(points)),2):
