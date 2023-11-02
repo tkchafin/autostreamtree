@@ -4,27 +4,19 @@ Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
 
 ### Table of Contents:
 1. [Installation](#installation)
-2. [Description](#ast)
-    1. [Methodology](#ast_desc)
-        1. [StreamTree Background](#ast_background)
-    2. [Usage](#usage)
-        1. [Options and Help Menu](#ast_help)
-        2. [Input File](#ast_table)
-        3. [Shapefile format](#ast_input)
-        4. [Output files](#ast_output)
-        5. [Genetic Distance Methods](#gen)
-        6. [Defining Populations](#pops)
-    3. [Example Workflows](#ast_workflow)
-        1. [Large SNP datasets](#ast_example2)
-        2. [Microhaplotypes](#ast_example3)
-    4. [Runtimes and Benchmarking](#ast_benchmark)
-    5. [References](#ast_refs)
+2. [Usage](#ast)
+    1. [Interface](#ast_cli)
+    2. [Inputs](#ast_inputs)
+    3. [Genetic distances](#gendist)
+3. [Example analysis](#ast_example)
 3. [Scripts and Other Useful Features](#tools)
 4. [Incorporating autoStreamTree into automated workflows](#snakemake)
 5. [Contributing Guidelines](#contributing)
 
 
 ## 1. Installation <a name="installation"></a>
+
+### Dependencies
 
 autoStreamTree is a Python package which relies upon a number of packages:
 
@@ -40,8 +32,16 @@ autoStreamTree is a Python package which relies upon a number of packages:
 - scikit-learn
 - momepy
 - mantel
+- pysam
 - sortedcontainers
 ```
+
+autoStreamTree also uses methodology described in [Kalinowski et al. 2008](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf), if you use this software you should cite: 
+```
+Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
+```
+
+### Installation with conda/mamba
 
 The recommended method of installation is with conda or mamba. First, create and activate a new conda environment:
 ```
@@ -73,118 +73,218 @@ Once your environment is set up, you can download autoStreamTree from GitHub:
 git clone https://github.com/tkchafin/autostreamtree.git
 ```
 
-You're now ready to go!
+You should now be ready to go!
 
---
 
-autoStreamTree also uses methodology described in [Kalinowski et al. 2008](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf), if you use this software you should cite: 
+## 2. Usage <a name="ast"></a>
+
+### Command-line interface <a name="ast_cli"></a>
+
+After installation, you can view the up-to-date help menu by calling the script with `./autostreamtree.py -h`:
+
 ```
-Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
-```
-
-
-## 2. Description <a name="ast"></a>
-
-### Methodology <a name="ast_desc"></a>
-autostreamtree is a Python software package providing various analyses aimed at analyzing patterns of genetic differentiation among aquatic stream-dwelling organisms. The intention is to take what was previously a tedious process involving multiple discrete steps and to integrate these all in one place.
-
-Currently, it provides a companion library of functions for calculating various measures of genetic distances among individuals or populations, including model-corrected p-distances (e.g. Jukes-Cantor 1969, Kimura 2-parameter, Tamura-Nei 1993) as well as those based on allele frequencies (e.g. Theta-ST, linearized Fst, Jost's D -- full list of available distance models below). It also includes integrated functions for parsing an input vector shapefile of streams (see below 'Requirements for input shapefiles') for easy calculation of pairwise stream distances between sites, as well as the ordinary or weighted least-squares fitting of reach-wise genetic distances according to the "stream tree" model of Kalinowski et al. (2008). Various plotting functions are also provided for downstream analysis, including looking at patterns of isolation-by-distance. Outputs should also be directly importable into R, with additional outputs with annotated streamtree fitted distances provided for analysis in your GIS suite of choice.
-
-For a description of the package, please refer to our pre-print:
-
-[Chafin TK, Mussmann SM, Douglas MR, Douglas ME. autoStreamTree: Genomic variant data fitted to geospatial networks](https://www.biorxiv.org/content/10.1101/2023.05.27.542562.abstract)
-
-And more importntly, see the original algorithm description:
-
-[Kalinowski ST, Meeuwig MH, Narum SR, Taper ML. 2008. Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Can. J. Fish. Aquat. Sci. 65: 2752–2760](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf)
-
-### Usage <a name="ast_usage"></a>
-
-#### Options and Help Menu <a name="ast_help"></a>
-
-To view all of the options for DistNet, call the program with the <-h> argument:
-```
-$ python3 autostreamtree.py -h
+(test) tyler@Tylers-MacBook-Pro-2 autostreamtree % python3 ./autostreamtree.py -h
 
 Exiting because help menu was called.
 
-DistNet.py
+autostreamtree.py
 
-Author: Tyler K Chafin, University of Arkansas
-Contact: tkchafin@uark.edu
-Description: Computes stream distances and genetic distances for georeferenced DNA sequences, performs tests for isolation-by-distance, and uses a least-squares method to fit distances to stream segments.
+Author: Tyler K Chafin, Biomathematics and Statistics Scotland
+Description: Methods for analysing genetic distances in networks.
 
-	Input file format:
-		SampleName	Data	Lat	Long	seq1	[seq2]...[seqn]
-		...
-		...
-	--NOTE: The "DATA" column can be anything- a population/ species identifier
-	  (e.g. when used with --pop), or irrelevant data (e.g. GenBank accesson
-	  number, if datafile produced by my autoFetcher script)
+Mandatory arguments:
+    -s,--shp        : Path to shapefile containing cleaned, contiguous stream reaches (can also support geodatabase or GPKG files)
+    -i,--input      : Input .tsv file containing sample coordinates
+    -v,--vcf        : Input VCF file containing genotypes
 
-	Mandatory arguments:
-		-s,--shp	: Path to shapefile containing cleaned, contiguous stream reaches
-		-i,--input	: Input .tsv file containing sample coordinates and sequences
+General options:
+    -o,--out        : Output prefix [default="out"]
+    -O,--gbf_out    : Output driver for annotated geodataframe (options "SHP", "GPKG", or "GDB")
+    -C,--concat     : Concatenate all SNPs ("all"), by locus ("loc"), or not at all ("none")
+    -n,--network    : Provide an already optimized network output from a previous run
+    --overwrite     : Overwrite an input network (Only relevant with --network)
+    -h,--help       : Displays help menu
+    -r,--run        : Run which steps? Options: [all, gendist, ibd, streamdist, streamtree]
+        ALL         : Run all steps
+        GENDIST     : Only calculate genetic distance matrix
+        STREAMDIST  : Only compute pairwise stream distances
+        DISTANCES   : Only compute GENDIST + STREAMDIST
+        IBD         : GENDIST + STREAMDIST + Mantel test
+        STREAMTREE  : GENDIST + STREAMDIST + fit StreamTree model
+        RUNLOCI     : Run STREAMTREE fitting on each locus
+    -p,--pop        : Pool individuals based on an input population map tsv file
+        NOTE: The location will be taken as the centroid among individual samples
+    -g,--geopop     : Pool individuals having identical coordinates
+    -c,--clusterpop : Use DBSCAN algorithm to automatically cluster populations
+    --reachid_col   : Attribute name representing primary key in shapefile [default="HYRIV_ID"]
+    --length_col    : Attribute name giving length in kilometers [default="LENGTH_KM"]
 
-	General options:
-		-o,--out	: Output prefix [default="out"]
-		-n,--network	: Provide an already optimized network output from a previous run
-			This will be the $out.network file written by autoStreamTree
-		--overwrite	: Overwrite an input network (Only relevant with --network)
-		-h,--help	: Displays help menu
-		-r,--run	: Run which steps? Options: [all, gendist, ibd, streamdist, streamtree]
-			ALL		: Run all steps
-			GENDIST		: Only calculate genetic distance matrix
-			STREAMDIST	: Only compute pairwise stream distances
-			DISTANCES	: Only compute GENDIST + STREAMDIST
-			IBD		: GENDIST + STREAMDIST + Mantel test
-			STREAMTREE	: GENDIST + STREAMDIST + fit StreamTree model
-			RUNLOCI	: Run STREAMTREE fitting on each locus
-		-p,--pop		: Pool individuals based on column 2 of input file
-			NOTE: The location will be taken as the centroid among individual samples
-		-g,--geopop		: Pool individuals having identical coordinates
-		-c,--clusterpop	: Use DBSCAN algorithm to automatically cluster populations
-		--reachid_col	: Attribute name representing primary key in shapefile [default="REACH_ID"]
-		--length_col	: Attribute name giving length in kilometers [default="LENGTH_KM"]
+Genetic distance options:
+    -d,--dist       : Use which metric of distance? Options are:
+        Substitution models (individual-based):
+          PDIST     : Uncorrected p-distances [# Differences / Length]
+          JC69      : [default] Jukes-Cantor (1969) corrected p-distances
+        Frequency models (when using --pop):
+          FST       : Weir and Cockerham's Fst formulation (=THETAst)
+          LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
+          JOST      : Jost's (2008) D
+          NEI83     : Nei and Chesser (1983) Da
+          CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
+          --NOTE: Individual-based metrics can also be computed for
+                    populations. You can set how these are aggregated w/ --pop_agg
+          --NOTE: Multiple loci for PDIST, and JC69 distances
+                  will be reported using the method defined in --loc_agg
+    -G,--genmat     : Skip calculation and use the provided labeled .tsv matrix
+    --coercemat     : [Boolean] Coerce negative values in input matrix to zero
+    --het           : [Boolean] Count partial differences [e.g. ind1=T, ind2=W]
+    --global_het    : Estimate Ht using global frequencies (default is averaged over pops)
 
-	Genetic distance options:
-		-d,--dist	: Use which metric of distance? Options are:
-			Substitution models (individual-based):
-			  PDIST			: Uncorrected p-distances [# Differences / Length]
-			  JC69 			: [default] Jukes-Cantor (1969) corrected p-distances
-			  K2P			: Kimura 2-parameter distances
-			  TN84			: Tajima and Nei's (1984) distance
-			  TN93			: Tamura and Nei's (1993) distance
-			Frequency models (when using --pop):
-			  FST			: Weir and Cockerham's Fst formulation (=THETAst)
-			  GST			: Hedrick's (2005) correction of Nei (1987) Gst [=G'st]
-			  GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
-			  LINFST		: [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
-			  JOST			: Jost's (2008) D
-			  NEI72			: Nei's (1972) standard genetic distance
-			  NEI83			: Nei and Chesser (1983) Da
-			  EUCLID		: Euclidean distance
-			  CHORD			: Cavalli-Sforza and Edwards (1967) chord distance
-			  --NOTE: Individual-based metrics can also be computed for
-		  	          populations. You can set how these are aggregated w/ --pop_agg
-			  --NOTE: Multiple loci for PDIST, JC69, K2P, and EUCLID distances
-		  	        will be reported using the method defined in --loc_agg
-			  --NOTE: TN84 will use empirical base frequencies
-		-G,--genmat	: Skip calculation and use the provided labeled .tsv matrix
-		--coercemat	: [Boolean] Coerce negative values in input matrix to zero
-		--locmatdir	: Directory of per-locus distance matrices
-		--het		: [Boolean] Count partial differences [e.g. ind1=T, ind2=W]
-		--snp		: [Boolean] Data represent concatenated SNPs
-		--msat		: xxx[Boolean] Data represent msat alleles [not yet implemented]
-		--global_het	: Estimate Ht using global frequencies (default is averaged over pops)
+DBSCAN options (only when --clusterpop):
+    --min_samples   : Minimum samples per cluster [default=1]
+    --epsilon       : Maximum distance (in km) within a cluster [default=20]
 
-	DBSCAN options (only when --clusterpop):
-		--min_samples	: Minimum samples per cluster [default=1]
-		--epsilon		: Maximum distance (in km) within a cluster [default=20]
+Aggregation options:
+    -P,--pop_agg    : Define aggregator function for certain genetic distances in pop samples
+    -L,--loc_agg    : Define aggregator function for aggregating locus-wise distances
+        All of these can take the following options:
+          ARITH     : [default] Use arithmetic mean
+          MEDIAN    : Use median distance
+          HARM      : Use harmonic mean
+          ADJHARM   : Adjusted harmonic mean (see docs)
+          GEOM      : Use geometric mean
+          MIN       : Use minimum distance
+          MAX       : Use maximum distance
 
+IBD options:
+    --perm          : Number of permutations for mantel test [def=1000]
+    --and_log       : Also perform IBD steps with log geographic distances
+
+StreamTree options (see Kalinowski et al. 2008) :
+    -w,--weight : Desired weighting for least-squares fitting:
+        Options:
+          FM67      : Fitch and Margoliash (1967) [w = 1/D^2]
+          BEYER74   : Beyer et al. (1974) weights [w = 1/D]
+          CSE67     : [default] Cavalli-Sforza and Edwards (1967) [w = 1]
+
+```
+
+The main workflow control argument is `-r/--run`, which tells which steps of the pipeline you want to run. The options for this are:
+- -r GENDIST: Only calculates a pairwise genetic distance matric for input samples 
+- -r STREAMDIST: Only calculates a pairwise matrix of hydrologic (stream) distances
+- -r DISTANCES: Computes both of the above 
+- -r IBD: Computes both distance matrices and performes a simple Mantel test for isolation-by-distance
+- -r STREAMTREE: Computes distance matrices and fits the StreamTree model 
+- -r ALL: All of the above 
+- -r RUNLOCI: All of the above, but fitting StreamTree models to each individual locus 
+
+Some of these are included only for convenience -- for example, there are much more comprehensive packages out there for computing genetic distance matrices, and I don't recommend the Mantel test as the sole means of testing for isolation-by-distance -- and in most cases I think `-r ALL` or `-r STREAMTREE` will be what you want. 
+
+Many of the runtime options relate to specific components of the required inputs, which I will discuss below.
+
+### Input files <a name="ast_inputs"></a>
+
+Depending on the workflow you are running, some of these files may not be required (for example, computing genetic distances only will not require an input geodatabase). 
+
+#### Genotype data 
+
+The intended input format for the genotype data is the widely used VCF format. Some examples are provided in the example `data/` directory, which were produced by the program ipyrad:
+```
+##fileformat=VCFv4.0
+##fileDate=2021/03/21
+##source=ipyrad_v.0.9.68
+##reference=pseudo-reference (most common base at site)
+##phasing=unphased
+##INFO=<ID=NS,Number=1,Type=Integer,Description="Number of Samples With Data">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">
+##FORMAT=<ID=CATG,Number=1,Type=String,Description="Base Counts (CATG)">
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  63burk03        63cburk01       >
+RAD_0   28      loc0_pos27      G       A       13      PASS    .       GT:DP:CATG      0/0:81:0,0,0,81 >
+RAD_0   76      loc0_pos75      C       T       13      PASS    .       GT:DP:CATG      0/0:81:81,0,0,0 >
+...
+...
+```
+
+Parsing is faster with compressed and indexed files (and will be more space efficient), so I recommend keeping these compressed with bgzip and indexed with tabix:
+```
+# compress
+bgzip test.vcf 
+
+# index
+tabix test.vcf.gz
+```
+
+This file should be provided using `-v/--vcf`.
+#### Individual metadata
+
+Individual metadata will be needed in the form of coordinates, which can be passed as a simple tab-delimited text file (see example in `data/test.coords`):
+```
+63burk03        26.925414       90.396139
+63cburk01       26.92383        90.39815
+63cburk02       26.92383        90.39815
+63cdikc01       27.2676 90.04778
+63cdikc02       27.2676 90.04778
+63cdikc03       27.2676 90.04778
+63cdolk01       26.88353        90.34272
+63cdolk03       26.88353        90.34272
+63cdort03       26.86776        89.37437
+...
+...
+```
+
+For population-level analysis, there are currently three ways in which you can define populations for population-wise analysis. One option (`-g/--geopop`) will group any samples into populations which "snap" to the same stream node (see below).
+
+A third option (`-c,--clusterpop`) will automatically cluster geographically similar individuals using the DBSCAN algorithm in scikit-learn, using great-circle geographic distances (i.e., this is not informed by stream distances calculated as a part of some workflows). Two relevant options are provided for manipulating the DBSCAN results:
+```
+	--min_samples	: Minimum samples per cluster [default=1]
+	--epsilon	    : Maximum distance (in km) within a cluster [default=20]
+```
+
+or using an input file providing population assignments for each individual, again as a simple tab-delimited text file (see example `data/test.popmap`), passed via `-p/--pops`:
+```
+63burk03        burk
+63cburk01       burk
+63cburk02       burk
+63dakp01        dakp
+63dakp02        dakp
+63dakp03        dakp
+63dakp04        dakp
+63dakp05        dakp
+...
+...
+```
+#### Geodatabase 
+The input stream network can be provided as a shapefile, geodatabase, or GPKG file, all passed uing the `-s/--shp` option. There are a number of requirements for this file in order for the result to create a valid network. I highly recommend using the existing global stream datasets provided by the [HydroLab group](https://wp.geog.mcgill.ca/hydrolab/) at McGill University, specifically the [HydroAtlas](https://www.hydrosheds.org/page/hydroatlas) or [free-flowing rivers dataset](https://wp.geog.mcgill.ca/hydrolab/free-flowing-rivers/) as these are already properly formatted for use, and the additional variables included will make downstream analysis very easy. 
+
+If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) REACH_ID (case sensitive) must provide a unique identifier to each stream reach; and 2) LENGTH_KM should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in ArcMAP later, but for now there are some scripts in our complementary package that can help with these steps using the ArcPy API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so.
+
+Note that a valid path is required between all sites in order to calculate pairwise stream distances. Thus, if you are analyzing data from multiple drainages which only share an oceanic connection, you will need to augment the shapefile. For example this could be accomplished by adding a vector representing the coastline to create an artificial connection among drainages.
+
+### Genetic distances <a name="gendist"></a>
+
+There are a number of existing (and more comprehensive) packages out there for computing pairwise genetic distance matrices. If you already have this (either at individual or population level), you can provide a labelled matrix as a tab-delimited text file with `--genmat`. An example of how this should be formatted may be found in `data/test.popGenDistMat.txt`.
+
+For convenience, a number of options are built-in, which can be selected using the `-d,--dist` argument:
+```
+    -d,--dist       : Use which metric of distance? Options are:
+        Substitution models (individual-based):
+          PDIST     : Uncorrected p-distances [# Differences / Length]
+          JC69      : [default] Jukes-Cantor (1969) corrected p-distances
+        Frequency models (when using --pop):
+          FST       : Weir and Cockerham's Fst formulation (=THETAst)
+          LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
+          JOST      : Jost's (2008) D
+          NEI83     : Nei and Chesser (1983) Da
+          CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
+```
+For most use cases, I would suggest `-d LINFST` which will compute a "linearised" version of Weir and Cockerham's Theta-ST. 
+
+Optionally, the user can also opt to aggregate individual-based distance measures, either those provided (p-distances) or from an input matrix that is only at the individual level. This can be provided using the `--pop_agg` argument, with any of the following options available:
+
+```
 	Aggregation options:
-		-P,--pop_agg	: Define aggregator function for certain genetic distances in pop samples
-		-L,--loc_agg	: Define aggregator function for aggregating locus-wise distances
+		--pop_agg	: Define aggregator function for certain genetic distances w/ --pops:
 			All of these can take the following options:
 			  ARITH		: [default] Use arithmetic mean
 			  MEDIAN	: Use median distance
@@ -193,34 +293,23 @@ Description: Computes stream distances and genetic distances for georeferenced D
 			  GEOM		: Use geometric mean
 			  MIN		: Use minimum distance
 			  MAX		: Use maximum distance
-
-	IBD options:
-		--perm		: Number of permutations for mantel test [def=1000]
-		--and_log	: Also perform IBD steps with log geographic distances
-
-	StreamTree (see Kaliowski et al. 2008) options:
-		--iterative	: Prevent negative distances using the iterative approach
-		-w,--weight	: Desired weighting for least-squares fitting:
-			Options:
-			  FM67			: Fitch and Margoliash (1967) [w = 1/D^2]
-			  BEYER74		: Beyer et al. (1974) weights [w = 1/D]
-			  CSE67			: [default] Cavalli-Sforza and Edwards (1967) [w = 1]
 ```
 
-#### Requirements for input shapefiles <a name="ast_input"></a>
+Another useful feature is the ability to concatenate the input variant data -- this can be done either globally (for example if you want to only compute a global p-distance) with `-C all`, or if you have phased data used to form "pseudo" microhaplotypes using `-C loc`, which will group variants using the CHROM field in the input VCF. Note that if using a program such as ipyrad (e.g., for RADseq data), the entries in this field will represent 'independent' loci -- if you have data aligned to a genome and want to define loci in some way you will need to insert this information into the CHROM field as a pre-processing step. 
 
-I highly recommend using the existing global stream datasets provided by the [HydroLab group](https://wp.geog.mcgill.ca/hydrolab/) at McGill University, specifically the [HydroAtlas](https://www.hydrosheds.org/page/hydroatlas) or [free-flowing rivers dataset](https://wp.geog.mcgill.ca/hydrolab/free-flowing-rivers/) as these are already properly formatted for use, and the additional variables included will make downstream analysis very easy. Because of their size, I would recommend clipping them to the relevant scale first (e.g. the drainage encompassing all of your samples).
+## 3. Example analysis <a name="ast_example"></a>
 
-Note that a valid path is required between all sites in order to calculate pairwise stream distances. Thus, if you are analyzing data from multiple drainages which only share an oceanic connection, you will need to augment the shapefile. For example this could be accomplished by adding a vector representing the coastline to create an artificial connection among drainages.
+If you have just installed autoStreamTree and are running it for the first time, I recommend you first run the example analysis using the provided files in the `data` directory. These include all necessary inputs, and a geodatabase. To run the full workflow on the example data, simply use:
 
-If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) REACH_ID (case sensitive) must provide a unique identifier to each stream reach; and 2) LENGTH_KM should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in ArcMAP later, but for now there are some scripts in our complementary package that can help with these steps using the ArcPy API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so.
+```
+# Change directories to the autoStreamTree repository
+cd autostreamtree 
 
-#### Input file format <a name="ast_table"></a>
+# run the analysis
+python3 ./autostreamtree.py -s data/test.shp -i data/test.coords -v data/test.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
+```
 
-Coordinates do not need to exactly match nodes in the input shapefile, as points will be 'snapped' to network nodes after parsing. autoStreamTree will output both a table($out.snapDistances.txt) and a histogram plot ($out.snapDistances.pdf) showing distances in kilometers that samples or populations had to be snapped:
-
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.snapDistances.png)
-
+--
 #### Outputs <a name="ast_outputs"></a>
 
 The first thing autoStreamTree will do upon reading your input shapefile is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an EDGE_ID attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
@@ -239,77 +328,12 @@ Finally, the fitted distances per stream edge will be output both as an added co
 
 #### Genetic distance models <a name="gen"></a>
 
-The currently recommended way to run autoStreamTree is to provide a labelled matrix of pairwise genetic distances, as there are many available packages for calculating these. This input matrix is provided using the --genmat argument, and should be tab-delimited with both column and row labels matching your population or individual identifiers.
 
-Built-in genetic distance calculations are currently in beta, meaning they are provided conditionally and still require more extensive external testing. They appear to be by-and-large functioning as written, but I would like to have a much more comprehensive test of whether or not my implementation of each statistic produces identical (or very similar) results to those of other packages such as Arlequin or adegenet. If you use autoStreamTree for your research and have the ability to directly compare your genetic distance matrix with those of other packages, please do so and feel free to let me know how they compare. Please note that I also offer the ability to directly import a genetic distance matrix that has been externally calculated, skipping this step altogether.
 
-Currently I provide options for individual-based distances (p-distance and various substitution-model corrected distances), and population-based distances which use allele frequency data (such as Fst):
-
-```
-	Genetic distance options:
-		-d,--dist	: Use which metric of distance? Options are:
-			Substitution models (individual-based):
-			  PDIST			: Uncorrected p-distances [# Differences / Length]
-			  JC69 			: [default] Jukes-Cantor (1969) corrected p-distances
-			  K2P			: Kimura 2-parameter distances
-			  TN84			: Tajima and Nei's (1984) distance
-			  TN93			: Tamura and Nei's (1993) distance
-			Frequency models (when using --pop):
-			  FST			: Weir and Cockerham's Fst formulation (theta)
-			  GST			: Hedrick's (2005) correction of Nei's (1987) Gst [=G'st]
-			  GSTPRIME		: Meirmans & Hedrick (2011) corrected G'st [=G''st]
-			  LINFST		: [default] Rousset's (1997) linearized Fst [=Fst/(1-Fst)]
-			  JOST			: Jost's (2008) D
-			  LINJOST		: 1/1-D, where D=Jost's (2008) D
-			  NEI72			: Nei's (1972) standard genetic distance
-			  NEI83			: Nei and Chesser (1983) Da
-			  EUCLID		: Euclidean distance
-			  CHORD			: Cavalli-Sforza and Edwards (1967) chord distance
-```
-
-Optionally, the user can also opt to aggregate individual-based distance measures (when using a priori population assignments or the --geopop option). This can be provided using the --pop_agg argument, with any of the following options available:
-
-```
-	Aggregation options:
-		--pop_agg	: Define aggregator function for certain genetic distances w/ --pops:
-			All of these can take the following options:
-			  ARITH		: [default] Use arithmetic mean
-			  MEDIAN	: Use median distance
-			  HARM		: Use harmonic mean
-			  ADJHARM	: Adjusted harmonic mean (see docs)
-			  GEOM		: Use geometric mean
-			  MIN		: Use minimum distance
-			  MAX		: Use maximum distance
-```
 
 For datasets containing multiple non-concatenated loci, note that individual-based distances (e.g. PDIST or JC69) will also need to be aggregated among loci within each pairwise calculation. Any of the above options can again be used here, provided using the --loc_agg argument.
 
-#### Defining populations <a name="pops"></a>
-There are currently three ways in which you can define populations for population-wise analysis. The first (specified using --pop) assumes that the 2nd column in the input file contains population identifiers. These can take any form (e.g., integer or string). The second (--geopop) will group any samples into populations which "snap" to the same stream node (see below).
 
-A third option (--clusterpop) will automatically cluster geographically similar individuals using the DBSCAN algorithm in scikit-learn, using great-circle geographic distances (i.e., this is not informed by stream distances calculated as a part of some workflows). Two relevant options are provided for manipulating the DBSCAN results:
-```
-DBSCAN options (only when --clusterpop):
-	--min_samples	: Minimum samples per cluster [default=1]
-	--epsilon	: Maximum distance (in km) within a cluster [default=20]
-```
-
-If using population labels, whether provided in the input file (--pop/--geopop) or calculating using DBSCAN (--clusterpop), autoStreamTree will output a plot showing cluster membership in 2-D space called $OUT.clusteredPoints.pdf:
-
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.clusteredPoints.png)
-
-In this example, DBSCAN was used (hence population IDs are formatted as "DB_"#). Population centroids, which are ultimately used to "snap" populations to the stream network are shown with an "x". Note that this means that the population will only be represented by a single point on the network!
-
-
-### Example workflows <a name="ast_workflow"></a>
-
-#### Fitting single-marker distances <a name="ast_example1"></a>
-
-#### Working with large SNP datasets <a name="ast_example2"></a>
-
-#### Microsatellites <a name="ast_example3"></a>
-
-### Runtimes and benchmarking <a name="ast_benchmark"></a>
 
 ### References <a name="ast_refs"></a>
 #### Citations for DistNet methods
@@ -353,35 +377,3 @@ Here are some recommended readings and resources:
 
 ## Scripts and Tools
 
-#### Re-plotting StreamTree outputs
-
-The default $out.streamdByFittedD plot may not be exactly what you wanted. To prevent cluttering the help menu of the main program too much, we've provided a separate script for loading up autoStreamTree outputs to re-make the plot, which has some added options for customization: scripts/plotStreamTree.py
-
-'''
-$ python3 ./scripts/plotStreamTree -h
-plotStreamTree.py
-
-Author: Tyler K Chafin, University of Arkansas
-Contact: tkchafin@uark.edu
-Description: Script for re-plotting StreamTree results after running DistNet
-
-		-p,--prefix	: Prefix for autoStreamTree output
-		-m,--min	: Minimum genetic distance
-		-M,--max	: Maximum genetic distance
-		-c,--cmap	: Colormap (any valit matplotlib cmap value)
-			see: https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html
-		-o,--out	: Output prefix (if not overwriting original)
-		-h,--help	: Displays this help menu)
-'''
-
-For example, to re-plot values with a distance ceiling of 0.2 and a viridis color scale:
-'''
-python3 ./scripts/plotStreamTree.py -p out2 -m 0.0 -M 0.2 -c "viridis"
-'''
-
-#### Clustering populations using any distance matrix
-
-For example, if you wanted to cluster individuals using their stream distances, I've provided a script called clusterPopsDB.py which will use a DBSCAN clustering algorithm to output a tab-delimited population map given any arbitrary distance matrix:
-'''
-$ python3 ./scripts/clusterPopsDB.py -h
-'''
