@@ -9,9 +9,9 @@ Implementation of Kalinowsky et al. 2008 'StreamTree' software for SNP datasets
     2. [Inputs](#ast_inputs)
     3. [Genetic distances](#gendist)
 3. [Example analysis](#ast_example)
-3. [Scripts and Other Useful Features](#tools)
-4. [Incorporating autoStreamTree into automated workflows](#snakemake)
-5. [Contributing Guidelines](#contributing)
+4. [Outputs](#ast_outputs)
+5. [References](#ast_refs)
+6. [Contributing Guidelines](#contrib)
 
 
 ## 1. Installation <a name="installation"></a>
@@ -309,35 +309,24 @@ cd autostreamtree
 python3 ./autostreamtree.py -s data/test.shp -i data/test.coords -v data/test.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
 ```
 
---
-#### Outputs <a name="ast_outputs"></a>
+This will produce a number of output text files and plots using the prefix provided with `-o`. 
 
-The first thing autoStreamTree will do upon reading your input shapefile is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an EDGE_ID attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
+## 4. Outputs <a name="ast_outputs"></a>
 
-The reduced sub-network will be plotted for you in a file called $OUT.subGraph.pdf:
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.subGraph.png)
+If running the full workflow, the first thing autoStreamTree will do upon reading your input geodatabase is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an EDGE_ID attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
 
-Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as $out.streamsByEdgeID.pdf:
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.networkByEdgeID.png)
+The reduced sub-network will be plotted for you in a file called *out*.subGraph.pdf.
 
-After fitting genetic distances, autoStreamTree will create several other outputs. First, a table called $out.reachToEdgeTable.txt will give a tab-delimited map of how REACH_ID attributes were dissolved into contiguous edges. Second, a tabular and graphical representation of how fitted pairwise distances compare to the raw calculates (or user-provided) pairwise distances: $out.obsVersusFittedD.txt and $out.obsVersusFittedD.pdf
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.obsByFittedD.png)
+Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as *out*.streamsByEdgeID.pdf.
 
-Finally, the fitted distances per stream edge will be output both as an added column to the original shapefile attribute table ($out.streamTree.shp and $out.streamTree.txt), and also as a plot showing how distances compare across all streams:
-![](https://raw.githubusercontent.com/tkchafin/autostreamtree/master/examples/plots/example.networkByStreamTree.png)
+After fitting genetic distances, autoStreamTree will create several other outputs. First, a table called *out*.reachToEdgeTable.txt will give a tab-delimited map of how REACH_ID attributes were dissolved into contiguous edges. Second, a tabular and graphical representation of how fitted pairwise distances compare to the raw calculates (or user-provided) pairwise distances: *out*.obsVersusFittedD.txt and *out*.obsVersusFittedD.pdf
 
-#### Genetic distance models <a name="gen"></a>
+Finally, the fitted distances per stream edge will be output both as an added column to the original shapefile attribute table (*out*.streamTree.shp and *out*.streamTree.txt), and also as a plot showing how distances compare across all streams.
 
+## 5. References <a name="ast_refs"></a>
+### Citations for autoStreamTree methods
+Below is a full list of citations for the various methods used. Apologies to anyone I missed - please let me know if you notice any discrepancies.
 
-
-
-For datasets containing multiple non-concatenated loci, note that individual-based distances (e.g. PDIST or JC69) will also need to be aggregated among loci within each pairwise calculation. Any of the above options can again be used here, provided using the --loc_agg argument.
-
-
-
-### References <a name="ast_refs"></a>
-#### Citations for DistNet methods
-Below is a full list of citations for the various methods used in DistNet. Apologies to anyone I missed - feel free to let me know if you notice any discrepancies.
 * Beyer WM, Stein M, Smith T, Ulam S. 1974. A molecular sequence metric and evolutionary trees. Mathematical Biosciences. 19: 9-25.
 * Cavalli-Sforza LL, Edwards AWF. 1967. Phylogenetic analysis: model and estimation procedures. American Journal of Human Genetics. 19: 233-257.
 * Ester M, Kriegel HP, Sander J, Xu X. 1996. A density-based algorithm for discovering  clusters in large spatial databases with noise. IN: Simoudis E, Han J, Fayyad UM. (eds.). Proceedings of the Second International Conference on Knowledge Discovery and Data Mining (KDD-96). AAAI Press. pp. 226–231.
@@ -362,7 +351,7 @@ Below is a full list of citations for the various methods used in DistNet. Apolo
 * Tamura K, Nei M. 1993. Estimation of the number of nucleotide substitutions in the control region of mitochondrial DNA in humans and chimpanzees. Molecular Biology and Evolution. 10(3):512-526.
 * Weir BS, Cockerham CC. 1984. Estimating F-statistics for the analysis of population structure. Evolution. 38: 1358-1370.
 
-#### Other reading
+### Other reading
 Here are some recommended readings and resources:
 * Comte L, Olden JD. 2018. Fish dispersal in flowing waters: A synthesis of movement- and genetic-based studies. Fish and Fisheries. 19(6): 1063-1077.
 * Comte L, Olden JD. 2018. Evidence for dispersal syndromes in freshwater fishes. Proceedings Royal Society: B. 285(1871):  
@@ -375,5 +364,15 @@ Here are some recommended readings and resources:
 * Tonkin JD, Altermatt F, Finn DS, Heino J, Olden JD, Pauls SU, Lytle DA. 2017. The role of dispersal in river network metacommunities: Patterns, processes, and pathways. Freshwater Biology. 61(1): 141-163.
 * Wright S. 1965. Isolation by distance. Genetics. 28: 114-138.
 
-## Scripts and Tools
+## 5. Contributing <a name="contrib"></a>
 
+If you are interested in contributing to autoStreamTree, first of all thank you! Any form of contribution is always welcome, be that bug reports, code review, bug fixes, or even adding new features! 
+
+If you encounter a problem in using or installing autoStreamTree, please post to the [GitHub Issues](https://github.com/tkchafin/autostreamtree/issues) page. If you do so, please be sure to share the full steps which led to your problem, and the full output (including any error messages). In some instances it may be necessary to see your input files. 
+
+If you would like to contribute any changes to the code, just follow these steps!
+1. Fork the repository 
+2. Make changes
+3. Submit a pull request
+
+That's it! If you have an idea for a feature that would be helpful for your research, but aren't sure how to implement it, this can be logged using the GitHub Issues page linked above and I'll do my best to help! 
