@@ -161,7 +161,9 @@ def read_network(network, shapefile):
     if network:
         print("Reading network from saved file: ", network)
         # Read the network from the saved file and convert it to an undirected graph
-        G = nx.Graph(nx.read_gpickle(network).to_undirected())
+        #G = nx.Graph(nx.read_gpickle(network).to_undirected())
+        with open(network, 'rb') as f:
+            G = nx.Graph(pickle.load(f)).to_undirected()
     else:
         # If no saved network file is provided, build the network from the shapefile
         print("Building network from shapefile:", shapefile)
@@ -228,9 +230,11 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
     # Save minimized network to file (unless we already read from one)
     if not params.network or params.overwrite:
         net_out = str(params.out) + ".network"
-        nx.write_gpickle(K, net_out, pickle.HIGHEST_PROTOCOL)
+        with open(net_out, 'wb') as f:
+            pickle.dump(K, f, pickle.HIGHEST_PROTOCOL)
         net_full_out = str(params.out) + ".full.network"
-        nx.write_gpickle(ktemp, net_full_out, pickle.HIGHEST_PROTOCOL)
+        with open(net_full_out, 'wb') as f:
+            pickle.dump(ktemp, f, pickle.HIGHEST_PROTOCOL)
     else:
         print("NOTE: Not over-writing existing network. To change this, use --overwrite")
 
