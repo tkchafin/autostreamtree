@@ -15,7 +15,7 @@ authors:
     orcid: 0000-0002-5237-5088
     affiliation: "2, 3"
   - name: Marlis R. Douglas
-    orcid: 00000-0001-6234-3939
+    orcid: 0000-0001-6234-3939
     affiliation: 3
   - name: Michael E. Douglas
     orcid: 0000-0001-9670-7825
