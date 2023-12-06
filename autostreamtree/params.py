@@ -192,7 +192,7 @@ class parseArgs():
         if message is not None:
             print()
             print (message)
-        print ("\nautostreamtree.py\n")
+        print ("\nautostreamtree\n")
         print("Author: Tyler K Chafin, Biomathematics and Statistics Scotland")
         print ("Description: Methods for analysing genetic distances in networks.")
         print("""

@@ -11,7 +11,6 @@ import getopt
 import momepy
 import pyogrio
 import pandas as pd
-import geopandas as gpd
 import numpy as np
 import networkx as nx
 import seaborn as sns

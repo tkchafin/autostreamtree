@@ -2,7 +2,6 @@ import os
 import sys
 
 import pandas as pd
-import geopandas as gpd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt

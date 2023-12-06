@@ -1,0 +1,45 @@
+channels:
+  - conda-forge
+  - bioconda
+  - ecoevoinfo
+  - defaults
+
+package:
+  name: autostreamtree
+  version: "1.0.1"
+
+source:
+  path: ../ 
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - setuptools
+  run:
+  - python >=3.10
+  - pip
+  - setuptools
+  - perl
+  - pytest
+  - numpy
+  - pandas >2
+  - matplotlib
+  - scikit-learn
+  - seaborn
+  - geopandas
+  - sortedcontainers
+  - momepy
+  - networkx >3
+  - pyogrio
+  - mantel
+  - pysam
+  - scikit-learn >1
+
+build:
+  noarch: python
+
+about:
+  home: "https://github.com/tkchafin/autostreamtree"
+  license: "GPLv3"
+  summary: "A package for fitting genetic distances to spatial networks"

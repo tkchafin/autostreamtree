@@ -45,53 +45,101 @@ autoStreamTree also uses methodology described in [Kalinowski et al. 2008](https
 Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
 ```
 
+### Installation with GitHub
+
+Simple installation of the development version may be done simply as:
+```
+git clone https://github.com/tkchafin/autostreamtree.git
+
+cd autostreamtree
+
+pip install . 
+```
+
+The command-line interface is then accesible as `autostreamtree`.
+
 ### Installation with conda/mamba
 
-The recommended method of installation is with conda or mamba. First, create and activate a new conda environment:
+The recommended method of installation is with conda or mamba. First, create \
+and activate a new conda environment:
 ```
-conda create -n streamtree_test python=3.10
-conda activate streamtree_test
-```
-
-Then install the dependencies:
-```
-# most dependencies installable via conda/mamba
-mamba install -c conda-forge -c bioconda pandas numpy geopandas pyogrio matplotlib seaborn pyproj networkx scikit-learn momepy pysam sortedcontainers
-
-# then finally install mantel
-pip install mantel
+conda create -n streamtree python=3.10
+conda activate streamtree
 ```
 
-Note that if you are running Mac ARM, pysam will need to be installed via pip, so you can use:
+Then install the package:
 ```
-# most dependencies installable via conda/mamba
-mamba install -c conda-forge -c bioconda pandas numpy geopandas pyogrio matplotlib seaborn pyproj networkx scikit-learn momepy sortedcontainers
-
-# then finally install mantel and pysam
-pip install mantel pysam
+mamba install -c ecoevoinfo -c conda-forge -c bioconda autostreamtree
 ```
 
-Once your environment is set up, you can download autoStreamTree from GitHub:
+If you require the development branch, you can then install from GitHub as \
+well:
 
 ```
 git clone https://github.com/tkchafin/autostreamtree.git
+cd autostreamtree 
+pip install .
 ```
 
 You should now be ready to go!
 
+#### Note for Apple silicon (ARM) Macs
+
+Currently there are some dependencies which can't be easily installed on Macs 
+running the Apple ARM CPU architectures. If you are using an Apple Silicon (M1/M2) Mac there are some extra steps to run x86_64 (Intel-based) applications, which you can do via Rosetta 2. Here are the steps to set up and launch a terminal in Rosetta mode:
+
+1. **Install Rosetta**:
+   - Open the Terminal app (found in `Applications` > `Utilities`).
+   - Enter the following command and press Return:
+
+     ```
+     /usr/sbin/softwareupdate --install-rosetta --agree-to-license
+     ```
+
+   - If Rosetta is already installed, this command will have no effect. If it's not installed, you'll be prompted to agree to the license terms, and the installation will proceed.
+
+2. **Find Terminal in Finder**:
+   - Open Finder.
+   - Navigate to the `Applications` folder, then `Utilities`.
+   - Find `Terminal`.
+
+3. **Duplicate Terminal**:
+   - Right-click (or Ctrl-click) on `Terminal`.
+   - Select `Duplicate` to create a copy of the Terminal application. This ensures you have a separate instance for Rosetta without altering your default Terminal.
+
+4. **Enable Rosetta for the Duplicated Terminal**:
+   - Right-click (or Ctrl-click) on the duplicated Terminal.
+   - Select `Get Info`.
+   - In the `Info` window, check the box `Open using Rosetta`.
+
+5. **Launch the Rosetta Terminal**:
+   - Open the duplicated Terminal application. This instance of Terminal will run under Rosetta, allowing you to run x86_64 architecture applications.
+
+
+Once this is done, you can create a conda environment:
+
+```
+conda create -n streamtree
+conda activate streamtree 
+conda config --env --set subdir osx-64
+conda install python=3.10 mamba
+```
+
+Then install `autostreamtree`:
+
+```
+mamba install -c ecoevoinfo -c conda-forge -c bioconda autostreamtree
+```
 
 ## 2. Usage <a name="ast"></a>
 
 ### Command-line interface <a name="ast_cli"></a>
 
-After installation, you can view the up-to-date help menu by calling the script with `./autostreamtree.py -h`:
+After installation, you can view the up-to-date help menu by calling the script with `autostreamtree -h`:
 
 ```
-(test) tyler@Tylers-MacBook-Pro-2 autostreamtree % python3 ./autostreamtree.py -h
 
-Exiting because help menu was called.
-
-autostreamtree.py
+autostreamtree
 
 Author: Tyler K Chafin, Biomathematics and Statistics Scotland
 Description: Methods for analysing genetic distances in networks.
@@ -310,7 +358,7 @@ If you have just installed autoStreamTree and are running it for the first time,
 cd autostreamtree 
 
 # run the analysis
-python3 ./autostreamtree.py -s data/test.shp -i data/test.coords -v data/test.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
+autostreamtree -s data/test.shp -i data/test.coords -v data/test.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
 ```
 
 This will produce a number of output text files and plots using the prefix provided with `-o`. 
