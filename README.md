@@ -433,7 +433,11 @@ options:
 ```
 
 ### Incorporating into workflows <a name="workflow"></a>
+All utilities from `autoStreamTree` are intended to be easy to run within an automated pipeline. An example of building these into a [`SnakeMake`](https://snakemake.github.io) workflow can be found in the [Open Science Framework](https://osf.io/4uxfj/) repository (doi: 10.17605/OSF.IO/4UXFJ).
 
+For example, in the `run_spd.smk` file, you will find an example of fitting distances for regional subsets of samples for an empirical ddRADseq dataset, and then performing downstream environmental resistance modelling on each using [`ResistNet`](https://github.com/tkchafin/resistnet)
+
+We hope to provide some more `SnakeMake` example pipelines soon!
 ## 5. References <a name="ast_refs"></a>
 ### Citations for autoStreamTree methods
 Below is a full list of citations for the various methods used. Apologies to anyone I missed - please let me know if you notice any discrepancies.
