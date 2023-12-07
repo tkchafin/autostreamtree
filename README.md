@@ -148,18 +148,19 @@ Author: Tyler K Chafin, Biomathematics and Statistics Scotland
 Description: Methods for analysing genetic distances in networks.
 
 Mandatory arguments:
-    -s,--shp        : Path to shapefile containing cleaned, contiguous stream reaches (can also support geodatabase or GPKG files)
-    -i,--input      : Input .tsv file containing sample coordinates
-    -v,--vcf        : Input VCF file containing genotypes
+    -s, --shp       : Path to shapefile containing cleaned, contiguous stream reaches
+                       (can also support geodatabase or GPKG files)
+    -i, --input     : Input .tsv file containing sample coordinates
+    -v, --vcf       : Input VCF file containing genotypes
 
 General options:
-    -o,--out        : Output prefix [default="out"]
-    -O,--gbf_out    : Output driver for annotated geodataframe (options "SHP", "GPKG", or "GDB")
-    -C,--concat     : Concatenate all SNPs ("all"), by locus ("loc"), or not at all ("none")
-    -n,--network    : Provide an already optimized network output from a previous run
+    -o, --out       : Output prefix [default="out"]
+    -O, --gdf_out   : Output driver for annotated geodataframe (options "SHP", "GPKG", "GDB")
+    -C, --concat    : Concatenate all SNPs ("all"), by locus ("loc"), or not at all ("none")
+    -n, --network   : Provide an already optimized network output from a previous run
     --overwrite     : Overwrite an input network (Only relevant with --network)
-    -h,--help       : Displays help menu
-    -r,--run        : Run which steps? Options: [all, gendist, ibd, streamdist, streamtree]
+    -h, --help      : Displays help menu
+    -r, --run       : Run which steps? Options:
         ALL         : Run all steps
         GENDIST     : Only calculate genetic distance matrix
         STREAMDIST  : Only compute pairwise stream distances
@@ -167,15 +168,15 @@ General options:
         IBD         : GENDIST + STREAMDIST + Mantel test
         STREAMTREE  : GENDIST + STREAMDIST + fit StreamTree model
         RUNLOCI     : Run STREAMTREE fitting on each locus
-    -p,--pop        : Pool individuals based on an input population map tsv file
+    -p, --pop       : Pool individuals based on an input population map tsv file
         NOTE: The location will be taken as the centroid among individual samples
-    -g,--geopop     : Pool individuals having identical coordinates
-    -c,--clusterpop : Use DBSCAN algorithm to automatically cluster populations
+    -g, --geopop    : Pool individuals having identical coordinates
+    -c, --clusterpop: Use DBSCAN algorithm to automatically cluster populations
     --reachid_col   : Attribute name representing primary key in shapefile [default="HYRIV_ID"]
     --length_col    : Attribute name giving length in kilometers [default="LENGTH_KM"]
 
 Genetic distance options:
-    -d,--dist       : Use which metric of distance? Options are:
+    -d, --dist      : Use which metric of distance? Options:
         Substitution models (individual-based):
           PDIST     : Uncorrected p-distances [# Differences / Length]
           JC69      : [default] Jukes-Cantor (1969) corrected p-distances
@@ -189,7 +190,7 @@ Genetic distance options:
                     populations. You can set how these are aggregated w/ --pop_agg
           --NOTE: Multiple loci for PDIST, and JC69 distances
                   will be reported using the method defined in --loc_agg
-    -G,--genmat     : Skip calculation and use the provided labeled .tsv matrix
+    -G, --genmat    : Skip calculation and use the provided labeled .tsv matrix
     --coercemat     : [Boolean] Coerce negative values in input matrix to zero
     --het           : [Boolean] Count partial differences [e.g. ind1=T, ind2=W]
     --global_het    : Estimate Ht using global frequencies (default is averaged over pops)
@@ -199,8 +200,8 @@ DBSCAN options (only when --clusterpop):
     --epsilon       : Maximum distance (in km) within a cluster [default=20]
 
 Aggregation options:
-    -P,--pop_agg    : Define aggregator function for certain genetic distances in pop samples
-    -L,--loc_agg    : Define aggregator function for aggregating locus-wise distances
+    -P, --pop_agg   : Define aggregator function for certain genetic distances in pop samples
+    -L, --loc_agg   : Define aggregator function for aggregating locus-wise distances
         All of these can take the following options:
           ARITH     : [default] Use arithmetic mean
           MEDIAN    : Use median distance
@@ -215,11 +216,11 @@ IBD options:
     --and_log       : Also perform IBD steps with log geographic distances
 
 StreamTree options (see Kalinowski et al. 2008) :
-    -w,--weight : Desired weighting for least-squares fitting:
+    -w, --weight    : Desired weighting for least-squares fitting:
         Options:
           FM67      : Fitch and Margoliash (1967) [w = 1/D^2]
           BEYER74   : Beyer et al. (1974) weights [w = 1/D]
-          CSE67     : [default] Cavalli-Sforza and Edwards (1967) [w = 1]
+          CSE67     : [default] Cavalli-Sforza & Edwards (1967) [w = 1]
 
 ```
 
@@ -322,7 +323,7 @@ There are a number of existing (and more comprehensive) packages out there for c
 
 For convenience, a number of options are built-in, which can be selected using the `-d,--dist` argument:
 ```
-    -d,--dist       : Use which metric of distance? Options are:
+    -d, --dist      : Use which metric of distance? Options:
         Substitution models (individual-based):
           PDIST     : Uncorrected p-distances [# Differences / Length]
           JC69      : [default] Jukes-Cantor (1969) corrected p-distances
@@ -332,22 +333,27 @@ For convenience, a number of options are built-in, which can be selected using t
           JOST      : Jost's (2008) D
           NEI83     : Nei and Chesser (1983) Da
           CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
+          --NOTE: Individual-based metrics can also be computed for
+                    populations. You can set how these are aggregated w/ --pop_agg
+          --NOTE: Multiple loci for PDIST, and JC69 distances
+                  will be reported using the method defined in --loc_agg
 ```
 For most use cases, I would suggest `-d LINFST` which will compute a "linearised" version of Weir and Cockerham's Theta-ST. 
 
 Optionally, the user can also opt to aggregate individual-based distance measures, either those provided (p-distances) or from an input matrix that is only at the individual level. This can be provided using the `--pop_agg` argument, with any of the following options available:
 
 ```
-	Aggregation options:
-		--pop_agg	: Define aggregator function for certain genetic distances w/ --pops:
-			All of these can take the following options:
-			  ARITH		: [default] Use arithmetic mean
-			  MEDIAN	: Use median distance
-			  HARM		: Use harmonic mean
-			  ADJHARM	: Adjusted harmonic mean (see docs)
-			  GEOM		: Use geometric mean
-			  MIN		: Use minimum distance
-			  MAX		: Use maximum distance
+Aggregation options:
+    -P, --pop_agg   : Define aggregator function for certain genetic distances in pop samples
+    -L, --loc_agg   : Define aggregator function for aggregating locus-wise distances
+        All of these can take the following options:
+          ARITH     : [default] Use arithmetic mean
+          MEDIAN    : Use median distance
+          HARM      : Use harmonic mean
+          ADJHARM   : Adjusted harmonic mean (see docs)
+          GEOM      : Use geometric mean
+          MIN       : Use minimum distance
+          MAX       : Use maximum distance
 ```
 
 Another useful feature is the ability to concatenate the input variant data -- this can be done either globally (for example if you want to only compute a global p-distance) with `-C all`, or if you have phased data used to form "pseudo" microhaplotypes using `-C loc`, which will group variants using the CHROM field in the input VCF. Note that if using a program such as ipyrad (e.g., for RADseq data), the entries in this field will represent 'independent' loci -- if you have data aligned to a genome and want to define loci in some way you will need to insert this information into the CHROM field as a pre-processing step. 
