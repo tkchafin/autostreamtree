@@ -1,11 +1,21 @@
 import sys
 import itertools
-import scipy
 import numpy as np
 from typing import List
 
 import autostreamtree.aggregators as agg
 import autostreamtree.sequence as seq
+
+
+"""
+Note several distance calculations not currently in use, I plan to expand this
+further in the future, but for now only the following are supported:
+- p distances
+- JC69
+- Weir and Cockerham's Fst (linearised or non-linearised)
+- Jost's D
+- Chord distance
+"""
 
 
 def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
@@ -29,8 +39,10 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
             gn = len(popmap)
 
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = clean_inds([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = clean_inds([seqs[x][loc] for x in popmap.values()[ib]])
+                seqs1 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ia]])
+                seqs2 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ib]])
                 if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
                         not clean_list(set(seqs2), ["n", "N", "-", "?"])):
                     continue
@@ -45,6 +57,7 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
             # Aggregate the results for Hs and Ht
             global_hs = agg.aggregate_dist(loc_agg, hs_vals)
             global_ht = agg.aggregate_dist(loc_agg, ht_vals)
+            hs_vals.append(global_hs)
 
             # Calculate global D
             if dist == "JOST":
@@ -165,7 +178,7 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
     return genmat
 
 
-# function computes pairwise JC69-corrected genetic distances
+# function computes pairwise p-distance or JC69-corrected distances
 def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     # make matrix
     genmat = np.zeros((len(points), len(points)))
@@ -365,7 +378,6 @@ def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
 #     return dist
 
 
-
 # p distance = D / L (differences / length)
 # L is the UNGAPPED distance
 # ambigs are expanded
@@ -373,28 +385,28 @@ def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
 # P (transitions/L) and Q (transversions/L)
 def p_distance(seq1, seq2, trans=False, transSplit=False):
     L = min(len(seq1), len(seq2))
-    D=0.0
-    P=0.0
-    Q=0.0
-    P1=0.0
-    P2=0.0
+    D = 0.0
+    P = 0.0
+    Q = 0.0
+    P1 = 0.0
+    P2 = 0.0
     for n1, n2 in zip(seq1.lower(), seq2.lower()):
         if n1 in ["?", "-", "n"] or n2 in ["?", "-", "n"] :
             L = L-1
             continue
         elif n1 == n2:
             continue
-        else: #if n1 and n2 not equal and not gaps
+        else:  # if n1 and n2 not equal and not gaps
             if n1 in ["a", "c", "g", "t"] and n2 in ["a", "c", "g", "t"]:
                 if trans or transSplit:
                     if n1 in ["a","g"] and n2 in ["a", "g"]:
                         P = P+1
                         P1 = P1+1
                     elif n1 in ["c","t"] and n2 in ["c","t"]:
-                        P=P+1
-                        P2=P2+1
+                        P = P + 1
+                        P2 = P2 + 1
                     else:
-                        Q=Q+1
+                        Q = Q + 1
                 else:
                     D = D + 1.0
                 continue
@@ -690,38 +702,39 @@ def two_pop_jost_d(seqs1, seqs2, global_het=False):
     return Hs, Ht, D
 
 
-def two_pop_ht_hs(seqs1, seqs2, ploidy, global_het=False):
-    """
-    Computes Nei's Fst estimator (Gst) using Nei and Chessers Hs and Ht estimators
-    also applies Hedrick's (2005) sample size correction, thus returning G'st.
+# NOT IN USE
+# def two_pop_ht_hs(seqs1, seqs2, ploidy, global_het=False):
+#     """
+#     Computes Nei's Fst estimator (Gst) using Nei and Chessers Hs and Ht estimators
+#     also applies Hedrick's (2005) sample size correction, thus returning G'st.
 
-    Args:
-    - seqs1, seqs2 (list): lists of sequences for populations 1 and 2.
-    - ploidy (int): ploidy of the sequences.
-    - global_het (bool, optional): If True, computes global heterozygosity. Defaults to False.
+#     Args:
+#     - seqs1, seqs2 (list): lists of sequences for populations 1 and 2.
+#     - ploidy (int): ploidy of the sequences.
+#     - global_het (bool, optional): If True, computes global heterozygosity. Defaults to False.
 
-    Returns:
-    - A tuple containing Ht_est and Hs_est.
+#     Returns:
+#     - A tuple containing Ht_est and Hs_est.
 
-    """
-    if global_het:
-        Ht = get_global_het(seqs1 + seqs2)
-    else:
-        Ht = get_average_het(seqs1, seqs2)
+#     """
+#     if global_het:
+#         Ht = get_global_het(seqs1 + seqs2)
+#     else:
+#         Ht = get_average_het(seqs1, seqs2)
 
-    Hs = np.mean([get_global_het(seqs1), get_global_het(seqs2)])
-    harmN = scipy.stats.hmean([(len(seqs1) / ploidy), (len(seqs1) / ploidy)])
+#     Hs = np.mean([get_global_het(seqs1), get_global_het(seqs2)])
+#     harmN = scipy.stats.hmean([(len(seqs1) / ploidy), (len(seqs1) / ploidy)])
 
-    # Hs correction based on Hedrick (2005)
-    Hs_est = Hs * ((2.0 * harmN) / ((2.0 * harmN) - 1.0))
+#     # Hs correction based on Hedrick (2005)
+#     Hs_est = Hs * ((2.0 * harmN) / ((2.0 * harmN) - 1.0))
 
-    # Ht correction based on Hedrick (2005)
-    Ht_est = Ht + (Hs / (harmN * 2.0 * 2.0))
+#     # Ht correction based on Hedrick (2005)
+#     Ht_est = Ht + (Hs / (harmN * 2.0 * 2.0))
 
-    # Gst = ((Ht_est - Hs_est) / Ht_est )
+#     # Gst = ((Ht_est - Hs_est) / Ht_est )
 
-    # GprimeST = ((Gst * (1.0 + Hs_est)) / (1.0 - Hs_est))
-    return (Ht_est, Hs_est)
+#     # GprimeST = ((Gst * (1.0 + Hs_est)) / (1.0 - Hs_est))
+#     return (Ht_est, Hs_est)
 
 def get_het_from_phased(allele, phasedList, count=False):
     """
