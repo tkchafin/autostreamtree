@@ -477,23 +477,24 @@ def process_samples(params, points, G):
     for idx, row in points.iterrows():
         name = None
         data = None
-        row[1] = float(row[1])
-        row[2] = float(row[2])
+        row.iloc[1] = float(row.iloc[1])
+        row.iloc[2] = float(row.iloc[2])
         if params.run == "GENDIST":
-            name = row[0]
-            data = tuple([row[2], row[1]])
+            name = row.iloc[0]
+            data = tuple([row.iloc[2], row.iloc[1]])
         else:
             if not params.pop and not params.clusterpop:
                 #print(tuple([row[3], row[2]]))
                 #--geopop and individual-level snap coordinates to nodes here
-                node = snap_to_node(G, tuple([row[2], row[1]]))
-                snapDists[row[0]] = great_circle(node[0], node[1], row[2], row[1])
+                node = snap_to_node(G, tuple([row.iloc[2], row.iloc[1]]))
+                snapDists[row.iloc[0]] = great_circle(node[0], node[1],
+                                                      row.iloc[2], row.iloc[1])
             else:
                 #if pop or clusterpop, extract centroid later
-                node = tuple([row[2], row[1]])
+                node = tuple([row.iloc[2], row.iloc[1]])
             #print(node)
             data = node
-            name = row[0]
+            name = row.iloc[0]
             #point_labels[node]=str(row[0])
         point_coords[name] = data
         #seq_data = parseLoci(params, list(row[4:]), verbose=verb)
@@ -507,11 +508,11 @@ def process_samples(params, points, G):
             else:
                 popmap[point_coords[name]].append(row[0])
         elif params.pop:
-            if popmap_temp[row[0]] not in popmap:
+            if popmap_temp[row.iloc[0]] not in popmap:
                 l = [name]
-                popmap[popmap_temp[row[0]]] = l
+                popmap[popmap_temp[row.iloc[0]]] = l
             else:
-                popmap[popmap_temp[row[0]]].append(name)
+                popmap[popmap_temp[row.iloc[0]]].append(name)
     #print("Found",numLoci,"loci.\n")
     #points["node"]=point_coords
 
