@@ -1,169 +1,194 @@
 import sys
-import os
 import itertools
-import math
 import scipy
 import numpy as np
-import pandas as pd
-from sortedcontainers import SortedDict
-
-from typing import List, Tuple, Dict, Any, Union, Optional
+from typing import List
 
 import autostreamtree.aggregators as agg
 import autostreamtree.sequence as seq
 
-def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH", loc_agg="ARITH", ploidy=2, global_het=False):
-    #make matrix
-    genmat = np.zeros((len(popmap),len(popmap)))
-    #establish as nan
+
+def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
+                   loc_agg="ARITH", ploidy=2, global_het=False):
+    # make matrix
+    genmat = np.zeros((len(popmap), len(popmap)))
+    # establish as nan
     genmat[:] = np.nan
-    #for each combination, either average ind distances or calc freq dist
-    for ia,ib in itertools.combinations(range(0,len(popmap)),2):
-        if dist in ["JC69", "K2P", "PDIST", "TN84", "TN93"]:
-            #print(popmap.keys()[ia], popmap.values()[ia])
+    # for each combination, either average ind distances or calc freq dist
+    for ia, ib in itertools.combinations(range(0, len(popmap)), 2):
+        if dist in ["JC69", "PDIST"]:
             inds1 = [dat.index(x) for x in popmap.values()[ia]]
             inds2 = [dat.index(x) for x in popmap.values()[ib]]
-            #print(inds1)
-            genmat[ia,ib] = (agg.aggregate_dist(pop_agg, ([indmat[i, j] for i in inds1 for j in inds2])))
-            genmat[ib,ia] = genmat[ia,ib]
-        elif dist == "JOST":
-            results=list()
-            for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = get_alleles([seqs[x][loc] for x in popmap.values()[ib]])
-                if not clean_list(set(seqs1), ["n", "N", "-", "?"]) or not clean_list(set(seqs2), ["n", "N", "-", "?"]):
-                    continue
-                results.append(two_pop_jost_d(seqs1, seqs2, ploidy, global_het))
-            if len(results) > 1:
-                genmat[ia,ib] = genmat[ib,ia] = agg.aggregate_dist(loc_agg, results)
-            elif len(results) < 1:
-                #print("ERROR: population",popmap.values()[ia],"or",popmap.values()[ib],"lacks any data")
-                raise ValueError
-            else:
-                genmat[ia,ib] = genmat[ib,ia] = results[0]
-        elif dist == "GST" or dist == "GSTPRIME":
-            HT=list()
-            HS=list()
-            for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = get_alleles([seqs[x][loc] for x in popmap.values()[ib]])
-                if not clean_list(set(seqs1), ["n", "N", "-", "?"]) or not clean_list(set(seqs2), ["n", "N", "-", "?"]):
-                    continue
-                if dist == "GST" or "GSTPRIME":
-                    (ht, hs) = two_pop_ht_hs(seqs1, seqs2, ploidy, global_het)
-                    HT.append(ht)
-                    HS.append(hs)
-            Ht_global = np.mean(HT)
-            Hs_global = np.mean(HS)
-            if dist == "GST":
-                if Ht_global <= 0.0:
-                    genmat[ia,ib] = genmat[ib,ia] = 0.0
-                Gst = ((Ht_global - Hs_global) / Ht_global )
-                GprimeST = ((Gst * (1.0 + Hs_global)) / (1.0 - Hs_global))
-                genmat[ia,ib] = genmat[ib,ia] = GprimeST
-            elif dist == "GSTPRIME":
-                Ghedrick = ((2.0*(Ht_global - Hs_global)) / (((2.0*Ht_global) - Hs_global) * (1.0 - Hs_global)))
-                genmat[ia,ib] = genmat[ib,ia] = Ghedrick
-        elif dist == "FST" or dist == "LINFST":
-            num = list() #numerator; a
-            denom = list() #denominator; a*b*c
+            genmat[ia, ib] = (agg.aggregate_dist(
+                pop_agg, ([indmat[i, j] for i in inds1 for j in inds2]))
+            )
+            genmat[ib, ia] = genmat[ia, ib]
+        elif dist == "JOST" or dist == "HARMD":
+            # Arrays to store Hs, Ht, and D for each locus
+            hs_vals, ht_vals, d_vals = [], [], []
+            gn = len(popmap)
+
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
                 seqs1 = clean_inds([seqs[x][loc] for x in popmap.values()[ia]])
                 seqs2 = clean_inds([seqs[x][loc] for x in popmap.values()[ib]])
-                if not all("/" in x for x in seqs1) or not all("/" in x for x in seqs2):
+                if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
+                        not clean_list(set(seqs2), ["n", "N", "-", "?"])):
+                    continue
+                hs, ht, d = two_pop_jost_d(seqs1, seqs2, global_het)
+                hs_vals.append(hs)
+                ht_vals.append(ht)
+                d_vals.append(d)
+
+            if loc_agg not in ("ARITH", "HARM", "ADJHARM"):
+                raise ValueError("Invalid aggregation method for loci.")
+
+            # Aggregate the results for Hs and Ht
+            global_hs = agg.aggregate_dist(loc_agg, hs_vals)
+            global_ht = agg.aggregate_dist(loc_agg, ht_vals)
+
+            # Calculate global D
+            if dist == "JOST":
+                if global_ht == 0:
+                    global_d = 0.0
+                else:
+                    global_d = (global_ht - global_hs) / (1 - global_hs) * \
+                        (gn / (gn - 1))
+            else:
+                if loc_agg in ("HARM", "ADJHARM"):
+                    global_d = agg.aggregate_dist(loc_agg, d_vals)
+                else:
+                    global_d = agg.aggregate_dist("HARM", d_vals)
+            genmat[ia, ib] = genmat[ib, ia] = global_d
+
+        # elif dist == "GST" or dist == "GSTPRIME":
+        #     HT = list()
+        #     HS = list()
+        #     for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+        #         seqs1 = get_alleles(
+        #             [seqs[x][loc] for x in popmap.values()[ia]]
+        #         )
+        #         seqs2 = get_alleles(
+        #             [seqs[x][loc] for x in popmap.values()[ib]]
+        #         )
+        #         if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
+        #                 not clean_list(set(seqs2), ["n", "N", "-", "?"])):
+        #             continue
+        #         if dist == "GST" or "GSTPRIME":
+        #             (ht, hs) = two_pop_ht_hs(seqs1, seqs2, ploidy,global_het)
+        #             HT.append(ht)
+        #             HS.append(hs)
+        #     Ht_global = np.mean(HT)
+        #     Hs_global = np.mean(HS)
+        #     if dist == "GST":
+        #         if Ht_global <= 0.0:
+        #             genmat[ia, ib] = genmat[ib, ia] = 0.0
+        #         Gst = ((Ht_global - Hs_global) / Ht_global)
+        #         GprimeST = ((Gst * (1.0 + Hs_global)) / (1.0 - Hs_global))
+        #         genmat[ia, ib] = genmat[ib, ia] = GprimeST
+        #     elif dist == "GSTPRIME":
+        #         Ghedrick = ((2.0*(Ht_global - Hs_global)) /
+        #                     (((2.0*Ht_global) - Hs_global) *
+        #                      (1.0 - Hs_global)))
+        #         genmat[ia, ib] = genmat[ib, ia] = Ghedrick
+        elif dist == "FST" or dist == "LINFST":
+            num = list()  # numerator; a
+            denom = list()  # denominator; a*b*c
+            for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+                seqs1 = clean_inds([seqs[x][loc] for x in popmap.values()[ia]])
+                seqs2 = clean_inds([seqs[x][loc] for x in popmap.values()[ib]])
+                if (not all("/" in x for x in seqs1) or
+                        not all("/" in x for x in seqs2)):
                     print("ERROR: FST estimates require phased data.")
                     sys.exit(1)
                 if len(seqs1) == 0 or len(seqs2) == 0:
-                    #print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
                     continue
                 (n, d) = two_pop_weir_cockerham_fst(seqs1, seqs2)
                 num.append(n)
                 denom.append(d)
 
-            #if either population lacking data, set value to nan
+            # if either population lacking data, set value to nan
             if len(num) <= 0 or len(denom) <= 0:
-                #print("ERROR (two_pop_weir_cockerham_fst): No data for pops "+ia+" and "+ib+".")
                 np.nan
-            #if denominator is 0, set Fst to 0
+            # if denominator is 0, set Fst to 0
             elif np.sum(denom) == 0.0:
                 theta = 0.0
-            #otherwise, calculate as normal
+            # otherwise, calculate as normal
             else:
                 theta = np.sum(num) / np.sum(denom)
 
             if dist == "FST":
-                genmat[ia,ib] = genmat[ib,ia] = theta
+                genmat[ia, ib] = genmat[ib, ia] = theta
             elif dist == "LINFST":
                 if theta != 1.0:
-                    genmat[ia,ib] = genmat[ib,ia] = (theta / (1-theta))
+                    genmat[ia, ib] = genmat[ib, ia] = (theta / (1-theta))
                 else:
-                    genmat[ia,ib] = genmat[ib,ia] = theta
+                    genmat[ia, ib] = genmat[ib, ia] = theta
         elif dist == "NEI83":
             results = list()
             loci = 0.0
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = get_alleles([seqs[x][loc] for x in popmap.values()[ib]])
-                if not clean_list(set(seqs1), ["n", "N", "-", "?"]) or not clean_list(set(seqs2), ["n", "N", "-", "?"]):
-                    #print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
+                seqs1 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ia]]
+                )
+                seqs2 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ib]]
+                )
+                if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
+                        not clean_list(set(seqs2), ["n", "N", "-", "?"])):
                     continue
                 loci += 1.0
                 results.append(two_pop_nei_da(seqs1, seqs2))
             Da = (1.0 - (np.sum(results) / loci))
-            genmat[ia,ib] = genmat[ib,ia] = Da
-        elif dist == "EUCLID":
-            results = list()
-            for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = get_alleles([seqs[x][loc] for x in popmap.values()[ib]])
-                if not clean_list(set(seqs1), ["n", "N", "-", "?"]) or not clean_list(set(seqs2), ["n", "N", "-", "?"]):
-                    #print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
-                    continue
-                results.append(two_pop_euclid_dist(seqs1, seqs2))
-            euclid = np.sum(results)
-            genmat[ia,ib] = genmat[ib,ia] = euclid
+            genmat[ia, ib] = genmat[ib, ia] = Da
         elif dist == "CHORD":
-            num = list()
-            denom = list()
+            sum_squares = 0.0
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles([seqs[x][loc] for x in popmap.values()[ia]])
-                seqs2 = get_alleles([seqs[x][loc] for x in popmap.values()[ib]])
-                if not clean_list(set(seqs1), ["n", "N", "-", "?"]) or not clean_list(set(seqs2), ["n", "N", "-", "?"]):
-                    #print("WARNING: Skipping locus "+str(loc)+" in comparison of populations "+str(ia)+" and "+str(ib)+": Not enough data.")
+                seqs1 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ia]])
+                seqs2 = get_alleles(
+                    [seqs[x][loc] for x in popmap.values()[ib]])
+
+                if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
+                        not clean_list(set(seqs2), ["n", "N", "-", "?"])):
                     continue
-                (n, d) = two_pop_chord_dist(seqs1, seqs2)
-                num.append(n)
-                denom.append(d)
-            Dch = np.sqrt((np.sum(num))/(np.sum(denom)))
-            genmat[ia,ib] = genmat[ib,ia] = Dch
+
+                sq_diff, _ = two_pop_chord_dist(seqs1, seqs2)
+                sum_squares += sq_diff
+            Dch = np.sqrt(sum_squares)
+            genmat[ia, ib] = genmat[ib, ia] = Dch
+        else:
+            raise ValueError(f"Unsupported distance option {dist}")
     np.fill_diagonal(genmat, 0.0)
     if 0.0 in genmat:
         print("WARNING: Coercing negative distances to 0.0")
-        genmat[genmat<0.0] = 0.0
-    return(genmat)
+        genmat[genmat < 0.0] = 0.0
+    return genmat
 
-#function computes pairwise JC69-corrected genetic distances
+
+# function computes pairwise JC69-corrected genetic distances
 def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
-    #make matrix
-    genmat = np.zeros((len(points),len(points)))
-    #establish as nan
+    # make matrix
+    genmat = np.zeros((len(points), len(points)))
+    # establish as nan
     genmat[:] = np.nan
 
-    #for models which relax equal nuc frequencies, get global frequencies for each locus
-    #freqs will be a list of loci, with each locus as a dist of freqs
-    if dist in ["TN84", "TN93"]:
-        freqs = seq.get_nuc_freqs(seqs, ploidy)
-        # index = 1
-        # for f in freqs:
-        #     print("Empirical base frequencies for locus",index, end=": [ ")
-        #     for n in f:
-        #         print(f'{n}={f[n]:.3f} ', end="")
-        #     print("]")
-        #     index = index + 1
+    # NOT USED CURRENTLY
+    # for models which relax equal nuc frequencies, get global frequencies 
+    # for each locus
+    # freqs will be a list of loci, with each locus as a dist of freqs
+    # if dist in ["TN84", "TN93"]:
+    #     freqs = seq.get_nuc_freqs(seqs, ploidy)
+    #     index = 1
+    #     for f in freqs:
+    #         print("Empirical base frequencies for locus",index, end=": [ ")
+    #         for n in f:
+    #             print(f'{n}={f[n]:.3f} ', end="")
+    #         print("]")
+    #         index = index + 1
 
-    #for each combination, calc jukes-cantor corrected distance
-    for ia, ib in itertools.combinations(range(0,len(points)),2):
-        results=list()
+    # for each combination, calc jukes-cantor corrected distance
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        results = list()
         for loc in range(0, len(seqs[points.keys()[ia]])):
             seq1 = seqs[points.keys()[ia]][loc]
             seq2 = seqs[points.keys()[ib]][loc]
@@ -173,32 +198,29 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
                 seq2 = seq.dna_consensus(seq2)
             if dist == "JC69":
                 results.append(jukes_cantor_distance(seq1, seq2, het))
-            elif dist == "K2P":
-                results.append(k2p_distance(seq1, seq2, het))
             elif dist == "PDIST":
                 if het:
                     results.append(p_distance(seq1, seq2))
                 else:
                     results.append(hamming_distance(seq1, seq2))
-            elif dist == "TN84":
-                results.append(tn84_distance(seq1, seq2, freqs[loc], het))
-            elif dist == "TN93":
-                results.append(tn93_distance(seq1, seq2, freqs[loc], het))
-        #aggregate results across loci
-        genmat[ia,ib] = agg.aggregate_dist(loc_agg, results)
-        genmat[ib,ia] = genmat[ia,ib]
-    #fill diagonals
+        # aggregate results across loci
+        genmat[ia, ib] = agg.aggregate_dist(loc_agg, results)
+        genmat[ib, ia] = genmat[ia, ib]
+    # fill diagonals
     np.fill_diagonal(genmat, 0.0)
-    return(genmat)
+    return genmat
+
 
 def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
     """
-    Description: This function calculates the JC69-corrected p-distance between two DNA sequences.
+    Description: This function calculates the JC69-corrected p-distance
+                 between two DNA sequences.
 
     Args:
     - seq1 (str): The first DNA sequence.
     - seq2 (str): The second DNA sequence.
-    - het (bool): Whether to use the Jukes-Cantor correction for heterozygous sites (True) or for all sites (False). Default is False.
+    - het (bool): Whether to use the Jukes-Cantor correction for heterozygous
+                  sites (True) or for all sites (False). Default is False.
 
     Returns:
     - dist (float): The JC69-corrected p-distance between the two sequences.
@@ -220,122 +242,135 @@ def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
         return 0.0
     return dist
 
-#function to return Kimura 2-parameter distances
-def k2p_distance(seq1, seq2, het=False):
-    """
-    Computes the Kimura 2-parameter distance between two DNA sequences.
 
-    Args:
-    - seq1 (str): The first DNA sequence to compare.
-    - seq2 (str): The second DNA sequence to compare.
-    - het (bool): Whether to use the p-distance or Jukes-Cantor distance.
-                  Defaults to False (Jukes-Cantor distance).
+# NOT IN USE
+# # function to return Kimura 2-parameter distances
+# def k2p_distance(seq1, seq2, het=False):
+#     """
+#     Computes the Kimura 2-parameter distance between two DNA sequences.
 
-    Returns:
-    - dist (float): The Kimura 2-parameter distance between the two sequences.
-    """
-    P=0.0
-    Q=0.0
-    if het:
-        (P,Q)=p_distance(seq1, seq2, trans=True)
-    else:
-        (P,Q)=hamming_distance(seq1, seq2, trans=True)
+#     Args:
+#     - seq1 (str): The first DNA sequence to compare.
+#     - seq2 (str): The second DNA sequence to compare.
+#     - het (bool): Whether to use the p-distance or Jukes-Cantor distance.
+#                   Defaults to False (Jukes-Cantor distance).
 
-    dist=-0.5*(np.log((1.0-(2.0*P)-Q) * math.sqrt(1.0-(2.0*Q))))
-    #print(dist)
-    if dist <= 0.0:
-        return(0.0)
-    return(dist)
+#     Returns:
+#     - dist (float): The Kimura 2-parameter distance between the two sequences
+#     """
+#     P = 0.0
+#     Q = 0.0
+#     if het:
+#         (P, Q) = p_distance(seq1, seq2, trans=True)
+#     else:
+#         (P,Q)=hamming_distance(seq1, seq2, trans=True)
 
-def tn84_distance(seq1: str, seq2: str, freqs: Dict[str, float], het: bool = False) -> float:
-    """
-    Compute the TN84 distance between two DNA sequences.
-
-    Args:
-    seq1: str
-        A DNA sequence.
-    seq2: str
-        Another DNA sequence.
-    freqs: Dict[str, float]
-        A dictionary containing the frequency of each nucleotide.
-        For example, {'A': 0.3, 'C': 0.2, 'G': 0.2, 'T': 0.3}.
-    het: bool, optional (default=False)
-        Indicates whether heterozygosity is used.
-
-    Returns:
-    dist: float
-        TN84 distance between seq1 and seq2.
-
-    """
-    D=0.0
-    if het:
-        D=p_distance(seq1, seq2, trans=False)
-    else:
-        D=hamming_distance(seq1, seq2, trans=False)
-
-    ss=0.0
-    for n in freqs:
-        ss = ss + np.square(freqs[n])
-    b=float(1.0-ss)
-    dist=-b*np.log(1.0-((1.0/b)*D))
-    #print(dist)
-    if dist <= 0.0:
-        return(0.0)
-    return(dist)
-
-def tn93_distance(seq1: str, seq2: str, freqs: Dict[str, float], het: bool = False) -> float:
-    """
-    Compute TN93 distances between two sequences.
-
-    Args:
-        seq1: A DNA sequence.
-        seq2: A DNA sequence.
-        freqs: A dictionary of nucleotide frequencies, where the keys are nucleotides (A, T, C, G)
-            and the values are the frequency of the corresponding nucleotide in the alignment.
-        het: Whether the nucleotide differences are considered heterozygous. Default is False.
-
-    Returns:
-        The TN93 distance between the two input sequences.
-
-    """
-
-    P1 = 0.0
-    P2 = 0.0
-    Q = 0.0
-    if het:
-        P1, P2, Q = p_distance(seq1, seq2, trans=False, transSplit=True)
-    else:
-        P1, P2, Q = hamming_distance(seq1, seq2, trans=False, transSplit=True)
-
-    # Calculate nucleotide frequencies
-    gR = freqs['g'] + freqs['a']
-    gY = freqs['c'] + freqs['t']
-
-    # Calculate k values
-    k1 = (2.0 * (freqs['a'] * freqs['g'])) / gR
-    k2 = (2.0 * (freqs['t'] * freqs['c'])) / gY
-    k3 = 2.0 * ((gR * gY) - ((freqs['a'] * freqs['g'] * gY) / gR) - ((freqs['t'] * freqs['c'] * gR) / gY))
-
-    # Calculate weight values
-    w1 = 1.0 - (P1 / k1) - (Q / (2.0 * gR))
-    w2 = 1.0 - (P2 / k3) - (Q / (2.0 * gY))
-    w3 = 1.0 - (Q / (2.0 * gR * gY))
-
-    # Calculate the distance
-    dist = -(k1 * np.log(w1)) - (k2 * np.log(w2)) - (k2 * np.log(w3))
-
-    # Check for negative or NaN distances
-    if dist <= 0.0 or np.isnan(dist):
-        return 0.0
-
-    return dist
+#     dist=-0.5*(np.log((1.0-(2.0*P)-Q) * math.sqrt(1.0-(2.0*Q))))
+#     #print(dist)
+#     if dist <= 0.0:
+#         return(0.0)
+#     return(dist)
 
 
+# NOT IN USE
+# def tn84_distance(seq1: str, seq2: str, freqs: Dict[str, float], het:
+#                   bool = False) -> float:
+#     """
+#     Compute the TN84 distance between two DNA sequences.
 
-#p distance = D / L (differences / length)
-#L is the UNGAPPED distance #TODO: Maybe make this optional later
-#ambigs are expanded
-#when trans = true, returns two values: P (transitions/L) and Q (transversions/L)
+#     Args:
+#     seq1: str
+#         A DNA sequence.
+#     seq2: str
+#         Another DNA sequence.
+#     freqs: Dict[str, float]
+#         A dictionary containing the frequency of each nucleotide.
+#         For example, {'A': 0.3, 'C': 0.2, 'G': 0.2, 'T': 0.3}.
+#     het: bool, optional (default=False)
+#         Indicates whether heterozygosity is used.
+
+#     Returns:
+#     dist: float
+#         TN84 distance between seq1 and seq2.
+
+#     """
+#     D=0.0
+#     if het:
+#         D=p_distance(seq1, seq2, trans=False)
+#     else:
+#         D=hamming_distance(seq1, seq2, trans=False)
+
+#     ss=0.0
+#     for n in freqs:
+#         ss = ss + np.square(freqs[n])
+#     b=float(1.0-ss)
+#     dist=-b*np.log(1.0-((1.0/b)*D))
+#     #print(dist)
+#     if dist <= 0.0:
+#         return(0.0)
+#     return(dist)
+
+
+# NOT IN USE
+# def tn93_distance(seq1: str, seq2: str, freqs: Dict[str, float],
+#                   het: bool = False) -> float:
+#     """
+#     Compute TN93 distances between two sequences.
+
+#     Args:
+#         seq1: A DNA sequence.
+#         seq2: A DNA sequence.
+#         freqs: A dictionary of nucleotide frequencies, where the keys are
+#                nucleotides (A, T, C, G)
+#                and the values are the frequency of the corresponding nucleoti
+#                in the alignment.
+#         het: Whether the nucleotide differences are considered heterozygous.
+#              Default is False.
+
+#     Returns:
+#         The TN93 distance between the two input sequences.
+
+#     """
+
+#     P1 = 0.0
+#     P2 = 0.0
+#     Q = 0.0
+#     if het:
+#         P1, P2, Q = p_distance(seq1, seq2, trans=False, transSplit=True)
+#     else:
+#         P1, P2, Q = hamming_distance(seq1, seq2, trans=False,transSplit=True)
+
+#     # Calculate nucleotide frequencies
+#     gR = freqs['g'] + freqs['a']
+#     gY = freqs['c'] + freqs['t']
+
+#     # Calculate k values
+#     k1 = (2.0 * (freqs['a'] * freqs['g'])) / gR
+#     k2 = (2.0 * (freqs['t'] * freqs['c'])) / gY
+#     k3 = 2.0 * ((gR * gY) - ((freqs['a'] * freqs['g'] * gY) / gR) -
+#                 ((freqs['t'] * freqs['c'] * gR) / gY))
+
+#     # Calculate weight values
+#     w1 = 1.0 - (P1 / k1) - (Q / (2.0 * gR))
+#     w2 = 1.0 - (P2 / k3) - (Q / (2.0 * gY))
+#     w3 = 1.0 - (Q / (2.0 * gR * gY))
+
+#     # Calculate the distance
+#     dist = -(k1 * np.log(w1)) - (k2 * np.log(w2)) - (k2 * np.log(w3))
+
+#     # Check for negative or NaN distances
+#     if dist <= 0.0 or np.isnan(dist):
+#         return 0.0
+
+#     return dist
+
+
+
+# p distance = D / L (differences / length)
+# L is the UNGAPPED distance
+# ambigs are expanded
+# when trans = true, returns two values:
+# P (transitions/L) and Q (transversions/L)
 def p_distance(seq1, seq2, trans=False, transSplit=False):
     L = min(len(seq1), len(seq2))
     D=0.0
@@ -505,52 +540,55 @@ def two_pop_nei_da(s1: List[str], s2: List[str]) -> float:
     return sumSqRt
 
 
-def two_pop_euclid_dist(s1: List[str], s2: List[str]) -> float:
-    """
-    Computes Euclidean distance between two populations for a single locus.
+# NOT IN USE
+# def two_pop_euclid_dist(s1: List[str], s2: List[str]) -> float:
+#     """
+#     Computes Euclidean distance between two populations for a single locus.
 
-    Args:
-    - s1 (List[str]): List of allele calls for population 1 at a given locus
-    - s2 (List[str]): List of allele calls for population 2 at a given locus
+#     Args:
+#     - s1 (List[str]): List of allele calls for population 1 at a given locus
+#     - s2 (List[str]): List of allele calls for population 2 at a given locus
 
-    Returns:
-    - Euclidean distance between the two populations for the given locus
+#     Returns:
+#     - Euclidean distance between the two populations for the given locus
 
-    """
-    # Get unique alleles in the two populations
-    uniques = seq.uniq_alleles(s1+s2)
+#     """
+#     # Get unique alleles in the two populations
+#     uniques = seq.uniq_alleles(s1+s2)
     
-    # Clean the sequences by removing any unknown or gap alleles
-    s1 = clean_list(s1, ["n", "?", "-", "N"])
-    s2 = clean_list(s2, ["n", "?", "-", "N"])
+#     # Clean the sequences by removing any unknown or gap alleles
+#     s1 = clean_list(s1, ["n", "?", "-", "N"])
+#     s2 = clean_list(s2, ["n", "?", "-", "N"])
     
-    # Calculate Euclidean distance
-    sumSq = 0.0
-    for allele in uniques:
-        if allele in ["-", "?", "n", "N"]:
-            continue
-        else:
-            Xu = float(s1.count(allele) / len(s1))
-            Yu = float(s2.count(allele) / len(s2))
-            sumSq += np.square(Xu - Yu)
-    return sumSq
+#     # Calculate Euclidean distance
+#     sumSq = 0.0
+#     for allele in uniques:
+#         if allele in ["-", "?", "n", "N"]:
+#             continue
+#         else:
+#             Xu = float(s1.count(allele) / len(s1))
+#             Yu = float(s2.count(allele) / len(s2))
+#             sumSq += np.square(Xu - Yu)
+#     return sumSq
 
 
-#Cavalli-Sforza and Edwards 1967 chord distance
-#non-nucleotide alleles are deleted
+# Cavalli-Sforza and Edwards 1967 chord distance
+# non-nucleotide alleles are deleted
 def two_pop_chord_dist(s1, s2):
     s1 = clean_list(s1, ["n", "?", "-", "N"])
     s2 = clean_list(s2, ["n", "?", "-", "N"])
-    uniques = uniq_alleles(s1+s2)
-    sumSqRt = 0.0
+    uniques = uniq_alleles(s1 + s2)
+
+    sum_squares = 0.0
     for allele in uniques:
         if allele in ["-", "?", "n", "N"]:
             continue
-        else:
-            Xu = float(s1.count(allele) / len(s1))
-            Yu = float(s2.count(allele) / len(s2))
-            sumSqRt += np.sqrt(np.square(Xu)*np.square(Yu))
-    return((1.0-sumSqRt), (len(uniques)-1.0))
+        Xu = float(s1.count(allele) / len(s1))
+        Yu = float(s2.count(allele) / len(s2))
+        sum_squares += np.square(Xu - Yu)
+
+    return sum_squares, len(uniques)
+
 
 def two_pop_weir_cockerham_fst(s1, s2):
     """
@@ -584,9 +622,9 @@ def two_pop_weir_cockerham_fst(s1, s2):
     denom = 0.0
 
     #mean sample size
-    alleles1 = get_alleles(s1) #split alleles s1
-    alleles2 = get_alleles(s2) #split alleles s2
-    uniques = uniq_alleles(s1+s2) #list of unique alleles only
+    alleles1 = get_alleles(s1)  # split alleles s1
+    alleles2 = get_alleles(s2)  # split alleles s2
+    uniques = uniq_alleles(s1+s2)  # list of unique alleles only
     r = 2.0 #number of pops
     n1 = float(len(s1)) #pop size of pop 1
     n2 = float(len(s2)) #pop size of pop 2
@@ -641,37 +679,15 @@ def clean_inds(inds):
     return ret
 
 
-def two_pop_jost_d(seqs1, seqs2, ploidy, global_het=False):
-    """
-    Computes Jost's D using Nei and Chesser's Hs and Ht estimators.
-
-    Args:
-    - seqs1: list of sequences for population 1
-    - seqs2: list of sequences for population 2
-    - ploidy: the ploidy of the sequences
-    - global_het (optional): whether to compute global heterozygosity instead of population-specific heterozygosity
-    Returns:
-    - The Jost's D estimate for the two populations.
-    """
-    # Compute Hs and Ht estimates
+def two_pop_jost_d(seqs1, seqs2, global_het=False):
     if global_het:
         Ht = get_global_het(seqs1 + seqs2)
     else:
         Ht = get_average_het(seqs1, seqs2)
     Hs = np.mean([get_global_het(seqs1), get_global_het(seqs2)])
-    harmN = scipy.stats.hmean([(len(seqs1) / ploidy), (len(seqs1) / ploidy)])
-    Hs_est = Hs * ((2.0 * harmN) / ((2.0 * harmN) - 1.0))
-    Ht_est = Ht + (Hs / harmN * 2.0 * 2.0)
-    
-    # Compute Jost's D
-    if Ht_est == 0.0:
-        return(0.0)
-    D = (Ht_est - Hs_est) * 2.0 #b/c in pw estimate, N/N-1 is always 2
-    if D == 2:
-        return(1.0)
-    elif D <= 0.0:
-        return(0.0)
-    return(D)
+    n = len(seqs1 + seqs2)
+    D = (Ht - Hs) / (1 - Hs) * (n / (n - 1))
+    return Hs, Ht, D
 
 
 def two_pop_ht_hs(seqs1, seqs2, ploidy, global_het=False):
