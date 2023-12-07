@@ -241,9 +241,9 @@ def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
     obs = 0.0
     # calculate the observed distance
     if het:
-        obs = p_distance(seq1, seq2, trans=False)
+        obs = p_distance(seq1, seq2)
     else:
-        obs = hamming_distance(seq1, seq2, trans=False)
+        obs = hamming_distance(seq1, seq2)
 
     # apply the JC69 correction
     if obs >= 0.75:
@@ -383,143 +383,72 @@ def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
 # ambigs are expanded
 # when trans = true, returns two values:
 # P (transitions/L) and Q (transversions/L)
-def p_distance(seq1, seq2, trans=False, transSplit=False):
+def p_distance(seq1, seq2):
+    """
+    Calculate p-distance, accounting for IUPAC ambiguity codes and partial
+    matches.
+
+    Args:
+        seq1 (str): First sequence.
+        seq2 (str): Second sequence.
+
+    Returns:
+        float: p-distance.
+    """
     L = min(len(seq1), len(seq2))
     D = 0.0
-    P = 0.0
-    Q = 0.0
-    P1 = 0.0
-    P2 = 0.0
-    for n1, n2 in zip(seq1.lower(), seq2.lower()):
-        if n1 in ["?", "-", "n"] or n2 in ["?", "-", "n"] :
-            L = L-1
-            continue
-        elif n1 == n2:
-            continue
-        else:  # if n1 and n2 not equal and not gaps
-            if n1 in ["a", "c", "g", "t"] and n2 in ["a", "c", "g", "t"]:
-                if trans or transSplit:
-                    if n1 in ["a","g"] and n2 in ["a", "g"]:
-                        P = P+1
-                        P1 = P1+1
-                    elif n1 in ["c","t"] and n2 in ["c","t"]:
-                        P = P + 1
-                        P2 = P2 + 1
-                    else:
-                        Q = Q + 1
-                else:
-                    D = D + 1.0
-                continue
-            else:
-                ex1 = seq.get_iupac_caseless(n1)
-                ex2 = seq.get_iupac_caseless(n2)
-                val=1.0
-                if len(ex1) > 1 and len(ex2) > 1:
-                    val=0.25
-                elif len(ex1) == 1 and len(ex2)== 1:
-                    val=1.0
-                else:
-                    val=0.50
-                for nuc1, nuc2 in zip(ex1, ex2):
-                    if nuc2 == nuc1:
-                        continue
-                    else:
-                        if trans or transSplit:
-                            if n1 in ["a","g"] and n2 in ["a", "g"]:
-                                P = P+val
-                                P1 = P1+val
-                            elif n1 in ["c","t"] and n2 in ["c","t"]:
-                                P = P+val
-                                P2 = P2+val
-                            else:
-                                Q=Q+val
-                        else:
-                            D=D+val
-    if trans:
-        transitions=0.0
-        transversions=0.0
-        if P > 0.0:
-            transitions = float(P/L)
-        if Q > 0.0:
-            transversions = float(Q/L)
-        return(transitions,transversions)
-    elif transSplit:
-        transition1=0.0
-        transition2=0.0
-        transversions=0.0
-        if P1 > 0.0:
-            transition1 = float(P1/L)
-        if P2 > 0.0:
-            transition2 = float(P2/L)
-        if Q > 0.0:
-            transversions = float(Q/L)
-        return(transition1, transition2, transversions)
-    else:
-        if D <= 0.0:
-            return(0.0)
-        else:
-            return(float(D/L))
 
-#p distance = D / L (differences / length)
-#gaps ignored
-#ambigs are treated as alleles
-def hamming_distance(seq1, seq2, trans=False, transSplit=False):
-    L = min(len(seq1), len(seq2))
-    D=0.0
-    P=0.0
-    Q=0.0
-    P1=0.0
-    P2=0.0
     for n1, n2 in zip(seq1.lower(), seq2.lower()):
         if n1 in ["?", "-", "n"] or n2 in ["?", "-", "n"]:
-            L = L-1
-            continue
-        elif n1 == n2:
+            L -= 1
             continue
         else:
-            if n1 != n2:
-                if trans or transSplit:
-                    ex1 = seq.get_iupac_caseless(n1)
-                    ex2 = seq.get_iupac_caseless(n2)
-                    for nuc1, nuc2 in zip(ex1, ex2):
-                        if nuc2 == nuc1:
-                            continue
-                        else:
-                            if n1 in ["a","g"] and n2 in ["a", "g"]:
-                                P = P+1.0
-                                P1 = P1 + 1.0
-                            elif n1 in ["c","t"] and n2 in ["c","t"]:
-                                P=P+1.0
-                                P2 = P2 + 1.0
-                            else:
-                                Q=Q+1.0
-                else:
-                    D = D + 1.0
+            ex1 = set(seq.get_iupac_caseless(n1))
+            ex2 = set(seq.get_iupac_caseless(n2))
+
+            if ex1 == ex2:
+                # Exact match, including ambiguity codes
                 continue
-    if trans:
-        transitions=0.0
-        transversions=0.0
-        if P > 0.0:
-            transitions = float(P/L)
-        if Q > 0.0:
-            transversions = float(Q/L)
-        return(transitions,transversions)
-    elif transSplit:
-        transition1=0.0
-        transition2=0.0
-        transversions=0.0
-        if P1 > 0.0:
-            transition1 = float(P1/L)
-        if P2 > 0.0:
-            transition2 = float(P2/L)
-        if Q > 0.0:
-            transversions = float(Q/L)
-        return(transition1, transition2, transversions)
-    else:
-        if D <= 0.0:
-            return(0.0)
-        else:
-            return(float(D/L))
+            elif ex1.isdisjoint(ex2):
+                # Disjoint sets, no common alleles
+                D += 1.0
+            else:
+                # Partial match (overlap but not exact match)
+                D += 0.5
+
+    if L <= 0:
+        return 0.0
+    return D / L
+
+
+# p distance = D / L (differences / length)
+# gaps ignored
+# ambigs are treated as alleles
+def hamming_distance(seq1, seq2):
+    """
+    Calculate the Hamming distance between two sequences.
+
+    Args:
+        seq1 (str): First sequence.
+        seq2 (str): Second sequence.
+
+    Returns:
+        float: Hamming distance.
+    """
+    # Ensure sequences are of equal length
+    L = min(len(seq1), len(seq2))
+    D = 0.0
+
+    for n1, n2 in zip(seq1.lower(), seq2.lower()):
+        if n1 in ["?", "-", "n"] or n2 in ["?", "-", "n"]:
+            L -= 1  # Ignore positions with gaps or ambiguous nucleotides
+        elif n1 != n2:
+            D += 1.0  # Count mismatches
+
+    if L <= 0:
+        return 0.0  # Avoid division by zero; could also return np.nan or raise an error
+    return D / L
+
 
 def two_pop_nei_da(s1: List[str], s2: List[str]) -> float:
     """
