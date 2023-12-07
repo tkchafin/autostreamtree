@@ -1,23 +1,27 @@
-import os
-import sys
-
-from typing import List, Tuple, Dict, Any, Union, Optional
+from typing import List
 
 
-def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False, as_tuple: bool = False, as_list: bool = False) -> str:
+def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False,
+           as_tuple: bool = False, as_list: bool = False) -> str:
     """
-    Decode a genotype from a VCF file and return the corresponding DNA sequence.
+    Decode a genotype from a VCF file and return the corresponding DNA sequence
 
     Args:
-        gt (tuple): The genotype as a tuple of integers representing the indices of the reference and alternate alleles.
+        gt (tuple): The genotype as a tuple of integers representing the
+                    indices of the reference and alternate alleles.
         ref (str): The reference allele.
         alts (list): A list of alternate alleles.
-        as_iupac (bool): Whether to return the consensus IUPAC symbol if the genotype is heterozygous. Default is False.
-        as_tuple (bool): Whether to return the result as a tuple of two strings. Default is False.
-        as_list (bool): Whether to return the result as a list of two strings. Default is False.
+        as_iupac (bool): Whether to return the consensus IUPAC symbol if the
+                         genotype is heterozygous. Default is False.
+        as_tuple (bool): Whether to return the result as a tuple of two strings
+                         Default is False.
+        as_list (bool): Whether to return the result as a list of two strings.
+                        Default is False.
 
     Returns:
-        ret (str): The decoded genotype as a string. By default, this is a string in the format "ref/alt", but the format can be customized using the optional arguments.
+        ret (str): The decoded genotype as a string. By default, this is a
+                   string in the format "ref/alt", but the format can be
+                   customized using the optional arguments.
     """
     # initialize return value
     ret = [None, None]
@@ -52,38 +56,61 @@ def get_nuc_freqs(seqs: dict, ploidy: int) -> list:
     Compute the nucleotide frequencies of a set of DNA sequences.
 
     Args:
-        seqs (dict): A dictionary of DNA sequences. The keys are sample names and the values are strings of nucleotides.
-        ploidy (int): The ploidy of the sequences. If ploidy=1, ambiguities will be skipped. If ploidy=2, ambiguities will be resolved.
+        seqs (dict): A dictionary of DNA sequences. The keys are sample names
+                     and the values are strings of nucleotides.
+        ploidy (int): The ploidy of the sequences. If ploidy=1, ambiguities
+                      will be skipped. If ploidy=2, ambiguities will be
+                      resolved.
 
     Returns:
-        freqs (list): A list of dictionaries, where each dictionary contains the nucleotide frequencies for a single position in the sequences.
+        freqs (list): A list of dictionaries, where each dictionary contains
+                      the nucleotide frequencies for a single position in the
+                      sequences.
+
+    Raises:
+        ValueError: If any sequence is empty or contains only invalid
+                    characters, or if sequences are not all the same length.
     """
+    if not all(seqs):
+        raise ValueError("One or more sequences are empty.")
+
+    sequence_length = len(seqs[list(seqs.keys())[0]])
+    if not all(len(seq) == sequence_length for seq in seqs.values()):
+        raise ValueError("Sequences are not all the same length.")
+
     freqs = []
-    for loc in range(len(seqs[list(seqs.keys())[0]])):
-        temp = dict()
+    for loc in range(sequence_length):
         allnucs = ""
         for samp in seqs.keys():
             allnucs += dna_consensus(seqs[samp][loc]).lower()
+
         badchars = ["?", "-", "n"]
         if ploidy == 1:
             badchars += ["r", "y", "s", "w", "k", "m", "b", "d", "h", "v"]
-        for char in badchars:
-            allnucs = allnucs.replace(char, "")
+        allnucs = ''.join([nuc for nuc in allnucs if nuc not in badchars])
+
         if ploidy == 2:
             iupacs = ["r", "y", "s", "w", "k", "m", "b", "d", "h", "v"]
             for ambig in iupacs:
-                allnucs = allnucs.replace(ambig, "".join(get_iupac_caseless(ambig)))
+                allnucs = allnucs.replace(
+                    ambig, "".join(get_iupac_caseless(ambig))
+                )
             for nuc in ["a", "c", "t", "g"]:
                 allnucs = allnucs.replace(nuc, nuc + nuc)
+
         total = len(allnucs)
         counts = {"a": 0, "g": 0, "c": 0, "t": 0}
         for c in allnucs:
             if c in counts:
                 counts[c] += 1
-        for nuc in counts.keys():
-            counts[nuc] = float(counts[nuc] / total)
-        freqs.append(counts)
+        if total <= 0:
+            freqs.append({"a": 0, "g": 0, "c": 0, "t": 0})
+        else:
+            for nuc in counts.keys():
+                counts[nuc] = float(counts[nuc] / total)
+            freqs.append(counts)
     return freqs
+
 
 def dna_consensus(seq: str) -> str:
     """
@@ -93,14 +120,21 @@ def dna_consensus(seq: str) -> str:
         seq (str): A string of DNA sequences separated by a "/" character.
 
     Returns:
-        consens (str): A consensus DNA sequence derived from the input sequences.
+        consens (str): A consensus DNA sequence derived from the input
+                       sequences.
     """
+    if not seq:
+        return None
+    if len(seq) <= 0:
+        return None
     alleles = seq.split("/")
     consens = ""
     if len(alleles) < 1:
         return None
     elif not all(len(x) == len(alleles[0]) for x in alleles):
-        raise ValueError("Not all alleles are the same length: " + str(alleles))
+        raise ValueError(
+            "Not all alleles are the same length: " + str(alleles)
+        )
     elif len(alleles) == 1:
         return alleles[0]
     else:
@@ -111,6 +145,7 @@ def dna_consensus(seq: str) -> str:
             temp = list_to_sort_unique_string(nucs.upper())
             consens += reverse_iupac_case(temp)
     return consens
+
 
 def reverse_iupac_case(char: str) -> str:
     """
@@ -159,7 +194,8 @@ def reverse_iupac_case(char: str) -> str:
     }
     return iupac[char]
 
-def list_to_sort_unique_string(l: list) -> str:
+
+def list_to_sort_unique_string(input: list) -> str:
     """
     Convert a list of characters to a sorted, unique string.
 
@@ -167,9 +203,10 @@ def list_to_sort_unique_string(l: list) -> str:
         l (list): A list of characters.
 
     Returns:
-        s (str): A string containing the characters from the input list, sorted and with duplicates removed.
+        s (str): A string containing the characters from the input list, sorted
+                 and with duplicates removed.
     """
-    s = ''.join(sorted(set(l)))
+    s = ''.join(sorted(set(input)))
     return s
 
 
@@ -181,7 +218,8 @@ def get_iupac_caseless(char: str) -> List[str]:
         char (str): A character to be split.
 
     Returns:
-        codes (list): A list of IUPAC codes corresponding to the input character.
+        codes (list): A list of IUPAC codes corresponding to the input
+                      character.
     """
     lower = False
     if char.islower():
@@ -214,7 +252,8 @@ def get_iupac_caseless(char: str) -> List[str]:
 
 def phase_snp(snp: str) -> str:
     """
-    Phase a single nucleotide polymorphism (SNP) by splitting its IUPAC code into two alleles.
+    Phase a single nucleotide polymorphism (SNP) by splitting its IUPAC code
+    into two alleles.
 
     Args:
         snp (str): The IUPAC code for the SNP.
@@ -230,4 +269,3 @@ def phase_snp(snp: str) -> str:
         return phase
     else:
         return "/".join(nucs)
-

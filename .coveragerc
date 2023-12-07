@@ -1,0 +1,12 @@
+[run]
+include =
+    autostreamtree/*.py
+    autostreamtree_scripts/*.py
+omit =
+    */tests/*
+    */conda-recipe*/*
+    setup.py
+    */build/*
+
+[report]
+fail_under = 80
