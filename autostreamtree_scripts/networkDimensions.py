@@ -1,16 +1,21 @@
+#!/usr/bin/env python
 import argparse
 import networkx as nx
-import geopy.distance
-from shapely.geometry import Point, MultiPoint
 from pyproj import Proj
 from pyproj import Transformer
 from scipy.spatial import ConvexHull
 import numpy as np
 
 
-def main(network_file):
+def main():
+
+    # read arguments 
+    parser = argparse.ArgumentParser(description='Calculate total lineage length and bounding box area of a network.')
+    parser.add_argument('network_file', type=str, help='Path to the pickled Networkx graph file.')
+    args = parser.parse_args()
+
     # Load the pickled Networkx graph
-    with open(network_file, 'rb') as file:
+    with open(args.network_file, 'rb') as file:
         network = nx.read_gpickle(file)
 
     total_length = calculate_total_length(network)
@@ -69,7 +74,4 @@ def calculate_bounding_box_area(network):
     return width * height / (1000 * 1000)  # Convert from sq. meters to sq. km
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Calculate total lineage length and bounding box area of a network.')
-    parser.add_argument('network_file', type=str, help='Path to the pickled Networkx graph file.')
-    args = parser.parse_args()
-    main(args.network_file)
+    main()

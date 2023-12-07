@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys 
 import os
 
@@ -15,7 +16,23 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 import autostreamtree.functions as ast
 
-def main(params):
+def main():
+
+    # read arguments 
+    parser = argparse.ArgumentParser(description='Plot a stream tree with fittedD attribute as dendrogram')
+    parser.add_argument('--shp', type=str, required=True, help='Network as shapefile')
+    parser.add_argument("--points", type=str, required=True, help="Sample coordinates")
+    parser.add_argument("--pop", type=str, required=False, default=None, help="Population map file (optional)")
+    parser.add_argument('--edge_id', type=str, default='EDGE_ID', help='Edge ID attribute.')
+    parser.add_argument('--dist', type=str, default='fittedD', help='Dist attribute.')
+    parser.add_argument('--out', type=str, default='out', help='Output prefix')
+    args = parser.parse_args()
+    setattr(args, "geopop", False)
+    setattr(args, "clusterpop", False)
+    setattr(args, "run", "STREAMTREE")
+
+    params = args
+
     shp = gpd.read_file(params.shp)
     # Convert the GeoDataFrame to a NetworkX Graph object
     G = momepy.gdf_to_nx(shp, approach="primal", directed=False, multigraph=False)
@@ -87,15 +104,4 @@ def print_edge_attributes(network):
         print(f"Edge ({u}, {v}): {attrs}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Plot a stream tree with fittedD attribute as dendrogram')
-    parser.add_argument('--shp', type=str, required=True, help='Network as shapefile')
-    parser.add_argument("--points", type=str, required=True, help="Sample coordinates")
-    parser.add_argument("--pop", type=str, required=False, default=None, help="Population map file (optional)")
-    parser.add_argument('--edge_id', type=str, default='EDGE_ID', help='Edge ID attribute.')
-    parser.add_argument('--dist', type=str, default='fittedD', help='Dist attribute.')
-    parser.add_argument('--out', type=str, default='out', help='Output prefix')
-    args = parser.parse_args()
-    setattr(args, "geopop", False)
-    setattr(args, "clusterpop", False)
-    setattr(args, "run", "STREAMTREE")
-    main(args)
+    main()

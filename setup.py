@@ -4,13 +4,11 @@ setup(
     name='autostreamtree',
     version='1.0.1',
     packages=find_packages(),
-    scripts=[
-        'scripts/networkDimensions.py',
-        'scripts/streeToDendrogram.py'
-    ],
     entry_points={
         'console_scripts': [
             'autostreamtree=autostreamtree.cli:main',
+            'networkDimensions=autostreamtree_scripts.networkDimensions:main',
+            'streeToDendrogram=autostreamtree_scripts.streeToDendrogram:main',
         ],
     },
     install_requires=[

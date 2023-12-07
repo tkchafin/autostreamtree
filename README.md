@@ -12,8 +12,11 @@ An input geospatial network (as shapefile, geodatabase, or .gpkg) is first used 
     1. [Interface](#ast_cli)
     2. [Inputs](#ast_inputs)
     3. [Genetic distances](#gendist)
-3. [Example analysis](#ast_example)
-4. [Outputs](#ast_outputs)
+    4. [Outputs](#ast_outputs)
+3. [Example](#tutorial)
+4. [Downstream analysis](#downstream)
+    1. [Utility scripts](#utils)
+    2. [Incorporating into workflows](#workflow)
 5. [References](#ast_refs)
 6. [Contributing Guidelines](#contrib)
 
@@ -22,7 +25,7 @@ An input geospatial network (as shapefile, geodatabase, or .gpkg) is first used 
 
 ### Dependencies
 
-autoStreamTree is a Python package which relies upon a number of packages:
+`autoStreamTree` is a Python package which relies upon a number of dependencies:
 
 ```
 - pandas
@@ -40,7 +43,7 @@ autoStreamTree is a Python package which relies upon a number of packages:
 - sortedcontainers
 ```
 
-autoStreamTree also uses methodology described in [Kalinowski et al. 2008](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf), if you use this software you should cite: 
+`autoStreamTree` also uses methodology described in [Kalinowski et al. 2008](https://www.montana.edu/kalinowski/documents/2008_Stream_Trees%20_CJFAS.pdf), if you use this software you should cite: 
 ```
 Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
 ```
@@ -261,10 +264,10 @@ RAD_0   76      loc0_pos75      C       T       13      PASS    .       GT:DP:CA
 Parsing is faster with compressed and indexed files (and will be more space efficient), so I recommend keeping these compressed with bgzip and indexed with tabix:
 ```
 # compress
-bgzip test.vcf 
+bgzip test_sub100.vcf 
 
 # index
-tabix test.vcf.gz
+tabix test_sub100.vcf.gz
 ```
 
 This file should be provided using `-v/--vcf`.
@@ -309,7 +312,7 @@ or using an input file providing population assignments for each individual, aga
 #### Geodatabase 
 The input stream network can be provided as a shapefile, geodatabase, or GPKG file, all passed uing the `-s/--shp` option. There are a number of requirements for this file in order for the result to create a valid network. I highly recommend using the existing global stream datasets provided by the [HydroLab group](https://wp.geog.mcgill.ca/hydrolab/) at McGill University, specifically the [HydroAtlas](https://www.hydrosheds.org/page/hydroatlas) or [free-flowing rivers dataset](https://wp.geog.mcgill.ca/hydrolab/free-flowing-rivers/) as these are already properly formatted for use, and the additional variables included will make downstream analysis very easy. 
 
-If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) REACH_ID (case sensitive) must provide a unique identifier to each stream reach; and 2) LENGTH_KM should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in ArcMAP later, but for now there are some scripts in our complementary package that can help with these steps using the ArcPy API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so.
+If for some reason you cannot use the HydroRIVERS dataset, you will need to do some things first before loading your shapefile into autoStreamTree. First, you will need to include two variables in the attribute table of your shapefile: 1) `REACH_ID` (case sensitive) must provide a unique identifier to each stream reach; and 2) `LENGTH_KM` should give the length of each segment. Next, because sometime large stream layers will have small gaps in between streams, you will need to span any small gaps between streams which should be contiguous, and also dissolve any lines that overlap with one another so that any given section of river is represented by a single line. I will provide a tutorial for doing this in `ArcMAP` later, but for now there are some scripts in our complementary package that can help with these steps using the `ArcPy` API: https://github.com/stevemussmann/StreamTree_arcpy. Note that this package will also help you in running the original Stream Tree package on Windows, if you want to do so.
 
 Note that a valid path is required between all sites in order to calculate pairwise stream distances. Thus, if you are analyzing data from multiple drainages which only share an oceanic connection, you will need to augment the shapefile. For example this could be accomplished by adding a vector representing the coastline to create an artificial connection among drainages.
 
@@ -349,31 +352,87 @@ Optionally, the user can also opt to aggregate individual-based distance measure
 
 Another useful feature is the ability to concatenate the input variant data -- this can be done either globally (for example if you want to only compute a global p-distance) with `-C all`, or if you have phased data used to form "pseudo" microhaplotypes using `-C loc`, which will group variants using the CHROM field in the input VCF. Note that if using a program such as ipyrad (e.g., for RADseq data), the entries in this field will represent 'independent' loci -- if you have data aligned to a genome and want to define loci in some way you will need to insert this information into the CHROM field as a pre-processing step. 
 
-## 3. Example analysis <a name="ast_example"></a>
+### Outputs <a name="ast_outputs"></a>
 
-If you have just installed autoStreamTree and are running it for the first time, I recommend you first run the example analysis using the provided files in the `data` directory. These include all necessary inputs, and a geodatabase. To run the full workflow on the example data, simply use:
+If running the full workflow, the first thing `autoStreamTree` will do upon reading your input geodatabase is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an `EDGE_ID` attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
+
+The reduced sub-network will be plotted for you in a file called *out*.subGraph.pdf.
+
+Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as *out*.streamsByEdgeID.pdf.
+
+After fitting genetic distances, `autoStreamTree` will create several other outputs. First, a table called *out*.reachToEdgeTable.txt will give a tab-delimited map of how `REACH_ID` attributes were dissolved into contiguous edges. Second, a tabular and graphical representation of how fitted pairwise distances compare to the raw calculates (or user-provided) pairwise distances: *out*.obsVersusFittedD.txt and *out*.obsVersusFittedD.pdf
+
+Finally, the fitted distances per stream edge will be output both as an added column to the original shapefile attribute table (*out*.streamTree.shp and *out*.streamTree.txt), and also as a plot showing how distances compare across all streams.
+
+## 3. Example <a name="ast_example"></a>
+
+If you have just installed `autoStreamTree` and are running it for the first time, I recommend you first run the example analysis using the provided files in the `data` directory. These include all necessary inputs, and a geodatabase. To run the full workflow on the example data, simply use:
 
 ```
 # Change directories to the autoStreamTree repository
 cd autostreamtree 
 
 # run the analysis
-autostreamtree -s data/test.shp -i data/test.coords -v data/test.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
+autostreamtree -s data/test.shp -i data/test.coords -v data/test_sub100.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
 ```
 
-This will produce a number of output text files and plots using the prefix provided with `-o`. 
+This will produce a number of output text files and plots using the prefix provided with `-o`.
 
-## 4. Outputs <a name="ast_outputs"></a>
 
-If running the full workflow, the first thing autoStreamTree will do upon reading your input geodatabase is to calculate a minimally reduced sub-network which collapses the input river network into continuous reaches (="edges"), with nodes either representing sample localities or junctions. Because the full river network will likely contain many branches and contiguous reaches which do not contain samples, these are removed to speed up computation. The underlying metadata will be preserved, and the final output will consist of an annotated shapefile containing an EDGE_ID attribute which tells you how reaches were dissolved into contiguous edges in the graph, and a FittedD attribute giving the least-squares optimized distances.
+## 4. Downstream analysis <a name="downstream"></a>
 
-The reduced sub-network will be plotted for you in a file called *out*.subGraph.pdf.
+`autoStreamTree` is designed to aid in the downstream analysis of genetic differentiation, adaptation, and ecological aspects of aquatic species, although it is versatile enough to be applicable to any dataset structured as a network. 
 
-Here, the total cumulative stream length (in km) is plotted along edges (NOTE: Any natural curvature in the river is not preserved in this plot), with sample sites as blue dots and junctions as black dots. A geographically accurate representation, coloring individual streams to designate different dissolved edges, will be provided as *out*.streamsByEdgeID.pdf.
+A key use case involves the examination of locus-wise genetic distances across network segments. This is efficiently done by importing the out.streamTree.tsv file, which is an output of autoStreamTree using the `-r LOC` option, into R or a similar analytical platform. Moreover, if autoStreamTree is run with an annotated geodatabase, such as HydroRIVERS, the resultant fitted distances are enriched with additional attributes. These attributes are particularly useful in conducting in-depth analyses to understand how environmental covariates influence genetic patterns, for instance, through methods like redundancy analysis. This multifaceted approach makes autoStreamTree a robust tool for exploring and interpreting complex genetic and ecological data in aquatic species.
 
-After fitting genetic distances, autoStreamTree will create several other outputs. First, a table called *out*.reachToEdgeTable.txt will give a tab-delimited map of how REACH_ID attributes were dissolved into contiguous edges. Second, a tabular and graphical representation of how fitted pairwise distances compare to the raw calculates (or user-provided) pairwise distances: *out*.obsVersusFittedD.txt and *out*.obsVersusFittedD.pdf
+### Utility scripts <a name="utils"></a>
 
-Finally, the fitted distances per stream edge will be output both as an added column to the original shapefile attribute table (*out*.streamTree.shp and *out*.streamTree.txt), and also as a plot showing how distances compare across all streams.
+`autoStreamTree` is currently distributed with two utility scripts: `networkDimensions.py` and `streeToDendrogram.py`. We expect this list to grow, and if you need help writing any specific utilities using `autoStreamTree` outputs, please don't hesitate to get in touch! 
+
+As with the `autoStreamTree` CLI, when installed via `pip` or `conda/mamba`, these can be accessed via front-ends `networkDimensions` and `streeToDendrogram`, both having help menus displayed by calling with `-h`
+
+#### networkDimensions
+
+`networkDimensions` is a simple script to capture the spatial dimensions of your minimized network, including the total length, and the area of a the minimally bounding convex hull. 
+
+The options are: 
+```
+(autostreamtree) tyler@Tylers-MacBook-Pro-2 autostreamtree % networkDimensions -h
+usage: networkDimensions [-h] network_file
+
+Calculate total lineage length and bounding box area of a network.
+
+positional arguments:
+  network_file  Path to the pickled Networkx graph file.
+
+options:
+  -h, --help    show this help message and exit
+```
+
+Simply provide the output `.network` file created by `autoStreamTree`.
+
+#### streeToDendrogram
+
+`streeToDendrogram` makes it easier to visualise the fitted distances as a dendrogram (rather than a colored spatial network). The options are:
+
+```
+(autostreamtree) tyler@Tylers-MacBook-Pro-2 autostreamtree % streeToDendrogram -h
+usage: streeToDendrogram [-h] --shp SHP --points POINTS [--pop POP] [--edge_id EDGE_ID]
+                         [--dist DIST] [--out OUT]
+
+Plot a stream tree with fittedD attribute as dendrogram
+
+options:
+  -h, --help         show this help message and exit
+  --shp SHP          Network as shapefile
+  --points POINTS    Sample coordinates
+  --pop POP          Population map file (optional)
+  --edge_id EDGE_ID  Edge ID attribute.
+  --dist DIST        Dist attribute.
+  --out OUT          Output prefix
+```
+
+### Incorporating into workflows <a name="workflow"></a>
 
 ## 5. References <a name="ast_refs"></a>
 ### Citations for autoStreamTree methods
