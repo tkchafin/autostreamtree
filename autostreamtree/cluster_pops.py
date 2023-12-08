@@ -48,8 +48,8 @@ def dbscan_cluster(coords: Dict[str, Tuple[float, float]], epsilon: float,
     for k, v in coords.items():
         if not isinstance(v, tuple) or len(v) != 2:
             raise ValueError(
-                f"Coordinate value for '{k}' is missing or \
-                    not a tuple of size 2."
+                f"Coordinate value for '{k}' is missing or",
+                "not a tuple of size 2."
             )
         if not all(isinstance(coord, float) for coord in v):
             raise ValueError(

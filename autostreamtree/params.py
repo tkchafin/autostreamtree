@@ -17,7 +17,8 @@ class parseArgs():
                  "loc_agg=", "pop_agg=", "sdist_agg=", "clusterpop",
                  "epsilon=", "min_samples=", "sclusterpop", "network=",
                  "overwrite", "reachid_col=", "length_col=", "coercemat",
-                 "locmatdir=", "vcf=", "concat=", "edge_list=", "gdf_out="]
+                 "locmatdir=", "vcf=", "concat=", "edge_list=", "gdf_out=", 
+                 "seed="]
             )
         except getopt.GetoptError as err:
             print(err)
@@ -57,6 +58,7 @@ class parseArgs():
         self.loc_agg = "ARITH"
         self.pop_agg = "ARITH"
         self.sdist_agg = "ARITH"
+        self.seed = None
 
         self.reachid_col = "HYRIV_ID"
         self.length_col = "LENGTH_KM"
@@ -90,6 +92,8 @@ class parseArgs():
                                       for option <--concat>")
             elif opt in ('v', 'vcf'):
                 self.vcf = arg
+            elif opt == "seed":
+                self.seed = int(arg)
             elif opt in ('r', 'run'):
                 self.run = arg.upper()
                 valid_runs = ["ALL", "GENDIST", "IBD", "STREAMDIST",
@@ -261,6 +265,7 @@ cluster populations\n"
 shapefile [default=\"HYRIV_ID\"]\n"
             "    --length_col    : Attribute name giving length in kilometers \
 [default=\"LENGTH_KM\"]\n\n"
+            "    --seed          : Seed for RNG\n\n"
 
             "Genetic distance options:\n"
             "    -d, --dist      : Use which metric of distance? Options:\n"

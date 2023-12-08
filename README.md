@@ -272,8 +272,9 @@ tabix test_sub100.vcf.gz
 This file should be provided using `-v/--vcf`.
 #### Individual metadata
 
-Individual metadata will be needed in the form of coordinates, which can be passed as a simple tab-delimited text file (see example in `data/test.coords`):
+Individual metadata will be needed in the form of coordinates, which can be passed as a simple tab-delimited text file with header (see example in `data/test.coords`):
 ```
+sample  lat     long
 63burk03        26.925414       90.396139
 63cburk01       26.92383        90.39815
 63cburk02       26.92383        90.39815
@@ -368,14 +369,14 @@ Finally, the fitted distances per stream edge will be output both as an added co
 
 ## 3. Example <a name="ast_example"></a>
 
-If you have just installed `autoStreamTree` and are running it for the first time, I recommend you first run the example analysis using the provided files in the `data` directory. These include all necessary inputs, and a geodatabase. To run the full workflow on the example data, simply use:
+If you have just installed `autoStreamTree` and are running it for the first time, I recommend you first run the example analysis using the provided files in the `autostreamtree/data` directory. These include all necessary inputs, and a geodatabase. To run the full workflow on the example data, simply use:
 
 ```
 # Change directories to the autoStreamTree repository
 cd autostreamtree 
 
 # run the analysis
-autostreamtree -s data/test.shp -i data/test.coords -v data/test_sub100.vcf.gz -p data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
+autostreamtree -s autostreamtree/data/test.shp -i autostreamtree/data/test.coords -v autostreamtree/data/test_sub100.vcf.gz -p autostreamtree/data/test.popmap -r ALL --reachid_col "HYRIV_ID" --length_col "LENGTH_KM" -o test
 ```
 
 This will produce a number of output text files and plots using the prefix provided with `-o`.

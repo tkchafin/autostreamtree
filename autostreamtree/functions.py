@@ -1,14 +1,10 @@
-
 import sys
 import os
-
-os.environ['USE_PYGEOS'] = '0'
-
 import itertools
 import traceback
 import math
-import getopt
 import momepy
+import warnings
 import pyogrio
 import pandas as pd
 import numpy as np
@@ -16,33 +12,30 @@ import networkx as nx
 import seaborn as sns
 from pysam import VariantFile
 from scipy import stats
-from os import listdir
-from os.path import isfile, join
 from sortedcontainers import SortedDict
-from sklearn.linear_model import LinearRegression
 from networkx import NodeNotFound
 import matplotlib.pyplot as plt
 import pickle
 import mantel
-from math import radians, degrees, sin, cos, asin, acos, sqrt
+from math import radians, sin, cos, acos
 
 import autostreamtree.cluster_pops as clust
 import autostreamtree.sequence as seq
 import autostreamtree.genetic_distances as gendist
-import autostreamtree.report_refs as ref
-import autostreamtree.aggregators as agg
 
-from typing import List, Tuple, Dict, Any, Union, Optional
 
 # suppress irrelevant warning from momepy
-import warnings
-def custom_warn_handler(message, category, filename, lineno, file=None, line=None):
+def custom_warn_handler(message, category, filename, lineno, file=None,
+                        line=None):
     if "momepy/utils.py" in filename and issubclass(category, UserWarning):
         return
-    return original_showwarning(message, category, filename, lineno, file, line)
+    return original_showwarning(message, category, filename, lineno, file,
+                                line)
+
 
 original_showwarning = warnings.showwarning
 warnings.showwarning = custom_warn_handler
+
 
 def read_vcf(vcf, concat="none", popmap=None):
     """
@@ -50,14 +43,17 @@ def read_vcf(vcf, concat="none", popmap=None):
 
     ARgs:
         vcf: Path to the input VCF file.
-        concat: Specifies the concatenation mode for genotypes. Options are "all", "loc", and "none".
+        concat: Specifies the concatenation mode for genotypes. Options are
+                "all", "loc", and "none".
                    "all": Concatenate genotypes of all loci for each sample.
-                   "loc": Concatenate genotypes within the same chromosome for each sample.
+                   "loc": Concatenate genotypes within the same chromosome for
+                          each sample.
                    "none": Do not concatenate genotypes.
-        popmap: Optional dictionary that maps populations to a list of samples. If provided,
-                   only samples in the popmap will be retained in the output dictionary.
+        popmap: Optional dictionary that maps populations to a list of samples.
+                If provided, only samples in the popmap will be retained in the
+                output dictionary.
     Returns:
-        A dictionary with sample names as keys and lists of genotypes as values.
+        A dictionary with sample names as keys and lists of genotypes as values
     """
 
     bcf_in = VariantFile(vcf)
@@ -66,12 +62,12 @@ def read_vcf(vcf, concat="none", popmap=None):
     vcf_samples = list(bcf_in.header.samples)
 
     # set up data dict
-    dat=dict()
+    dat = dict()
     samples = list((bcf_in.header.samples))
     for s in samples:
         if concat == "all":
             dat[s] = list()
-            dat[s].append(["",""])
+            dat[s].append(["", ""])
         else:
             dat[s] = list()
 
@@ -83,23 +79,26 @@ def read_vcf(vcf, concat="none", popmap=None):
         keep = [s for s in keep if s in vcf_samples]
         bcf_in.subset_samples(keep)
 
-    chrom="FIRST"
+    chrom = "FIRST"
     for record in bcf_in.fetch():
         for i, sample in enumerate(record.samples):
-            if concat=="all":
-                loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts, as_list=True)
-                dat[sample][-1][0]=dat[sample][-1][0]+loc[0]
-                dat[sample][-1][1]=dat[sample][-1][1]+loc[1]
-            elif concat=="loc":
+            if concat == "all":
+                loc = seq.decode(record.samples[i]['GT'], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
+            elif concat == "loc":
                 if record.chrom != chrom:
-                    dat[sample].append(["",""])
-                loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts, as_list=True)
-                dat[sample][-1][0]=dat[sample][-1][0]+loc[0]
-                dat[sample][-1][1]=dat[sample][-1][1]+loc[1]
+                    dat[sample].append(["", ""])
+                loc = seq.decode(record.samples[i]['GT'], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
             else:
-                loc = seq.decode(record.samples[i]['GT'], record.ref, record.alts)
+                loc = seq.decode(record.samples[i]['GT'], record.ref,
+                                 record.alts)
                 dat[sample].append(loc)
-        chrom=record.chrom
+        chrom = record.chrom
     if concat != "none":
         for sample in dat:
             dat[sample] = ["/".join(x) for x in dat[sample]]
@@ -108,11 +107,13 @@ def read_vcf(vcf, concat="none", popmap=None):
             del dat[sample]
         elif len(dat[sample]) == 1 and dat[sample][0][0] == "":
             del dat[sample]
-    return(dat)
+    return dat
+
 
 def prune_graph(G, edge_list, reachid_col):
     """
-    Prunes a graph to only retain edges whose 'reachid_col' matches values in 'edge_list'.
+    Prunes a graph to only retain edges whose 'reachid_col' matches values in
+    'edge_list'.
 
     Args:
         G: The input NetworkX Graph.
@@ -123,16 +124,19 @@ def prune_graph(G, edge_list, reachid_col):
         A pruned NetworkX Graph.
     """
     for u, v in G.edges():
-        data = G.get_edge_data(u, v)
-        #print(f"Edge ({u}, {v}): {data}")
+        _ = G.get_edge_data(u, v)
+        # print(f"Edge ({u}, {v}): {data}")
     # Get edges to be retained using get_edge_data method
-    edges_to_keep = [(u, v) for u, v in G.edges() if G.get_edge_data(u, v).get(reachid_col) in edge_list]
-    #print(edges_to_keep)
+    edges_to_keep = [(u, v) for u, v in G.edges() if
+                     G.get_edge_data(u, v).get(reachid_col) in edge_list]
 
     # Check if there are no edges to keep
     if not edges_to_keep:
-        raise ValueError("There are no edges to retain based on the given edge list and attribute.")
-    
+        raise ValueError(
+            "There are no edges to retain based on the given edge",
+            "list and attribute."
+        )
+
     # Create a new graph with only the edges to be retained
     pruned_G = G.edge_subgraph(edges_to_keep).copy()
 
@@ -148,10 +152,10 @@ def read_network(network, shapefile):
     Reads a network from a saved file or builds a network from a shapefile.
 
     Args:
-        network: Path to the saved network file (pickle format). If provided, the function will read
-                    the network from this file.
-        shapefile: Path to the shapefile to build the network from. This is used if the `network`
-                      parameter is not provided.
+        network: Path to the saved network file (pickle format). If provided,
+                  the function will read the network from this file.
+        shapefile: Path to the shapefile to build the network from. This is
+                   used if the `network` parameter is not provided.
     Returns:
         A NetworkX Graph object representing the network.
     """
@@ -159,22 +163,25 @@ def read_network(network, shapefile):
     # Check if a saved network file is provided
     if network:
         print("Reading network from saved file: ", network)
-        # Read the network from the saved file and convert it to an undirected graph
-        #G = nx.Graph(nx.read_gpickle(network).to_undirected())
+        # Read the network from the saved file and convert it to an undirected
+        # graph
         with open(network, 'rb') as f:
             G = nx.Graph(pickle.load(f)).to_undirected()
     else:
-        # If no saved network file is provided, build the network from the shapefile
+        # If no saved network file is provided, build the network from the
+        # shapefile
         print("Building network from shapefile:", shapefile)
         print("WARNING: This can take a while with very large files!")
         # Read the shapefile
-        #rivers = gpd.read_file(shapefile)
+        # rivers = gpd.read_file(shapefile)
         rivers = pyogrio.read_dataframe(shapefile)
-        #print(rivers.head())
+        # print(rivers.head())
         # Convert the GeoDataFrame to a NetworkX Graph object
-        G = momepy.gdf_to_nx(rivers, approach="primal", directed=False, multigraph=False)
+        G = momepy.gdf_to_nx(rivers, approach="primal", directed=False,
+                             multigraph=False)
 
     return G
+
 
 def parse_subgraph_from_points(params, point_coords, pop_coords, G):
     """
@@ -182,8 +189,10 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
 
     Args:
         params: A custom object containing various input parameters.
-        point_coords: A list of point coordinates to use for extracting the subgraph.
-        pop_coords: A list of population coordinates to use for extracting the subgraph.
+        point_coords: A list of point coordinates to use for extracting the
+                      subgraph.
+        pop_coords: A list of population coordinates to use for extracting the
+                    subgraph.
         G: A NetworkX Graph object representing the input graph.
 
     Returns:
@@ -203,12 +212,14 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
 
     # First pass extracts a subgraph from the master shapefile graph
     print("\nExtracting full subgraph...")
-    ktemp = path_subgraph(G, points, extract_full_subgraph, params.reachid_col, params.length_col)
+    ktemp = path_subgraph(G, points, extract_full_subgraph, params.reachid_col,
+                          params.length_col)
     del G
 
     # Second pass to simplify subgraph and collapse redundant nodes
     print("\nMerging redundant paths...\n")
-    K = path_subgraph(ktemp, points, extract_minimal_subgraph, params.reachid_col, params.length_col)
+    K = path_subgraph(ktemp, points, extract_minimal_subgraph,
+                      params.reachid_col, params.length_col)
 
     # Grab real coordinates as node positions for plotting
     pos = {n: n for n in K.nodes}
@@ -217,7 +228,8 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
     color_map = ["blue" if node in points.values() else "black" for node in K]
 
     # Draw networkx
-    nx.draw_networkx(K, pos, with_labels=False, node_color=color_map, node_size=50)
+    nx.draw_networkx(K, pos, with_labels=False, node_color=color_map,
+                     node_size=50)
 
     # Get LENGTH_KM attributes for labelling edges
     edge_labels = nx.get_edge_attributes(K, params.length_col)
@@ -235,7 +247,10 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
         with open(net_full_out, 'wb') as f:
             pickle.dump(ktemp, f, pickle.HIGHEST_PROTOCOL)
     else:
-        print("NOTE: Not over-writing existing network. To change this, use --overwrite")
+        print(
+            "NOTE: Not over-writing existing network. To change this, use",
+                "--overwrite"
+            )
 
     network_plot = str(params.out) + ".subGraph.pdf"
     plt.savefig(network_plot)
@@ -251,42 +266,52 @@ def report_genmats(params, gen, pop_gen, point_coords, pop_coords):
     ARgs:
         params: A custom object containing various input parameters.
         gen: A NumPy array representing the individual genetic distance matrix.
-        pop_gen: A NumPy array representing the population genetic distance matrix.
+        pop_gen: A NumPy array representing the population genetic distance
+                 matrix.
         point_coords: A dictionary containing individual point coordinates.
         pop_coords: A dictionary containing population point coordinates.
     """
 
-    # If the individual genetic distance matrix is not None, print and write it to file
+    # If the individual genetic distance matrix is not None, print and write
+    # it to file
     if gen is not None:
         print("Genetic distances:")
         np.set_printoptions(precision=3)
         print(gen, "\n")
 
         # Write individual genetic distances to file
-        ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()), index=list(point_coords.keys()))
-        ind_genDF.to_csv((str(params.out) + ".indGenDistMat.txt"), sep="\t", index=True)
+        ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                 index=list(point_coords.keys()))
+        ind_genDF.to_csv((str(params.out) + ".indGenDistMat.txt"), sep="\t",
+                         index=True)
 
-    # If the population genetic distance matrix is not None, print and write it to file
+    # If the population genetic distance matrix is not None, print and write
+    # it to file
     if pop_gen is not None:
         print("Population genetic distances:")
         np.set_printoptions(precision=3)
         print(pop_gen, "\n")
 
         # Write population genetic distances to file
-        pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()), index=list(pop_coords.keys()))
-        pop_genDF.to_csv((str(params.out) + ".popGenDistMat.txt"), sep="\t", index=True)
+        pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                 index=list(pop_coords.keys()))
+        pop_genDF.to_csv((str(params.out) + ".popGenDistMat.txt"), sep="\t",
+                         index=True)
         del pop_genDF
 
 
 def get_loc_data(seqs):
     """
-    Generator function that yields a dictionary of individual loci data for each locus in the input sequences.
+    Generator function that yields a dictionary of individual loci data for
+    each locus in the input sequences.
 
     Args:
-        seqs: A dictionary containing sequences as values and individual identifiers as keys.
-    
+        seqs: A dictionary containing sequences as values and individual
+        identifiers as keys.
+
     Returns:
-        A generator that yields a dictionary with individual identifiers as keys and a list containing the
+        A generator that yields a dictionary with individual identifiers as
+        keys and a list containing the
              corresponding locus as the value.
     """
 
@@ -300,17 +325,20 @@ def get_loc_data(seqs):
             d[ind] = [seqs[ind][loc]]
 
         # Yield the dictionary containing the locus data for the current locus
-        yield(d)
+        yield d
 
 
 def report_genmats_list(params, genlist, popgenlist, point_coords, pop_coords):
     """
-    Writes individual and population genetic distance matrices to files for each locus in genlist and popgenlist.
+    Writes individual and population genetic distance matrices to files for
+    each locus in genlist and popgenlist.
 
     Args:
-        params: A namespace object containing parameters, including the output directory.
+        params: A namespace object containing parameters, including the output
+                directory.
         genlist: A list of individual genetic distance matrices for each locus.
-        popgenlist: A list of population genetic distance matrices for each locus.
+        popgenlist: A list of population genetic distance matrices for each
+                    locus.
         point_coords: A dictionary containing individual point coordinates.
         pop_coords: A dictionary containing population point coordinates.
     """
@@ -324,8 +352,10 @@ def report_genmats_list(params, genlist, popgenlist, point_coords, pop_coords):
     for gen in genlist:
         if gen is not None:
             # Write individual genetic distances to a file
-            ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()), index=list(point_coords.keys()))
-            ind_genDF.to_csv((str(dir) + "/loc_" + str(i) + ".indGenDistMat.txt"), sep="\t", index=True)
+            ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                     index=list(point_coords.keys()))
+            ind_genDF.to_csv((str(dir) + "/loc_" + str(i) +
+                              ".indGenDistMat.txt"), sep="\t", index=True)
             del ind_genDF
             i += 1
 
@@ -334,30 +364,36 @@ def report_genmats_list(params, genlist, popgenlist, point_coords, pop_coords):
     for pop_gen in popgenlist:
         if pop_gen is not None:
             # Write population genetic distances to a file
-            pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()), index=list(pop_coords.keys()))
-            pop_genDF.to_csv((str(dir) + "/loc_" + str(j) + ".popGenDistMat.txt"), sep="\t", index=True)
+            pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                     index=list(pop_coords.keys()))
+            pop_genDF.to_csv((str(dir) + "/loc_" + str(j) +
+                              ".popGenDistMat.txt"), sep="\t", index=True)
             del pop_genDF
             j += 1
 
+
 def block_print():
     """
-    Disables standard output by redirecting it to a null device, effectively blocking any print statements.
+    Disables standard output by redirecting it to a null device, effectively
+    blocking any print statements.
     """
     sys.stdout = open(os.devnull, 'w')
 
 
 def enable_print():
     """
-    Restores standard output to its original state, allowing print statements to be displayed again.
+    Restores standard output to its original state, allowing print statements
+    to be displayed again.
     """
     sys.stdout = sys.__stdout__
 
 
-def parse_input_genmat(params, inmat, point_coords, popmap):
+def parse_input_genmat(params, inmat, point_coords, popmap, seqs=None):
     """
-    Parses an input genetic distance matrix and verifies if it matches the user input
-    parameters. Aggregates individual distances if required by the user input.
-    
+    Parses an input genetic distance matrix and verifies if it matches the
+    user input parameters. Aggregates individual distances if required by the
+    user input.
+
     Args:
         params: Input parameters provided by the user.
         inmat (pd.DataFrame): The input genetic distance matrix.
@@ -375,61 +411,80 @@ def parse_input_genmat(params, inmat, point_coords, popmap):
     if set(list(inmat.columns.values)) != set(list(inmat.index.values)):
         print(inmat.columns.values)
         print(inmat.index.values)
-        print("Oh no! Input matrix columns and/ or rows don't appear to be labelled. Please provide an input matrix with column and row names!")
+        print("Input matrix columns and/ or rows don't appear to be",
+              "labelled. Please provide an input matrix with column and row",
+              "names!")
         sys.exit(1)
     else:
-        agg=False
-        #first check if it fits whatever the user input was (i.e. --pop)
+        agg = False
+        # first check if it fits whatever the user input was (i.e. --pop)
         if params.pop:
             if len(inmat.columns) != len(popmap.keys()):
-                print("Found",str(len(inmat.columns)), "columns in provided matrix. This doesn't match number of populations from popmap.")
+                print("Found", str(len(inmat.columns)),
+                      "columns in provided matrix. This doesn't match number",
+                      "of populations from popmap.")
                 if (len(inmat.columns)) != len(point_coords):
-                    print("Doesn't match number of individuals either! Please check your matrix format.")
+                    print("Doesn't match number of individuals either! Please",
+                          "check your matrix format.")
                     sys.exit(1)
                 else:
-                    print("Assuming input matrix has individual distances... Aggregating using the following method (--pop_agg):", str(params.pop_agg))
-                    agg=True
+                    print("Assuming input matrix has individual distances...",
+                          "Aggregating using the following (--pop_agg):",
+                          str(params.pop_agg))
+                    agg = True
             else:
-                #re-order using pop orders
+                # re-order using pop orders
                 inmat = inmat.reindex(list(popmap.keys()))
                 inmat = inmat[list(popmap.keys())]
                 pop_gen = inmat.to_numpy()
-                del(inmat)
+                del inmat
         elif params.geopop or params.clusterpop:
             if (len(inmat.columns)) != len(point_coords):
-                print("Found",str(len(inmat.columns)), "columns in provided matrix. This doesn't match number of individuals.")
-                print("When using --geopop or --clusterpop, the provided matrix must represent individual-level distances.")
+                print("Found", str(len(inmat.columns)), 
+                      "columns in provided matrix. This doesn't match number",
+                      "of individuals.")
+                print("When using --geopop or --clusterpop, the provided",
+                      "matrix must represent individual-level distances.")
                 sys.exit(1)
             else:
-                #re-order using pop orders
+                # re-order using pop orders
                 inmat = inmat.reindex(list(point_coords.keys()))
                 inmat = inmat[list(point_coords.keys())]
                 gen = inmat.to_numpy()
                 agg = True
-                del(inmat)
+                del inmat
         else:
             if (len(inmat.columns)) != len(point_coords):
-                print("Found",str(len(inmat.columns)), "columns in provided matrix. This doesn't match number of individuals.")
+                print("Found", str(len(inmat.columns)),
+                      "columns in provided matrix. This doesn't match number",
+                      "of individuals.")
                 sys.exit(1)
             else:
-                #re-order using pop orders
+                # re-order using pop orders
                 inmat = inmat.reindex(list(point_coords.keys()))
                 inmat = inmat[list(point_coords.keys())]
                 gen = inmat.to_numpy()
-                del(inmat)
-        #if --geopop or --clusterpop, it should be an ind matrix
-        #if so, need to aggregate according to --pop_agg
-        #print(pop_gen)
+                del inmat
+        # if --geopop or --clusterpop, it should be an ind matrix
+        # if so, need to aggregate according to --pop_agg
+        # print(pop_gen)
         if agg:
-            print("Aggregating user-provided individual-level distance matrix using:",params.pop_agg)
-            pop_gen = gendist.get_pop_genmat("PDIST", gen, popmap, point_coords, seqs, pop_agg=params.pop_agg, loc_agg=params.loc_agg, ploidy=params.ploidy, global_het=params.global_het)
+            print("Aggregating user-provided individual-level distance matrix",
+                  "using:", params.pop_agg)
+            pop_gen = gendist.get_pop_genmat("PDIST", gen, popmap,
+                                             point_coords, seqs,
+                                             pop_agg=params.pop_agg,
+                                             loc_agg=params.loc_agg,
+                                             ploidy=params.ploidy,
+                                             global_het=params.global_het)
 
     return (gen, pop_gen)
 
+
 def read_popmap(popmap):
     """
-    Reads a population map file and returns a dictionary with individuals as keys
-    and populations as values.
+    Reads a population map file and returns a dictionary with individuals as
+    keys and populations as values.
 
     Args:
         popmap (str): Path to the population map file.
@@ -447,126 +502,119 @@ def read_popmap(popmap):
             ind = cols[0]
             pop = cols[1]
             popdict[ind] = pop
-    return(popdict)
+    return popdict
+
 
 def process_samples(params, points, G):
     """
-    Processes input sample data by snapping points to a graph, calculating coordinates,
-    and processing populations if required. This function is separated to declutter __main__.
-    
+    Processes input sample data by snapping points to a graph, calculating
+    coordinates, and processing populations if required.
+
     Args:
         params: Input parameters provided by the user.
         points (pd.DataFrame): DataFrame containing sample points.
         G (networkx.Graph): Graph object representing the road network.
 
     Returns:
-        tuple: A tuple containing point coordinates, population coordinates, and the population map.
+        tuple: A tuple containing point coordinates, population coordinates,
+        and the population map.
     """
     popmap = SortedDict()
     point_coords = SortedDict()
     pop_coords = SortedDict()
     snapDists = dict()
-    verb = True
-    first = True
 
     if params.pop:
         popmap_temp = read_popmap(params.pop)
         mask = points[points.columns[0]].isin(popmap_temp)
         points = points[mask]
-        
-    for idx, row in points.iterrows():
+
+    for _, row in points.iterrows():
         name = None
         data = None
-        row.iloc[1] = float(row.iloc[1])
-        row.iloc[2] = float(row.iloc[2])
+        row["lat"] = float(row["lat"])
+        row["long"] = float(row["long"])
         if params.run == "GENDIST":
-            name = row.iloc[0]
-            data = tuple([row.iloc[2], row.iloc[1]])
+            name = row["sample"]
+            data = tuple([row["long"], row["lat"]])
         else:
             if not params.pop and not params.clusterpop:
-                #print(tuple([row[3], row[2]]))
-                #--geopop and individual-level snap coordinates to nodes here
-                node = snap_to_node(G, tuple([row.iloc[2], row.iloc[1]]))
-                snapDists[row.iloc[0]] = great_circle(node[0], node[1],
-                                                      row.iloc[2], row.iloc[1])
+                # --geopop and individual-level snap coordinates to nodes here
+                node = snap_to_node(G, tuple([row["long"], row["lat"]]))
+                snapDists[row["sample"]] = great_circle(node[0], node[1],
+                                                        row["long"],
+                                                        row["lat"])
             else:
-                #if pop or clusterpop, extract centroid later
-                node = tuple([row.iloc[2], row.iloc[1]])
-            #print(node)
+                # if pop or clusterpop, extract centroid later
+                node = tuple([row["long"], row["lat"]])
             data = node
-            name = row.iloc[0]
-            #point_labels[node]=str(row[0])
+            name = row["sample"]
         point_coords[name] = data
-        #seq_data = parseLoci(params, list(row[4:]), verbose=verb)
-        #print(seq_data)
 
         # Process population-level analyses
         if params.geopop:
             if point_coords[name] not in popmap:
-                l = [name]
-                popmap[point_coords[name]] = l
+                names = [name]
+                popmap[point_coords[name]] = names
             else:
-                popmap[point_coords[name]].append(row[0])
+                popmap[point_coords[name]].append(row["sample"])
         elif params.pop:
             if popmap_temp[row.iloc[0]] not in popmap:
-                l = [name]
-                popmap[popmap_temp[row.iloc[0]]] = l
+                names = [name]
+                popmap[popmap_temp[row.iloc[0]]] = names
             else:
                 popmap[popmap_temp[row.iloc[0]]].append(name)
-    #print("Found",numLoci,"loci.\n")
-    #points["node"]=point_coords
 
-    print("Read",str(len(point_coords.keys())),"individuals.")
-    #print(list(point_coords.keys()))
+    print("Read", str(len(point_coords.keys())), "individuals.")
     print()
 
     if params.pop or params.geopop:
-        print("Read",str(len(popmap.keys())),"populations.")
-        #print(list(popmap.keys()))
+        print("Read", str(len(popmap.keys())), "populations.")
         print()
 
-    """
-    For population-level analyses, generate population maps and centroids here
-    according to user-input options: --pop, --geopop, --clusterpop
-    """
-    #get population centroid
+    # For population-level analyses, generate population maps and centroids
+    # here according to user-input options: --pop, --geopop, --clusterpop
+    # get population centroid
     if params.pop or params.geopop or params.clusterpop:
         if params.clusterpop:
-            #create population clusters using DBSCAN
-            print("Running DBSCAN clustering with min_samples=",params.min_samples,"and epsilon=",params.epsilon)
-            popmap=clust.dbscan_cluster(point_coords, params.epsilon, params.min_samples)
-            num_clusters=len(popmap.keys())
-            print("Found",str(num_clusters),"clusters!")
-            #print(popmap)
-            #print("\n")
+            # create population clusters using DBSCAN
+            print("Running DBSCAN clustering with min_samples=",
+                  params.min_samples, "and epsilon=", params.epsilon)
+            popmap = clust.dbscan_cluster(point_coords, params.epsilon,
+                                          params.min_samples)
+            num_clusters = len(popmap.keys())
+            print("Found", str(num_clusters), "clusters!")
 
-            #calculate centroids for clusters
-            pop_temp=clust.get_cluster_centroid(point_coords, popmap, params.out)
+            # calculate centroids for clusters
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
 
         elif params.pop or params.geopop:
-            #popmap generated earlier when parsing input file!
-            #still need to calculate centroids:
+            # popmap generated earlier when parsing input file!
+            # still need to calculate centroids:
             print("Calculating population centroids...")
-            pop_temp=clust.get_cluster_centroid(point_coords, popmap, params.out)
-            #note in the case of --geopop the centroid is the joint snapped-to location
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
+            # note in the case of --geopop the centroid is the joint
+            # snapped-to location
 
-        #now, snap pop_coords to nodes
+        # now, snap pop_coords to nodes
         pop_coords = SortedDict()
         for p in pop_temp:
             node = snap_to_node(G, pop_temp[p])
-            #print(node[0], node[1], pop_temp[p][0], pop_temp[p][1])
-            snapDists[p] = great_circle(node[0], node[1], pop_temp[p][0], pop_temp[p][1])
-            pop_coords[p]=node
-        #write popmap to file
+            snapDists[p] = great_circle(node[0], node[1], pop_temp[p][0],
+                                        pop_temp[p][1])
+            pop_coords[p] = node
+        # write popmap to file
         flat = clust.flatten_popmap(popmap)
         temp = pd.DataFrame(list(flat.items()), columns=['IND_ID', 'POP_ID'])
         temp.to_csv((str(params.out) + ".popmap.txt"), sep="\t", index=False)
         del flat
         del temp
 
-        #plot grouped samples
-        #TODO: for --geopop maybe plot original coordinates with "snap" as centroid here??
-        clust.plot_clustered_points(point_coords, popmap, params.out, pop_coords)
+        # plot grouped samples
+        clust.plot_clustered_points(point_coords, popmap, params.out,
+                                    pop_coords)
 
     # Plot histogram of snap distances and write snap distances to a file
     clust.plot_histogram(list(snapDists.values()), params.out)
@@ -577,8 +625,8 @@ def process_samples(params, points, G):
     del dtout
     del snapDists
 
-    #return everything
-    return(point_coords, pop_coords, popmap)
+    # return everything
+    return point_coords, pop_coords, popmap
 
 
 def get_gendist_mats(params, point_coords, popmap, seqs):
@@ -587,56 +635,70 @@ def get_gendist_mats(params, point_coords, popmap, seqs):
     Args:
         params (object): An object that contains parameters for the analysis.
         point_coords (list): A list of coordinates for the sampled points.
-        popmap (dict): A dictionary that maps each sample to its corresponding population.
+        popmap (dict): A dictionary that maps each sample to its corresponding
+                       population.
         seqs (list): A list of DNA sequences for the sampled points.
 
     Returns:
-        tuple: A tuple containing two matrices. The first is a pairwise distance matrix for all
-        samples. The second is a matrix of pairwise genetic distances between populations.
+        tuple: A tuple containing two matrices. The first is a pairwise
+               distance matrix for all
+        samples. The second is a matrix of pairwise genetic distances between
+                 populations.
 
     Raises:
         SystemExit: If distance metric is not possible without population data.
 
     """
-    gen = None  # Initialize variable to hold pairwise distance matrix
-    pop_gen = None  # Initialize variable to hold population genetic distance matrix
+    gen = None  # Initialize variable to hold pairwise dist matrix
+    pop_gen = None  # Initialize variable to hold population dist matrix
 
     if params.dist in ["PDIST", "TN84", "TN93", "K2P", "JC69"]:
         # Calculate pairwise distance matrix using selected method
-        gen = gendist.get_genmat(params.dist, point_coords, seqs, ploidy=params.ploidy, het=params.het, loc_agg=params.loc_agg)
+        gen = gendist.get_genmat(params.dist, point_coords, seqs,
+                                 ploidy=params.ploidy, het=params.het,
+                                 loc_agg=params.loc_agg)
 
         if params.pop or params.geopop or params.clusterpop:
-            print("Aggregating pairwise population genetic distances from individual distances using:",params.pop_agg)
+            print("Aggregating pairwise population genetic distances from",
+                  "individual distances using:", params.pop_agg)
 
     else:
         # If distance metric requires population data, but none is provided
         if not params.pop and not params.geopop:
-            print("ERROR: Distance metric",params.dist,"not possible without population data.")
+            print("ERROR: Distance metric", params.dist,
+                  "not possible without population data.")
             sys.exit(1)
 
     # Calculate population genetic distance matrix
     if params.pop or params.geopop or params.clusterpop:
-        pop_gen = gendist.get_pop_genmat(params.dist, gen, popmap, point_coords, seqs, pop_agg=params.pop_agg, loc_agg=params.loc_agg, ploidy=params.ploidy, global_het=params.global_het)
+        pop_gen = gendist.get_pop_genmat(params.dist, gen, popmap,
+                                         point_coords, seqs,
+                                         pop_agg=params.pop_agg,
+                                         loc_agg=params.loc_agg,
+                                         ploidy=params.ploidy,
+                                         global_het=params.global_het)
 
     # Return pairwise distance matrix and population genetic distance matrix
-    return(gen, pop_gen)
+    return gen, pop_gen
 
 
 def get_point_table(points):
     """Returns a pandas DataFrame from a dictionary of points.
 
     Args:
-        points (dict): A dictionary of points with their latitude and longitude values.
+        points (dict): A dictionary of points with their latitude and longitude
+                       values.
 
     Returns:
-        pandas.DataFrame: A dataframe with columns for 'sample', 'lat', and 'long'.
+        pandas.DataFrame: A dataframe with columns for 'sample', 'lat', and
+                          'long'.
 
     """
     temp = []  # Initialize list to hold temporary values
     for p in points:
         # Append values for each point to temporary list
         temp.append([p, points[p][1], points[p][0]])
-    p = pd.DataFrame(temp, columns=['sample', 'lat', 'long'])  # Create dataframe from temporary list
+    p = pd.DataFrame(temp, columns=['sample', 'lat', 'long'])
     return p
 
 
@@ -648,66 +710,78 @@ def r2(x, y):
         y (array): An array of values.
 
     Returns:
-        float: The squared Pearson correlation coefficient between the two arrays.
+        float: The squared Pearson correlation coefficient between the two
+               arrays.
 
     """
-    return (stats.pearsonr(x, y)[0] ** 2)  # Calculate Pearson correlation coefficient squared and return it
+    return (stats.pearsonr(x, y)[0] ** 2)
 
 
 def get_fitted_d(points, genmat, inc, r):
-    """Calculates predicted genetic distances based on fitted streamtree distances.
+    """Calculates predicted genetic distances based on fitted streamtree
+    distances.
 
     Args:
-        points (dict): A dictionary of points with their latitude and longitude values.
+        points (dict): A dictionary of points with their latitude and
+                       longitude values.
         genmat (ndarray): A pairwise genetic distance matrix.
-        inc (ndarray): An incidence matrix representing the presence or absence of streams for each point.
+        inc (ndarray): An incidence matrix representing the presence or absence
+                       of streams for each point.
         r (ndarray): A fitted streamtree distance matrix.
 
     Returns:
-        pandas.DataFrame: A dataframe with columns for 'from', 'to', 'observed_D', 'predicted_D', and 'abs_diff'.
+        pandas.DataFrame: A dataframe with columns for 'from', 'to',
+                          'observed_D', 'predicted_D', and 'abs_diff'.
 
     """
     rows = []  # Initialize list to hold temporary values
     names = list(points.keys())  # Get names of points
 
     # Iterate over all pairwise combinations of points
-    inc_row=0 #tracks what ROW we are in the incidence matrix (streams are columns!)
-    for ia, ib in itertools.combinations(range(0,len(points)),2):
-        obs=genmat[ia,ib]
-        inc_streams=inc[inc_row,]
-        pred_dist=np.sum(r[inc_streams==1])
-        inc_row+=1
-        rows.append([names[ia], names[ib], obs, pred_dist, np.abs(obs-pred_dist)])
-     # Create dataframe from temporary list and return it
-    D=pd.DataFrame(rows, columns=['from','to','observed_D', 'predicted_D', 'abs_diff'])
-    return(D)
+    inc_row = 0  # tracks what ROW (pair) we are in the incidence matrix
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        obs = genmat[ia, ib]
+        inc_streams = inc[inc_row,]
+        pred_dist = np.sum(r[inc_streams == 1])
+        inc_row += 1
+        rows.append([names[ia], names[ib], obs, pred_dist,
+                     np.abs(obs-pred_dist)])
+    # Create dataframe from temporary list and return it
+    D = pd.DataFrame(rows, columns=['from', 'to', 'observed_D',
+                                    'predicted_D', 'abs_diff'])
+    return D
+
 
 def plot_gen_by_geo(gen, sdist, out, log=False):
     """
-    Plots genetic distance against geographic distance to visualize isolation by distance.
+    Plots genetic distance against geographic distance to visualize isolation
+    by distance.
 
     Args:
         gen (numpy.ndarray): Genetic distance matrix.
         sdist (numpy.ndarray): Spatial distance matrix.
         out (str): Output file prefix for the generated plot.
-        log (bool, optional): If True, the geographic distance axis will be log-transformed. Defaults to False.
+        log (bool, optional): If True, the geographic distance axis will be
+                              log-transformed. Defaults to False.
     """
 
     genetic_distance = get_lower_tri(gen)
     geographic_distance = get_lower_tri(sdist)
 
-    # Create a DataFrame from the geographic_distance and genetic_distance arrays
-    data = pd.DataFrame({'Geographic Distance': geographic_distance, 'Genetic Distance': genetic_distance})
+    data = pd.DataFrame({'Geographic Distance': geographic_distance,
+                         'Genetic Distance': genetic_distance})
 
     if not log:
-        sns.jointplot(data=data, x='Geographic Distance', y='Genetic Distance', kind="reg")
+        sns.jointplot(data=data, x='Geographic Distance', y='Genetic Distance',
+                      kind="reg")
         plt.savefig(str(out) + ".isolationByDistance.pdf")
     else:
         geographic_distance = replace_zeroes(geographic_distance)
         log_geo = np.log(geographic_distance)
         data['Log Geographic Distance'] = log_geo
 
-        sns.jointplot(data=data, x='Log Geographic Distance', y='Genetic Distance', kind="reg")
+        sns.jointplot(data=data, x='Log Geographic Distance',
+                      y='Genetic Distance', kind="reg")
         plt.savefig(str(out) + ".isolationByDistance.pdf")
 
     del geographic_distance
@@ -716,14 +790,16 @@ def plot_gen_by_geo(gen, sdist, out, log=False):
 
 def great_circle(lon1, lat1, lon2, lat2, thresh=0.0000001):
     """
-    Calculates the great circle distance between two points on a sphere, using their longitudes and latitudes.
+    Calculates the great circle distance between two points on a sphere, using
+    their longitudes and latitudes.
 
     Args:
         lon1 (float): Longitude of the first point.
         lat1 (float): Latitude of the first point.
         lon2 (float): Longitude of the second point.
         lat2 (float): Latitude of the second point.
-        thresh (float, optional): Threshold for determining if the points are the same. Defaults to 0.0000001.
+        thresh (float, optional): Threshold for determining if the points are
+                                  the same. Defaults to 0.0000001.
 
     Returns:
         float: Great circle distance in kilometers.
@@ -733,8 +809,10 @@ def great_circle(lon1, lat1, lon2, lat2, thresh=0.0000001):
     else:
         lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
         return 6371 * (
-            acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon1 - lon2))
+            acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
+                 cos(lon1 - lon2))
         )
+
 
 def get_lower_tri(mat):
     """
@@ -744,11 +822,13 @@ def get_lower_tri(mat):
         mat (numpy.ndarray): Input square matrix.
 
     Returns:
-        numpy.ndarray: 1D array containing the lower triangular elements of the input matrix.
+        numpy.ndarray: 1D array containing the lower triangular elements of
+                       the input matrix.
     """
     n = mat.shape[0]
     i = np.tril_indices(n, -1)
     return mat[i]
+
 
 def replace_zeroes(data):
     """
@@ -758,110 +838,123 @@ def replace_zeroes(data):
         data (numpy.ndarray): Input array.
 
     Returns:
-        numpy.ndarray: Array with zeroes replaced by the smallest non-zero value.
+        numpy.ndarray: Array with zeroes replaced by the smallest non-zero
+                       value.
     """
     min_nonzero = np.min(data[np.nonzero(data)])
     data[data == 0] = min_nonzero
     return data
 
 
-#function computes Mantel test using various transformations
+# function computes Mantel test using various transformations
 def test_ibd(gen, geo, out, perms, log=False):
-    #get flattened lower triangle of each matrix
+    # get flattened lower triangle of each matrix
     gen = get_lower_tri(gen)
     geo = get_lower_tri(geo)
 
-    if log==True:
-        geo=replace_zeroes(geo)
-        geo=np.log(geo)
+    if log is True:
+        geo = replace_zeroes(geo)
+        geo = np.log(geo)
 
-    #non-log pearson
-    res=mantel.test(geo, gen, perms=int(perms), method='pearson')
-    rows=list()
-    rows.append(['genXgeo','pearson', str(perms), res.r, res.p, res.z])
+    # non-log pearson
+    res = mantel.test(geo, gen, perms=int(perms), method='pearson')
+    rows = list()
+    rows.append(['genXgeo', 'pearson', str(perms), res.r, res.p, res.z])
 
-    #non-log spearman
-    res=mantel.test(geo, gen, perms=int(perms), method='spearman')
-    rows.append(['genXgeo','spearman', str(perms), res.r, res.p, res.z])
+    # non-log spearman
+    res = mantel.test(geo, gen, perms=int(perms), method='spearman')
+    rows.append(['genXgeo', 'spearman', str(perms), res.r, res.p, res.z])
 
-    #print(rows)
-    ibd=pd.DataFrame(rows,  columns=['test', 'method', 'perms', 'r', 'p' ,'z'])
+    ibd = pd.DataFrame(rows,  columns=['test', 'method', 'perms', 'r', 'p',
+                                       'z'])
     print("Mantel test results:")
     print(ibd)
     ibd.to_csv((str(out) + ".isolationByDistance.txt"), sep="\t", index=False)
     print()
+
 
 def output_fitted_d(pred, out):
     pred.to_csv((str(out)+".obsVersusFittedD.txt"), sep="\t", index=False)
     sns.jointplot(x="observed_D", y="predicted_D", data=pred, kind="reg")
     plt.savefig((str(out)+".obsVersusFittedD.pdf"))
     del pred
-    #plt.show()
+
 
 def fit_least_squares_distances(D, X, iterative, out, weight=None):
     """
-    Computes least-squares branch lengths from a vector of genetic distances D and incidence matrix X.
-    When iterative=True, negative distances are constrained to 0 and then recomputed.
+    Computes least-squares branch lengths from a vector of genetic distances D
+    and incidence matrix X. When iterative=True, negative distances are
+    constrained to 0 and then recomputed.
 
     Args:
         D (numpy.ndarray): Vector of genetic distances.
         X (numpy.ndarray): Incidence matrix.
-        iterative (bool): Whether to use an iterative approach to constrain negative distances.
+        iterative (bool): Whether to use an iterative approach to constrain
+                          negative distances.
         out (str): Output file prefix.
-        weight (numpy.ndarray, optional): Weight matrix for weighted least squares optimization. Defaults to None.
+        weight (numpy.ndarray, optional): Weight matrix for weighted least
+                                          squares optimization. Defaults to
+                                          None.
 
     Returns:
         numpy.ndarray: Least-squared optimized distances.
     """
-    num_segments = (np.size(X,1))
-    #print(num_segments)
+    num_segments = (np.size(X, 1))
     ls = np.zeros(num_segments)
     d = vectorize_mat(D)
 
-    #calculate weights matrix and write to file
-    W=generate_weights_matrix(d, weight)
+    # calculate weights matrix and write to file
+    W = generate_weights_matrix(d, weight)
     print("Weights matrix:")
     print(W)
-    #ofh=out+".weightsMatrix.txt"
-    #np.savetxt(ofh, W, delimiter="\t")
+    # ofh=out+".weightsMatrix.txt"
+    # np.savetxt(ofh, W, delimiter="\t")
 
-    #weighted least-squares optimization
-    ls = np.matmul(np.linalg.inv(np.matmul(np.matmul(X.transpose(),W),X)), np.matmul(np.matmul(X.transpose(), W),d))
+    # weighted least-squares optimization
+    ls = np.matmul(np.linalg.inv(
+        np.matmul(np.matmul(X.transpose(), W), X)),
+        np.matmul(np.matmul(X.transpose(), W), d))
 
     if iterative:
-        ls_old=ls
-        if(np.count_nonzero(ls<0.0) > 0):
-            print("\nLS-optimized distances contain negative values: Using iterative approach to re-calculate...")
-        constrains = list() #save indices of all constrained values
+        ls_old = ls
+        if (np.count_nonzero(ls < 0.0) > 0):
+            print("\nLS-optimized distances contain negative values: Using",
+                  "iterative approach to re-calculate...")
+        constrains = list()  # save indices of all constrained values
 
-        #if negative distances, use iterative procedure to re-calculate
-        while (np.count_nonzero(ls<0.0) > 0):
+        # if negative distances, use iterative procedure to re-calculate
+        while (np.count_nonzero(ls < 0.0) > 0):
             bad_ind = np.argmin(ls)
             constrains.append(bad_ind)
-            #constrain to 0 by removing from incidence matrix
+            # constrain to 0 by removing from incidence matrix
             X = np.delete(X, bad_ind, 1)
-            #re-compute values
-            ls = np.matmul(np.linalg.inv(np.matmul(np.matmul(X.transpose(),W),X)), np.matmul(np.matmul(X.transpose(), W),d))
+            # re-compute values
+            ls = np.matmul(np.linalg.inv(
+                np.matmul(np.matmul(X.transpose(), W), X)),
+                np.matmul(np.matmul(X.transpose(), W), d))
         for i in reversed(constrains):
-            ls=np.insert(ls, i, 0.0)
-        #print(ls)
+            ls = np.insert(ls, i, 0.0)
+        # print(ls)
 
-        #write original and constrained results to log file
-        ofh=out+".leastSquaresConstrained.txt"
-        df=pd.DataFrame({'LS.original':ls_old, 'LS.constrained':ls})
+        # write original and constrained results to log file
+        ofh = out+".leastSquaresConstrained.txt"
+        df = pd.DataFrame({'LS.original': ls_old, 'LS.constrained': ls})
         df.to_csv(ofh, sep="\t", index=False)
 
-        return(ls)
+        return ls
     else:
-        return(ls)
+        return ls
+
 
 def generate_weights_matrix(d, weight):
     """
-    Generates a weights matrix for the least-squares method, where weights are on the diagonals.
+    Generates a weights matrix for the least-squares method, where weights are
+    on the diagonals.
 
     Args:
         d (numpy.ndarray): Vector of genetic distances.
-        weight (str): Weighting method to use, options: 'CSE67', 'BEYER74', 'FM67'.
+        weight (str): Weighting method to use, options: 'CSE67', 'BEYER74',
+                      'FM67'.
 
     Returns:
         numpy.ndarray: Weights matrix.
@@ -873,14 +966,18 @@ def generate_weights_matrix(d, weight):
         W[row, col] = np.ones(len(d))
     elif weight.upper() == "BEYER74":
         if np.count_nonzero(d == 0) > 0:
-            print("WARNING: Divide-by-zero in weighted least-squares (weight=1/D).")
+            print("WARNING: Divide-by-zero in weighted least-squares",
+                  "(weight=1/D).")
         W[row, col] = np.divide(1.0, d, out=np.zeros_like(d), where=d != 0)
     elif weight.upper() == "FM67":
         if np.count_nonzero(d == 0) > 0:
-            print("WARNING: Divide-by-zero in weighted least-squares (weight=1/D^2).")
-        W[row, col] = np.divide(1.0, np.square(d), out=np.zeros_like(d), where=d != 0)
+            print("WARNING: Divide-by-zero in weighted least-squares",
+                  "(weight=1/D^2).")
+        W[row, col] = np.divide(1.0, np.square(d),
+                                out=np.zeros_like(d), where=d != 0)
     else:
-        print(f"ERROR: Weight option {weight} not recognized. Using ordinary least-squares instead.")
+        print(f"ERROR: Weight option {weight} not recognized. Using ordinary",
+              "least-squares instead.")
         W[row, col] = np.ones(len(d))
 
     return W
@@ -906,17 +1003,22 @@ def vectorize_mat(mat):
 
     return vec
 
+
 def get_stream_mats(points, graph, len_col):
     """
-    Computes pairwise stream distances and 0/1 incidence matrix for StreamTree calculations.
+    Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
+    calculations.
 
     Args:
-        points (dict): Dictionary of point indices and their corresponding node IDs in the graph.
-        graph (networkx.Graph): NetworkX graph object representing the stream network.
+        points (dict): Dictionary of point indices and their corresponding node
+                       IDs in the graph.
+        graph (networkx.Graph): NetworkX graph object representing the stream
+                                network.
         len_col (str): Attribute name for the length of the edges in the graph.
 
     Returns:
-        tuple: Pair of numpy.ndarray representing the pairwise stream distance matrix and incidence matrix.
+        tuple: Pair of numpy.ndarray representing the pairwise stream distance
+               matrix and incidence matrix.
     """
     dist = np.zeros((len(points), len(points)))
     inc = np.zeros((nCr(len(points), 2), len(graph.edges())), dtype=int)
@@ -925,17 +1027,20 @@ def get_stream_mats(points, graph, len_col):
     dist[:] = np.nan
 
     def dijkstra_weight(left, right, attributes):
-        """
-        Calculates weights for Dijkstra's shortest path algorithm by inverting the edge length with a small constant to avoid division by zero.
-        """
+        # Calculates weights for Dijkstra's shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
         epsilon = 1e-9
         return 1 / (attributes[len_col] + epsilon)
 
     index = 0
     for ia, ib in itertools.combinations(range(0, len(points)), 2):
-        path = nx.bidirectional_dijkstra(graph, points.values()[ia], points.values()[ib], weight=dijkstra_weight)
+        path = nx.bidirectional_dijkstra(graph, points.values()[ia],
+                                         points.values()[ib],
+                                         weight=dijkstra_weight)
         if path:
-            dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1], len_col)))
+            dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1],
+                                                          len_col)))
             dist[ib, ia] = dist[ia, ib]
 
         # Incidence matrix: assign 1 if edge is in the path, 0 otherwise
@@ -949,9 +1054,11 @@ def get_stream_mats(points, graph, len_col):
     np.fill_diagonal(dist, 0.0)
     return dist, inc
 
+
 def find_pair(lst, x, y):
     """
-    Check if two elements are consecutive in a list, irrespective of their order.
+    Check if two elements are consecutive in a list, irrespective of their
+    order.
 
     Args:
         lst (list): The list to search for the pair.
@@ -959,7 +1066,7 @@ def find_pair(lst, x, y):
         y (Any): The second element of the pair.
 
     Returns:
-        bool: True if the elements are consecutive in the list, False otherwise.
+        bool: True if the elements are consecutive in the list, False otherwise
     """
     if x not in lst or y not in lst:
         return False
@@ -1016,9 +1123,9 @@ def path_subgraph(graph, nodes, method, id_col, len_col):
     k = nx.Graph()
 
     def dijkstra_weight(left, right, attributes):
-        """
-        Calculates weights for Dijkstra's shortest path algorithm by inverting the edge length with a small constant to avoid division by zero.
-        """
+        # Calculates weights for Dijkstra's shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
         epsilon = 1e-9
         return 1 / (attributes[len_col] + epsilon)
 
@@ -1026,7 +1133,8 @@ def path_subgraph(graph, nodes, method, id_col, len_col):
     for p2 in list(nodes.values())[1:]:
         try:
             # Find the shortest path between the two points
-            path = nx.bidirectional_dijkstra(graph, p1, p2, weight=dijkstra_weight)
+            path = nx.bidirectional_dijkstra(graph, p1, p2,
+                                             weight=dijkstra_weight)
 
             # Traverse the nodes in the path to build a minimal set of edges
             method(k, graph, nodes.values(), id_col, len_col, path[1])
@@ -1043,6 +1151,7 @@ def path_subgraph(graph, nodes, method, id_col, len_col):
             print("Something unexpected happened:", e)
             sys.exit(1)
     return k
+
 
 def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
     """
@@ -1068,9 +1177,11 @@ def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
         dat = graph.get_edge_data(first, second)
         subgraph.add_edge(first, second, **dat)
 
+
 def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
     """
-    Extracts a simplified subgraph from paths, keeping only terminal and junction nodes.
+    Extracts a simplified subgraph from paths, keeping only terminal and
+    junction nodes.
 
     Args:
         subgraph (NetworkX Graph): The subgraph to be modified.
@@ -1092,7 +1203,9 @@ def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
 
         # Add path attributes to current edge
         dat = graph.get_edge_data(first, second)
-        curr_edge[id_col].extend([dat[id_col]] if not isinstance(dat[id_col], list) else dat[id_col])
+        curr_edge[id_col].extend([dat[id_col]] if not
+                                 isinstance(dat[id_col], list) else
+                                 dat[id_col])
         curr_edge[len_col] = float(curr_edge[len_col]) + float(dat[len_col])
 
         # If the second node is a STOP node (in nodelist or is a junction)
@@ -1108,9 +1221,12 @@ def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
             # Otherwise, continue building the current edge
             continue
 
-def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col, path):
+
+def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col,
+                             path):
     """
-    Extracts a simplified subgraph from paths, keeping only terminal and junction nodes.
+    Extracts a simplified subgraph from paths, keeping only terminal and
+    junction nodes.
 
     Args:
         subgraph (NetworkX Graph): The subgraph to be modified.
@@ -1147,6 +1263,7 @@ def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col, path):
         else:
             # Otherwise, continue building the current edge
             continue
+
 
 def snap_to_node(graph, pos):
     """

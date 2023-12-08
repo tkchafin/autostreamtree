@@ -29,6 +29,9 @@ setup(
     extras_require={
         'dev': ['pytest']
     },
+    package_data={
+        'autostreamtree': ['data/*'],
+    },
     include_package_data=True,
     author='Tyler Chafin',
     author_email='tyler.chafin@bioss.ac.uk',
