@@ -184,7 +184,7 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     genmat[:] = np.nan
 
     # NOT USED CURRENTLY
-    # for models which relax equal nuc frequencies, get global frequencies 
+    # for models which relax equal nuc frequencies, get global frequencies
     # for each locus
     # freqs will be a list of loci, with each locus as a dist of freqs
     # if dist in ["TN84", "TN93"]:
@@ -459,19 +459,15 @@ def hamming_distance(seq1, seq2):
 # e.g. ['A/A', 'A/B', 'B/B', ...].
 #         s2 (List[str]): A list of phased genotypes from population 2,
 # e.g. ['A/A', 'A/C', 'C/C', ...].
-
 #     Returns:
 #         float: The Nei's 1983 Da estimator.
-
 #     """
 #     # Clean the input lists by removing individuals with unknown or gap
 # alleles.
 #     s1 = clean_list(s1, ["n", "?", "-", "N"])
 #     s2 = clean_list(s2, ["n", "?", "-", "N"])
-    
 #     # Get the list of unique alleles from both populations.
 #     uniques = uniq_alleles(s1+s2)
-    
 #     # Compute the sum of squared roots of frequencies for each allele.
 #     sumSqRt = 0.0
 #     for allele in uniques:
@@ -499,11 +495,9 @@ def hamming_distance(seq1, seq2):
 #     """
 #     # Get unique alleles in the two populations
 #     uniques = seq.uniq_alleles(s1+s2)
-    
 #     # Clean the sequences by removing any unknown or gap alleles
 #     s1 = clean_list(s1, ["n", "?", "-", "N"])
 #     s2 = clean_list(s2, ["n", "?", "-", "N"])
-    
 #     # Calculate Euclidean distance
 #     sumSq = 0.0
 #     for allele in uniques:
@@ -789,4 +783,3 @@ def uniq_alleles(s):
         set: A set of unique alleles.
     """
     return set(sum([x.split("/") for x in s], []))
-

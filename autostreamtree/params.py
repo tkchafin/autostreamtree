@@ -17,7 +17,7 @@ class parseArgs():
                  "loc_agg=", "pop_agg=", "sdist_agg=", "clusterpop",
                  "epsilon=", "min_samples=", "sclusterpop", "network=",
                  "overwrite", "reachid_col=", "length_col=", "coercemat",
-                 "locmatdir=", "vcf=", "concat=", "edge_list=", "gdf_out=", 
+                 "locmatdir=", "vcf=", "concat=", "edge_list=", "gdf_out=",
                  "seed="]
             )
         except getopt.GetoptError as err:

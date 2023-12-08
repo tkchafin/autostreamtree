@@ -249,7 +249,7 @@ def parse_subgraph_from_points(params, point_coords, pop_coords, G):
     else:
         print(
             "NOTE: Not over-writing existing network. To change this, use",
-                "--overwrite"
+            "--overwrite"
             )
 
     network_plot = str(params.out) + ".subGraph.pdf"
@@ -440,7 +440,7 @@ def parse_input_genmat(params, inmat, point_coords, popmap, seqs=None):
                 del inmat
         elif params.geopop or params.clusterpop:
             if (len(inmat.columns)) != len(point_coords):
-                print("Found", str(len(inmat.columns)), 
+                print("Found", str(len(inmat.columns)),
                       "columns in provided matrix. This doesn't match number",
                       "of individuals.")
                 print("When using --geopop or --clusterpop, the provided",
@@ -1233,7 +1233,7 @@ def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col,
         graph (NetworkX Graph): The input graph.
         nodelist (list): The list of nodes.
         id_col (str): The column name for edge ID.
-        dist_col (str): Column name for dist attribute 
+        dist_col (str): Column name for dist attribute
         path (list): The path between nodes.
     """
     curr_edge = {id_col: list(), dist_col: 0}
@@ -1285,7 +1285,7 @@ def write_geodataframe(gdf, output_prefix, output_driver):
     extension = {
         "SHP": ".shp",
         "GPKG": ".gpkg",
-        "GDB": ".gdb"  
+        "GDB": ".gdb"
     }.get(output_driver.upper(), ".gpkg")  # Default to .gpkg
 
     output_path = f"{output_prefix}{extension}"
