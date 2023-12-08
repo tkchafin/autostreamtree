@@ -17,7 +17,8 @@ def aggregate_dist(method, stuff):
     """
     if method == "HARM":
         try:
-            return(scipy.stats.hmean(stuff))
+            stuff = [x for x in stuff if x > 0]
+            return scipy.stats.hmean(stuff) if len(stuff) > 0 else 0.0
         except ValueError as e:
             print(e)
             print("ERROR (DivideByZero): Harmonic mean cannot be calculated using a zero distance. Try recomputing using the \"ADJHARM\" option.")

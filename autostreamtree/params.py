@@ -103,9 +103,9 @@ class parseArgs():
                 self.geopop = True
             elif opt in ('d', 'dist'):
                 self.dist = arg.upper()
-                valid_dists = ["PDIST", "JC69", "K2P", "TN84", "TN93", "FST",
-                               "LINFST", "JOST", "NEI72", "NEI83",
-                               "EUCLID", "CHORD", "GST", "GSTPRIME", "LINJOST"]
+                valid_dists = ["PDIST", "FST",
+                               "LINFST", "JOST", "NEI83",
+                               "CHORD", "GST", "HARMD"]
                 if self.dist not in valid_dists:
                     self.display_help(f"Invalid option {self.dist} for \
                                       option <-d/--dist>")
@@ -204,7 +204,7 @@ class parseArgs():
                     allowable. Please choose 1 (haploid) or 2 (diploid)")
 
         # sanity checks
-        if self.dist not in ["PDIST", "TN84", "TN93", "K2P", "JC69"]:
+        if self.dist not in ["PDIST"]:
             if not self.pop and not self.geopop:
                 self.display_help(
                     f"ERROR: Distance metric {self.dist} not possible \
@@ -264,17 +264,16 @@ shapefile [default=\"HYRIV_ID\"]\n"
 
             "Genetic distance options:\n"
             "    -d, --dist      : Use which metric of distance? Options:\n"
-            "        Substitution models (individual-based):\n"
+            "        Individual-based:\n"
             "          PDIST     : Uncorrected p-distances [# Differences / \
 Length]\n"
-            "          JC69      : [default] Jukes-Cantor (1969) corrected \
-p-distances\n"
             "        Frequency models (when using --pop):\n"
             "          FST       : Weir and Cockerham's Fst formulation \
 (=THETAst)\n"
             "          LINFST    : [default] Rousset's (1997) Fst \
 [=Fst/(1-Fst)]\n"
-            "          JOST      : Jost's (2008) D\n"
+            "          JOST      : Global estimate Jost's (2008) D\n"
+            "          HARMD     : Harmonic mean of Jost's D per-locus\n"
             "          NEI83     : Nei and Chesser (1983) Da\n"
             "          CHORD     : Cavalli-Sforza and Edwards (1967) chord \
 distance\n"

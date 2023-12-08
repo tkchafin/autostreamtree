@@ -177,7 +177,7 @@ General options:
 
 Genetic distance options:
     -d, --dist      : Use which metric of distance? Options:
-        Substitution models (individual-based):
+        Individual-based:
           PDIST     : Uncorrected p-distances [# Differences / Length]
           JC69      : [default] Jukes-Cantor (1969) corrected p-distances
         Frequency models (when using --pop):
@@ -324,9 +324,8 @@ There are a number of existing (and more comprehensive) packages out there for c
 For convenience, a number of options are built-in, which can be selected using the `-d,--dist` argument:
 ```
     -d, --dist      : Use which metric of distance? Options:
-        Substitution models (individual-based):
+        Individual-based:
           PDIST     : Uncorrected p-distances [# Differences / Length]
-          JC69      : [default] Jukes-Cantor (1969) corrected p-distances
         Frequency models (when using --pop):
           FST       : Weir and Cockerham's Fst formulation (=THETAst)
           LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]

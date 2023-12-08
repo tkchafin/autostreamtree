@@ -11,7 +11,6 @@ import autostreamtree.sequence as seq
 Note several distance calculations not currently in use, I plan to expand this
 further in the future, but for now only the following are supported:
 - p distances
-- JC69
 - Weir and Cockerham's Fst (linearised or non-linearised)
 - Jost's D
 - Chord distance
@@ -224,36 +223,37 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
     return genmat
 
 
-def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
-    """
-    Description: This function calculates the JC69-corrected p-distance
-                 between two DNA sequences.
+# NOT IN USE
+# def jukes_cantor_distance(seq1: str, seq2: str, het: bool = False) -> float:
+#     """
+#     Description: This function calculates the JC69-corrected p-distance
+#                  between two DNA sequences.
 
-    Args:
-    - seq1 (str): The first DNA sequence.
-    - seq2 (str): The second DNA sequence.
-    - het (bool): Whether to use the Jukes-Cantor correction for heterozygous
-                  sites (True) or for all sites (False). Default is False.
+#     Args:
+#     - seq1 (str): The first DNA sequence.
+#     - seq2 (str): The second DNA sequence.
+#     - het (bool): Whether to use the Jukes-Cantor correction for heterozygous
+#                   sites (True) or for all sites (False). Default is False.
 
-    Returns:
-    - dist (float): The JC69-corrected p-distance between the two sequences.
-    """
-    obs = 0.0
-    # calculate the observed distance
-    if het:
-        obs = p_distance(seq1, seq2)
-    else:
-        obs = hamming_distance(seq1, seq2)
+#     Returns:
+#     - dist (float): The JC69-corrected p-distance between the two sequences.
+#     """
+#     obs = 0.0
+#     # calculate the observed distance
+#     if het:
+#         obs = p_distance(seq1, seq2)
+#     else:
+#         obs = hamming_distance(seq1, seq2)
 
-    # apply the JC69 correction
-    if obs >= 0.75:
-        obs = 0.74999
-    dist = -0.75 * np.log(1.0 - ((4.0/3.0) * obs))
+#     # apply the JC69 correction
+#     if obs >= 0.74999:
+#         obs = 0.749
+#     dist = -0.75 * np.log(1.0 - ((4.0/3.0) * obs))
 
-    # ensure distance is not negative and return
-    if not dist > 0.0:
-        return 0.0
-    return dist
+#     # ensure distance is not negative and return
+#     if not dist > 0.0:
+#         return 0.0
+#     return dist
 
 
 # NOT IN USE
@@ -407,13 +407,13 @@ def p_distance(seq1, seq2):
             ex2 = set(seq.get_iupac_caseless(n2))
 
             if ex1 == ex2:
-                # Exact match, including ambiguity codes
+                # Exact match
                 continue
             elif ex1.isdisjoint(ex2):
-                # Disjoint sets, no common alleles
+                # No match
                 D += 1.0
             else:
-                # Partial match (overlap but not exact match)
+                # Partial match
                 D += 0.5
 
     if L <= 0:
@@ -446,7 +446,7 @@ def hamming_distance(seq1, seq2):
             D += 1.0  # Count mismatches
 
     if L <= 0:
-        return 0.0  # Avoid division by zero; could also return np.nan or raise an error
+        return 0.0  # Avoid division by zero
     return D / L
 
 

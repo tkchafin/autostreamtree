@@ -39,38 +39,18 @@ weighting. Please also cite: \nBeyer WM, Stein M, Smith T, Ulam S. 1974. A \
 molecular sequence metric and evolutionary trees. Mathematical Biosciences. \
 19: 9-25"
     if params.run != "STREAMDIST" and not params.genmat:
-        if params.dist != "PDIST" and params.dist != "EUCLID":
+        if params.dist != "PDIST":
             refs = refs + "\n\nPlease cite the following for your genetic \
 distance calculations:"
             if params.dist == "JC69":
                 refs = refs + "\nJukes TH, Cantor CR. 1969. Evolution of \
 protein molecules. New York: Academic Press."
-            elif params.dist == "K2P":
-                refs = refs + "\nKimura M. 1980. A simple method for \
-estimating evolutionary rates of base substitutions through comparative \
-studies of nucleotide sequences. Journal of Molecular Evolution. 16(2): \
-111-120."
-            elif params.dist == "TN84":
-                refs = refs + "\nTajima F, Nei M. 1984. Estimation of \
-evolutionary distance between nucleotide sequences. Molecular Biology and \
-Evolution 1:269-285"
-            elif params.dist == "TN93":
-                refs = refs + "\nTamura K, Nei M. 1993. Estimation of the \
-number of nucleotide substitutions in the control region of mitochondrial DNA \
-in humans and chimpanzees. Molecular Biology and Evolution. 10(3):512-526."
             elif params.dist == "FST":
                 refs = refs + "\nWeir BS, Cockerham CC. 1984. Estimating \
 F-statistics for the analysis of population structure. Evolution. 38: \
 1358-1370."
-            elif params.dist == "GST":
-                refs = refs + "\nHedrick PW. 2005. A standardized genetic \
-differentiation measure. Evolution. 59: 1633–1638"
                 refs = refs + "\nNei M. 1987. Molecular Evolutionary \
 Genetics. Columbia University Press, New York"
-            elif params.dist == "GSTPRIME":
-                refs = refs + "\nMeirmans PG, Hedrick PW. 2011. Assessing \
-population structure: Fst and related measures. Molecular Ecology Resources. \
-11: 5-18."
             elif params.dist == "LINFST":
                 refs = refs + "\nRousset F. 1997. Genetic differentiation and \
 estimation of gene flow from F-statistics under isolation by distance. \
@@ -81,9 +61,6 @@ F-statistics for the analysis of population structure. Evolution. 38: \
             elif params.dist == "JOST":
                 refs = refs + "\nJost L. 2008. Gst and its relatives do not \
 measure differentiation. Molecular Ecology. 17: 4015-4026."
-            elif params.dist == "NEI72":
-                refs = refs + "\nNei M. 1972. Genetic distance between \
-populations. American Naturalist. 106: 283-292."
             elif params.dist == "NEI83":
                 refs = refs + "\nNei M, Chesser RK. 1983. Estimation of \
 fixation indices and gene diversities. Annals of Human Genetics 47(3): 253-259"
@@ -92,7 +69,7 @@ fixation indices and gene diversities. Annals of Human Genetics 47(3): 253-259"
 Phylogenetic analysis: model and estimation procedures. American Journal of \
 Human Genetics. 19: 233-257."
 
-    if params.run == "IBD":
+    if params.run == "IBD" or params.run == "ALL":
         refs = refs + "\n\nFor the Mantel test, please cite:\nMantel N. 1967. \
 The detection of disease clustering and a generalized regression approach. \
 Cancer Research 27(2): 209-220."
