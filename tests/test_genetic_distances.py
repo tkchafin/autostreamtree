@@ -5,7 +5,7 @@ from unittest.mock import patch
 import autostreamtree.genetic_distances as gendist
 
 
-dist_options = ["JC69", "PDIST", "JOST", "HARMD", "FST", "LINFST", "CHORD"]
+dist_options = ["PDIST", "JOST", "HARMD", "FST", "LINFST", "CHORD"]
 
 
 def mock_agg_dist(*args, **kwargs):
@@ -178,13 +178,13 @@ def test_get_genmat_pdist_het(mock_seqs_het, mock_points):
     np.testing.assert_allclose(result_matrix, expected_matrix, atol=1e-3)
 
 
-def test_get_genmat_jc69_het(mock_seqs_het, mock_points):
+def test_pop_pdist(mock_indmat, mock_popmap, mock_seqs, mock_dat):
+    # will fil in expected later 
     expected_matrix = np.array([
-        [0.0, 0.075, 0.8239, 1.0],
-        [0.071429, 0.0, 0.428571, 0.928571],
-        [0.5, 0.428571, 0.0, 0.5],
-        [1.0, 0.928571, 0.5, 0.0]
+        [0.0, 3.5],
+        [3.5, 0.0]
     ])
-    result_matrix = gendist.get_genmat("JC69", mock_points, mock_seqs_het,
-                                       ploidy=2, het=True, loc_agg="ARITH")
+    result_matrix = gendist.get_pop_genmat(dist="PDIST", indmat=mock_indmat,
+                                        popmap=mock_popmap, dat=mock_dat,
+                                        seqs=mock_seqs, pop_agg="ARITH")
     np.testing.assert_allclose(result_matrix, expected_matrix, atol=1e-3)

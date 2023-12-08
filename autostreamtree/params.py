@@ -274,7 +274,6 @@ Length]\n"
 [=Fst/(1-Fst)]\n"
             "          JOST      : Global estimate Jost's (2008) D\n"
             "          HARMD     : Harmonic mean of Jost's D per-locus\n"
-            "          NEI83     : Nei and Chesser (1983) Da\n"
             "          CHORD     : Cavalli-Sforza and Edwards (1967) chord \
 distance\n"
             "          --NOTE: Individual-based metrics can also be computed \

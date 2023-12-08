@@ -16,7 +16,7 @@ def test_fetch_references_default():
 def test_fetch_references_nondefault():
     test_args = ["autostreamtree", "-v", "vcf_file", "-s", "shapefile.shp",
                  "-i", "coords_file", "-p", "popmap_file", "-w", "FM67",
-                 "-d", "JC69", "--clusterpop", "--loc_agg", "ADJHARM"]
+                 "-d", "HARMD", "--clusterpop", "--loc_agg", "ADJHARM"]
     sys.argv = test_args
     args = parseArgs()
 

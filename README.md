@@ -183,7 +183,6 @@ Genetic distance options:
           FST       : Weir and Cockerham's Fst formulation (=THETAst)
           LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
           JOST      : Jost's (2008) D
-          NEI83     : Nei and Chesser (1983) Da
           CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
           --NOTE: Individual-based metrics can also be computed for
                     populations. You can set how these are aggregated w/ --pop_agg
@@ -329,7 +328,6 @@ For convenience, a number of options are built-in, which can be selected using t
           FST       : Weir and Cockerham's Fst formulation (=THETAst)
           LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
           JOST      : Jost's (2008) D
-          NEI83     : Nei and Chesser (1983) Da
           CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
           --NOTE: Individual-based metrics can also be computed for
                     populations. You can set how these are aggregated w/ --pop_agg

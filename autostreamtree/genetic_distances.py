@@ -1,7 +1,6 @@
 import sys
 import itertools
 import numpy as np
-from typing import List
 
 import autostreamtree.aggregators as agg
 import autostreamtree.sequence as seq
@@ -25,7 +24,7 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
     genmat[:] = np.nan
     # for each combination, either average ind distances or calc freq dist
     for ia, ib in itertools.combinations(range(0, len(popmap)), 2):
-        if dist in ["JC69", "PDIST"]:
+        if dist in ["PDIST"]:
             inds1 = [dat.index(x) for x in popmap.values()[ia]]
             inds2 = [dat.index(x) for x in popmap.values()[ib]]
             genmat[ia, ib] = (agg.aggregate_dist(
@@ -135,23 +134,23 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
                     genmat[ia, ib] = genmat[ib, ia] = (theta / (1-theta))
                 else:
                     genmat[ia, ib] = genmat[ib, ia] = theta
-        elif dist == "NEI83":
-            results = list()
-            loci = 0.0
-            for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
-                seqs1 = get_alleles(
-                    [seqs[x][loc] for x in popmap.values()[ia]]
-                )
-                seqs2 = get_alleles(
-                    [seqs[x][loc] for x in popmap.values()[ib]]
-                )
-                if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
-                        not clean_list(set(seqs2), ["n", "N", "-", "?"])):
-                    continue
-                loci += 1.0
-                results.append(two_pop_nei_da(seqs1, seqs2))
-            Da = (1.0 - (np.sum(results) / loci))
-            genmat[ia, ib] = genmat[ib, ia] = Da
+        # elif dist == "NEI83":
+        #     results = list()
+        #     loci = 0.0
+        #     for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
+        #         seqs1 = get_alleles(
+        #             [seqs[x][loc] for x in popmap.values()[ia]]
+        #         )
+        #         seqs2 = get_alleles(
+        #             [seqs[x][loc] for x in popmap.values()[ib]]
+        #         )
+        #         if (not clean_list(set(seqs1), ["n", "N", "-", "?"]) or
+        #                 not clean_list(set(seqs2), ["n", "N", "-", "?"])):
+        #             continue
+        #         loci += 1.0
+        #         results.append(two_pop_nei_da(seqs1, seqs2))
+        #     Da = (1.0 - (np.sum(results) / loci))
+        #     genmat[ia, ib] = genmat[ib, ia] = Da
         elif dist == "CHORD":
             sum_squares = 0.0
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
@@ -208,13 +207,13 @@ def get_genmat(dist, points, seqs, ploidy, het, loc_agg):
                 seq1 = seq.dna_consensus(seq1)
             if "/" in seq2:
                 seq2 = seq.dna_consensus(seq2)
-            if dist == "JC69":
-                results.append(jukes_cantor_distance(seq1, seq2, het))
-            elif dist == "PDIST":
+            if dist == "PDIST":
                 if het:
                     results.append(p_distance(seq1, seq2))
                 else:
                     results.append(hamming_distance(seq1, seq2))
+            else:
+                raise ValueError(f"{dist} not implemented")
         # aggregate results across loci
         genmat[ia, ib] = agg.aggregate_dist(loc_agg, results)
         genmat[ib, ia] = genmat[ia, ib]
@@ -450,35 +449,39 @@ def hamming_distance(seq1, seq2):
     return D / L
 
 
-def two_pop_nei_da(s1: List[str], s2: List[str]) -> float:
-    """
-    Computes Nei's 1983 Da estimator for two populations.
+# NOT IN USE
+# def two_pop_nei_da(s1: List[str], s2: List[str]) -> float:
+#     """
+#     Computes Nei's 1983 Da estimator for two populations.
 
-    Args:
-        s1 (List[str]): A list of phased genotypes from population 1, e.g. ['A/A', 'A/B', 'B/B', ...].
-        s2 (List[str]): A list of phased genotypes from population 2, e.g. ['A/A', 'A/C', 'C/C', ...].
+#     Args:
+#         s1 (List[str]): A list of phased genotypes from population 1,
+# e.g. ['A/A', 'A/B', 'B/B', ...].
+#         s2 (List[str]): A list of phased genotypes from population 2,
+# e.g. ['A/A', 'A/C', 'C/C', ...].
 
-    Returns:
-        float: The Nei's 1983 Da estimator.
+#     Returns:
+#         float: The Nei's 1983 Da estimator.
 
-    """
-    # Clean the input lists by removing individuals with unknown or gap alleles.
-    s1 = clean_list(s1, ["n", "?", "-", "N"])
-    s2 = clean_list(s2, ["n", "?", "-", "N"])
+#     """
+#     # Clean the input lists by removing individuals with unknown or gap
+# alleles.
+#     s1 = clean_list(s1, ["n", "?", "-", "N"])
+#     s2 = clean_list(s2, ["n", "?", "-", "N"])
     
-    # Get the list of unique alleles from both populations.
-    uniques = uniq_alleles(s1+s2)
+#     # Get the list of unique alleles from both populations.
+#     uniques = uniq_alleles(s1+s2)
     
-    # Compute the sum of squared roots of frequencies for each allele.
-    sumSqRt = 0.0
-    for allele in uniques:
-        if allele in ["-", "?", "n", "N"]:
-            continue
-        else:
-            Xu = float(s1.count(allele) / len(s1))
-            Yu = float(s2.count(allele) / len(s2))
-            sumSqRt += np.sqrt(Xu*Yu)
-    return sumSqRt
+#     # Compute the sum of squared roots of frequencies for each allele.
+#     sumSqRt = 0.0
+#     for allele in uniques:
+#         if allele in ["-", "?", "n", "N"]:
+#             continue
+#         else:
+#             Xu = float(s1.count(allele) / len(s1))
+#             Yu = float(s2.count(allele) / len(s2))
+#             sumSqRt += np.sqrt(Xu*Yu)
+#     return sumSqRt
 
 
 # NOT IN USE
@@ -533,7 +536,7 @@ def two_pop_chord_dist(s1, s2):
 
 def two_pop_weir_cockerham_fst(s1, s2):
     """
-    Computes Weir and Cockerham's THETAst Fst approximation for two populations.
+    Computes Weir and Cockerham's THETAst Fst approximation for two populations
 
     Args:
         s1 (list): A list of phased genotypes for population 1.
@@ -541,8 +544,8 @@ def two_pop_weir_cockerham_fst(s1, s2):
 
     Returns:
         tuple: A tuple containing two floats. The first float is the numerator
-        of the THETAst estimator for the locus. The second float is the denominator
-        of the THETAst estimator for the locus.
+        of the THETAst estimator for the locus. The second float is the
+        denominator of the THETAst estimator for the locus.
 
     Raises:
         ValueError: If the inputs are not valid.
@@ -553,27 +556,28 @@ def two_pop_weir_cockerham_fst(s1, s2):
         raise ValueError("Inputs must be lists.")
     if not s1 or not s2:
         raise ValueError("Inputs must not be empty.")
-    if not all(isinstance(x, str) for x in s1) or not all(isinstance(x, str) for x in s2):
+    if (not all(isinstance(x, str) for x in s1) or
+            not all(isinstance(x, str) for x in s2)):
         raise ValueError("Inputs must only contain strings.")
     if not all("/" in x for x in s1) or not all("/" in x for x in s2):
         raise ValueError("Inputs must be phased genotypes.")
-    
+
     # Initialize variables
     num = 0.0
     denom = 0.0
 
-    #mean sample size
+    # mean sample size
     alleles1 = get_alleles(s1)  # split alleles s1
     alleles2 = get_alleles(s2)  # split alleles s2
     uniques = uniq_alleles(s1+s2)  # list of unique alleles only
-    r = 2.0 #number of pops
-    n1 = float(len(s1)) #pop size of pop 1
-    n2 = float(len(s2)) #pop size of pop 2
+    r = 2.0  # number of pops
+    n1 = float(len(s1))  # pop size of pop 1
+    n2 = float(len(s2))  # pop size of pop 2
     csd = np.std([n1, n2])
     cm = np.mean([n1, n2])
     nbar = cm
     csquare = (csd*csd) / (cm*cm)
-    nC   = nbar * (1.0 - (csquare/r)) #coeff of pop size variance
+    nC = nbar * (1.0 - (csquare/r))  # coeff of pop size variance
     for allele in uniques:
         ac1 = float(alleles1.count(allele))
         ac2 = float(alleles2.count(allele))
@@ -582,26 +586,25 @@ def two_pop_weir_cockerham_fst(s1, s2):
         h1 = get_het_from_phased(allele, s1, count=True)
         h2 = get_het_from_phased(allele, s2, count=True)
         pbar = (ac1+ac2) / (float(len(alleles1)) + float(len(alleles2)))
-        ssquare = ((np.sum( [ (n1* (np.square(p1 - pbar)) ), (n2* (np.square(p2 - pbar))) ])) / ((r-1.0)*nbar))
-        hbar = ((h1+h2) / (r * nbar))
-        #print(nbar)
-        #print(hbar)
+        ssquare = ((np.sum([(n1 * (np.square(p1 - pbar))),
+                            (n2 * (np.square(p2 - pbar)))])) / ((r-1.0)*nbar))
+        hbar = ((h1 + h2) / (r * nbar))
         if nbar != 1.0:
-            a = ((nbar/nC) *
-                (ssquare -
-                ((1.0 / (nbar-1.0)) *
-                ((pbar * (1.0-pbar)) -
-                ((r - 1.0) * ssquare / r) -
-                (hbar / 4.0)))))
+            a = ((nbar/nC) * (ssquare -
+                              ((1.0 / (nbar-1.0)) *
+                               ((pbar * (1.0 - pbar)) -
+                                ((r - 1.0) * ssquare / r) -
+                                (hbar / 4.0)))))
             b = ((nbar / (nbar-1.0)) *
-                ((pbar * (1.0 - pbar)) -
-                ((r - 1.0) * ssquare / r) -
-                (((2.0 * nbar) - 1.0) * hbar / (4.0 * nbar))))
+                 ((pbar * (1.0 - pbar)) -
+                  ((r - 1.0) * ssquare / r) -
+                  (((2.0 * nbar) - 1.0) * hbar / (4.0 * nbar))))
             c = hbar/2.0
             d = a+b+c
             num += a
             denom += d
-    return(num, denom)
+    return num, denom
+
 
 def clean_inds(inds):
     """
@@ -615,7 +618,8 @@ def clean_inds(inds):
     """
     ret = []
     for ind in inds:
-        if "-" not in ind and "?" not in ind and "n" not in ind and "N" not in ind:
+        if ("-" not in ind and "?" not in ind and "n" not in ind and
+                "N" not in ind):
             ret.append(ind)
     return ret
 
@@ -634,13 +638,16 @@ def two_pop_jost_d(seqs1, seqs2, global_het=False):
 # NOT IN USE
 # def two_pop_ht_hs(seqs1, seqs2, ploidy, global_het=False):
 #     """
-#     Computes Nei's Fst estimator (Gst) using Nei and Chessers Hs and Ht estimators
-#     also applies Hedrick's (2005) sample size correction, thus returning G'st.
+#     Computes Nei's Fst estimator (Gst) using Nei and Chessers Hs and Ht
+# estimators
+#     also applies Hedrick's (2005) sample size correction, thus returning
+# G'st.
 
 #     Args:
 #     - seqs1, seqs2 (list): lists of sequences for populations 1 and 2.
 #     - ploidy (int): ploidy of the sequences.
-#     - global_het (bool, optional): If True, computes global heterozygosity. Defaults to False.
+#     - global_het (bool, optional): If True, computes global heterozygosity.
+# Defaults to False.
 
 #     Returns:
 #     - A tuple containing Ht_est and Hs_est.
@@ -665,23 +672,30 @@ def two_pop_jost_d(seqs1, seqs2, global_het=False):
 #     # GprimeST = ((Gst * (1.0 + Hs_est)) / (1.0 - Hs_est))
 #     return (Ht_est, Hs_est)
 
+
 def get_het_from_phased(allele, phasedList, count=False):
     """
-    Returns observed heterozygosity of an allele given a list of phased genotypes (e.g. allele1/allele2 for each individual). Assumes diploid.
+    Returns observed heterozygosity of an allele given a list of phased
+    genotypes (e.g. allele1/allele2 for each individual). Assumes diploid.
 
     Args:
     allele (str): The allele for which to compute heterozygosity.
-    phasedList (list): A list of phased genotypes, where each element is a string of the form 'allele1/allele2'.
-    count (bool): Whether to return the number of heterozygotes instead of the proportion.
+    phasedList (list): A list of phased genotypes, where each element is a
+                       string of the form 'allele1/allele2'.
+    count (bool): Whether to return the number of heterozygotes instead of the
+                  proportion.
 
     Returns:
-    float: The proportion of heterozygotes for the given allele, unless `count` is True, in which case the count of heterozygotes is returned.
+    float: The proportion of heterozygotes for the given allele, unless `count`
+           is True, in which case the count of heterozygotes is returned.
     """
     hets = 0.0
     twoN = (len(phasedList)) * 2.0
     for genotype in phasedList:
         if "/" not in genotype:
-            print("ERROR (get_het_from_phased): Phased genotypes are required.")
+            print(
+                "ERROR (get_het_from_phased): Phased genotypes are required."
+            )
         gens = genotype.split("/")
         if gens[0] == allele and gens[1] != allele:
             hets += 1.0
@@ -695,6 +709,7 @@ def get_het_from_phased(allele, phasedList, count=False):
         return hets
     else:
         return hets / twoN
+
 
 def get_global_het(seqs):
     """
@@ -712,6 +727,7 @@ def get_global_het(seqs):
     hom = np.sum(freqs)
     return 1.0 - hom
 
+
 def get_average_het(s1, s2):
     """Computes the mean expected heterozygosity (Ht) from two populations.
 
@@ -726,11 +742,14 @@ def get_average_het(s1, s2):
     # Get unique alleles
     uniq_alleles = clean_list(set(s1+s2), ["n", "?", "-", "N"])
     # Compute frequency for each allele
-    freqs = [np.square(np.mean([float(s1.count(x)/len(s1)), float(s2.count(x)/len(s2))])) for x in uniq_alleles]
+    freqs = [np.square(
+        np.mean([float(s1.count(x)/len(s1)),
+                 float(s2.count(x)/len(s2))])) for x in uniq_alleles]
     hom = np.sum(freqs)
-    return(1.0-hom)
+    return 1.0 - hom
 
-def clean_list(l, bads):
+
+def clean_list(to_clean, bads):
     """Removes bad items from a list.
 
     Args:
@@ -740,12 +759,13 @@ def clean_list(l, bads):
     Returns:
         list: A cleaned list.
     """
-    if not any(item not in bads for item in set(l)):
-        return(False)
+    if not any(item not in bads for item in set(to_clean)):
+        return False
     for b in bads:
-        if b in l:
-            l.remove(b)
-    return(l)
+        if b in to_clean:
+            to_clean.remove(b)
+    return to_clean
+
 
 def get_alleles(s):
     """Splits a string of alleles separated by "/" into a list.
@@ -756,7 +776,8 @@ def get_alleles(s):
     Returns:
         list: A list of alleles.
     """
-    return(sum([x.split("/") for x in s], []))
+    return sum([x.split("/") for x in s], [])
+
 
 def uniq_alleles(s):
     """Returns the unique alleles in a list of alleles.
@@ -767,5 +788,5 @@ def uniq_alleles(s):
     Returns:
         set: A set of unique alleles.
     """
-    return(set(sum([x.split("/") for x in s], [])))
+    return set(sum([x.split("/") for x in s], []))
 
