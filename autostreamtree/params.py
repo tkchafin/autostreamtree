@@ -281,7 +281,7 @@ distance\n"
 for\n"
             "                    populations. You can set how these are \
 aggregated w/ --pop_agg\n"
-            "          --NOTE: Multiple loci for PDIST, and JC69 distances\n"
+            "          --NOTE: Multiple loci for PDIST\n"
             "                  will be reported using the method defined in \
 --loc_agg\n"
             "    -G, --genmat    : Skip calculation and use the provided \

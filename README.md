@@ -179,7 +179,6 @@ Genetic distance options:
     -d, --dist      : Use which metric of distance? Options:
         Individual-based:
           PDIST     : Uncorrected p-distances [# Differences / Length]
-          JC69      : [default] Jukes-Cantor (1969) corrected p-distances
         Frequency models (when using --pop):
           FST       : Weir and Cockerham's Fst formulation (=THETAst)
           LINFST    : [default] Rousset's (1997) Fst [=Fst/(1-Fst)]
@@ -188,7 +187,7 @@ Genetic distance options:
           CHORD     : Cavalli-Sforza and Edwards (1967) chord distance
           --NOTE: Individual-based metrics can also be computed for
                     populations. You can set how these are aggregated w/ --pop_agg
-          --NOTE: Multiple loci for PDIST, and JC69 distances
+          --NOTE: Multiple loci for PDIST
                   will be reported using the method defined in --loc_agg
     -G, --genmat    : Skip calculation and use the provided labeled .tsv matrix
     --coercemat     : [Boolean] Coerce negative values in input matrix to zero
@@ -456,7 +455,6 @@ Below is a full list of citations for the various methods used. Apologies to any
 * Hedrick PW. 2005. A standardized genetic differentiation measure. Evolution. 59: 1633–1638
 * Jordahl K. 2014. GeoPandas: Python tools for geographic data. URL: https://github.com/geopandas/geopandas.
 * Jost L. 2008. Gst and its relatives do not measure differentiation. Molecular Ecology. 17: 4015-4026.
-* Jukes TH, Cantor CR. 1969. Evolution of protein molecules. New York: Academic Press.
 * Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
 * Kimura M. 1980. A simple method for estimating evolutionary rates of base substitutions through comparative studies of nucleotide sequences. Journal of Molecular Evolution. 16(2): 111-120.
 * Mantel N. 1967. The detection of disease clustering and a generalized regression approach. Cancer Research 27(2): 209-220.
