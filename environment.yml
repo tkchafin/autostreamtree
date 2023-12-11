@@ -1,0 +1,25 @@
+name: autostreamtree
+channels:
+  - ecoevoinfo
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python >=3.10
+  - pip
+  - setuptools
+  - perl
+  - pytest
+  - numpy
+  - pandas >2
+  - matplotlib
+  - seaborn
+  - geopandas
+  - pyogrio
+  - sortedcontainers
+  - momepy
+  - networkx >3
+  - mantel
+  - pysam
+  - scikit-learn >1
+  - flake8

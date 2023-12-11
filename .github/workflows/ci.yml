@@ -1,0 +1,36 @@
+name: autoStreamTree CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        environment-file: environment.yml
+        activate-environment: autostreamtree
+        use-mamba: true
+
+    - name: Install Package
+      shell: bash -l {0}
+      run: |
+        conda activate autostreamtree
+        pip install -e .
+
+    - name: Lint with flake8
+      shell: bash -l {0}
+      run: |
+        conda activate autostreamtree
+        flake8 autostreamtree/*.py
+
+    - name: Run unit tests
+      shell: bash -l {0}
+      run: |
+        conda activate autostreamtree
+        pytest tests/
