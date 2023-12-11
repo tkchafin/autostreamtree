@@ -25,13 +25,12 @@ requirements:
   - numpy
   - pandas >2
   - matplotlib
-  - scikit-learn
   - seaborn
   - geopandas
+  - pyogrio
   - sortedcontainers
   - momepy
   - networkx >3
-  - pyogrio
   - mantel
   - pysam
   - scikit-learn >1

@@ -17,6 +17,7 @@ from networkx import NodeNotFound
 import matplotlib.pyplot as plt
 import pickle
 import mantel
+import geopandas as gpd
 from math import radians, sin, cos, acos
 
 import autostreamtree.cluster_pops as clust
@@ -880,7 +881,7 @@ def output_fitted_d(pred, out):
     del pred
 
 
-def fit_least_squares_distances(D, X, iterative, out, weight=None):
+def fit_least_squares_distances(D, X, iterative, out, weight="CSE67"):
     """
     Computes least-squares branch lengths from a vector of genetic distances D
     and incidence matrix X. When iterative=True, negative distances are
@@ -892,9 +893,7 @@ def fit_least_squares_distances(D, X, iterative, out, weight=None):
         iterative (bool): Whether to use an iterative approach to constrain
                           negative distances.
         out (str): Output file prefix.
-        weight (numpy.ndarray, optional): Weight matrix for weighted least
-                                          squares optimization. Defaults to
-                                          None.
+        weight: Weight type. Defaults to CSE67.
 
     Returns:
         numpy.ndarray: Least-squared optimized distances.
@@ -966,15 +965,20 @@ def generate_weights_matrix(d, weight):
         W[row, col] = np.ones(len(d))
     elif weight.upper() == "BEYER74":
         if np.count_nonzero(d == 0) > 0:
-            print("WARNING: Divide-by-zero in weighted least-squares",
-                  "(weight=1/D).")
-        W[row, col] = np.divide(1.0, d, out=np.zeros_like(d), where=d != 0)
+            print(
+                "WARNING: Divide-by-zero in weighted least-squares."
+            )
+        W[row, col] = np.divide(1.0, d, out=np.zeros_like(d, dtype=float),
+                                where=d != 0)
+
     elif weight.upper() == "FM67":
         if np.count_nonzero(d == 0) > 0:
-            print("WARNING: Divide-by-zero in weighted least-squares",
-                  "(weight=1/D^2).")
-        W[row, col] = np.divide(1.0, np.square(d),
-                                out=np.zeros_like(d), where=d != 0)
+            print(
+                "WARNING: Divide-by-zero in weighted least-squares."
+            )
+            W[row, col] = np.divide(1.0, np.square(d), out=np.zeros_like(d,
+                                    dtype=float), where=d != 0)
+
     else:
         print(f"ERROR: Weight option {weight} not recognized. Using ordinary",
               "least-squares instead.")
@@ -1222,49 +1226,6 @@ def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
             continue
 
 
-def extract_minimal_existing(subgraph, graph, nodelist, id_col, dist_col,
-                             path):
-    """
-    Extracts a simplified subgraph from paths, keeping only terminal and
-    junction nodes.
-
-    Args:
-        subgraph (NetworkX Graph): The subgraph to be modified.
-        graph (NetworkX Graph): The input graph.
-        nodelist (list): The list of nodes.
-        id_col (str): The column name for edge ID.
-        dist_col (str): Column name for dist attribute
-        path (list): The path between nodes.
-    """
-    curr_edge = {id_col: list(), dist_col: 0}
-    curr_start = None
-
-    # Iterate through each pair of nodes in the path
-    for first, second in zip(path, path[1:]):
-        if not curr_start:
-            curr_start = first
-            if first in nodelist or len(graph[first]) > 2:
-                subgraph.add_node(first)
-
-        # Add path attributes to current edge
-        dat = graph.get_edge_data(first, second)
-        curr_edge[id_col] = dat[id_col]
-        curr_edge[dist_col] = dat[dist_col]
-
-        # If the second node is a STOP node (in nodelist or is a junction)
-        if second in nodelist or len(graph[second]) > 2:
-            # Add node to subgraph
-            subgraph.add_node(second)
-            # Link current attribute data
-            subgraph.add_edge(curr_start, second, **curr_edge)
-            # Empty edge attributes and set current second to curr_start
-            curr_edge = {id_col: list(), dist_col: 0}
-            curr_start = second
-        else:
-            # Otherwise, continue building the current edge
-            continue
-
-
 def snap_to_node(graph, pos):
     """
     Finds the closest node to the given [x, y] coordinates in the graph.
@@ -1282,15 +1243,18 @@ def snap_to_node(graph, pos):
 
 
 def write_geodataframe(gdf, output_prefix, output_driver):
+    gpd.options.io_engine = "pyogrio"
     extension = {
         "SHP": ".shp",
         "GPKG": ".gpkg",
         "GDB": ".gdb"
     }.get(output_driver.upper(), ".gpkg")  # Default to .gpkg
+    if output_driver.upper() == "SHP":
+        output_driver = "ESRI Shapefile"
 
     output_path = f"{output_prefix}{extension}"
 
     if output_driver == 'GDB' and not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    gdf.to_file(output_path, driver=output_driver)
+    gdf.to_file(output_path, driver=output_driver.upper())

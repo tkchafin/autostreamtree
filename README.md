@@ -174,6 +174,7 @@ General options:
     -c, --clusterpop: Use DBSCAN algorithm to automatically cluster populations
     --reachid_col   : Attribute name representing primary key in shapefile [default="HYRIV_ID"]
     --length_col    : Attribute name giving length in kilometers [default="LENGTH_KM"]
+    --seed          : Seed for RNG
 
 Genetic distance options:
     -d, --dist      : Use which metric of distance? Options:
