@@ -14,6 +14,8 @@ import geopandas as gpd
 import autostreamtree
 import autostreamtree.functions as funcs
 
+pytestmark = pytest.mark.filterwarnings("ignore:Geometry is in a geographic CRS. Results from 'length' are likely incorrect. Use 'GeoSeries.to_crs()' to re-project geometries to a projected CRS before this operation.:UserWarning")
+
 
 @pytest.fixture
 def sample_distances():
@@ -62,7 +64,8 @@ def mock_network_path():
     G = nx.Graph()
     G.add_edge('A', 'B')
     G.add_edge('B', 'C')
-    with tempfile.NamedTemporaryFile(mode='wb', suffix='.pickle', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(mode='wb', suffix='.pickle',
+                                     delete=False) as temp_file:
         pickle.dump(G, temp_file)
         return temp_file.name
 

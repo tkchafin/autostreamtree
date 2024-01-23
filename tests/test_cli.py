@@ -2,10 +2,14 @@ import os
 import sys
 import pytest
 import tempfile
-import subprocess
 import autostreamtree
 import autostreamtree.cli as cli
 
+
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:Geometry is in a geographic CRS. Results from 'length' are likely incorrect. Use 'GeoSeries.to_crs()' to re-project geometries to a projected CRS before this operation.:UserWarning",
+    "ignore:Creating a 256th field, but some DBF readers might only support 255 fields:RuntimeWarning"
+)
 
 @pytest.fixture
 def output_directory_path():
