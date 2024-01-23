@@ -24,7 +24,7 @@ def main():
         random.seed(params.seed)
     else:
         # Use clock time to seed RNG if params.seed is None
-        clock_seed = int(time.time() * 1000)
+        clock_seed = int(time.time() * 1000) % (2**32)
         np.random.seed(clock_seed)
         random.seed(clock_seed)
 
