@@ -48,19 +48,6 @@ An input geospatial network (as shapefile, geodatabase, or .gpkg) is first used 
 Kalinowski ST, MH Meeuwig, SR Narum, ML Taper (2008) Stream trees: a statistical method for mapping genetic differences between populations of freshwater organisms to the sections of streams that connect them. Canadian Journal of Fisheries and Aquatic Sciences (65:2752-2760)
 ```
 
-### Installation with GitHub
-
-Simple installation of the development version may be done simply as:
-```
-git clone https://github.com/tkchafin/autostreamtree.git
-
-cd autostreamtree
-
-pip install . 
-```
-
-The command-line interface is then accesible as `autostreamtree`.
-
 ### Installation with conda/mamba
 
 The recommended method of installation is with conda or mamba. First, create \
@@ -125,13 +112,13 @@ Once this is done, you can create a conda environment:
 conda create -n streamtree
 conda activate streamtree 
 conda config --env --set subdir osx-64
-conda install python=3.10 mamba
+conda install python=3.10
 ```
 
 Then install `autostreamtree`:
 
 ```
-mamba install -c ecoevoinfo -c conda-forge -c bioconda autostreamtree
+conda install -c ecoevoinfo -c conda-forge -c bioconda autostreamtree
 ```
 
 ## 2. Usage <a name="ast"></a>
