@@ -81,6 +81,6 @@ The utility of autoStreamTree was demonstrated with a population genomic dataset
 
 Links to non-Service websites do not imply any official U.S. Fish & Wildlife Service endorsement of the opinions or ideas expressed therein or guarantee the validity of the information provided. The findings, conclusions, and opinions expressed in this article represent those of the authors, and do not necessarily represent the views of the U.S. Fish & Wildlife Service.
 
-This work was supported by University of Arkansas via Doctoral Fellowships (TKC/SMM) and endowments (MED: 21st Chair Century Global Change Biology; MRD: Bruker Life Sciences Professorship). TKC is currently supported by the Scottish Government's Rural and Environment Science and Analytical Services Division (RESAS).
+This work was supported by University of Arkansas via Doctoral Fellowships (TKC/SMM) and endowments (MED: 21st Chair Century Global Change Biology; MRD: Bruker Life Sciences Professorship). TKC is currently supported by the Scottish Government's Rural and Environment Science and Analytical Services Division (RESAS). Data and scripts associated with this work can be found on the Open Science Framework (doi: 10.17605/OSF.IO/4UXFJ). 
 
 # References
