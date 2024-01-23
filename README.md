@@ -1,8 +1,8 @@
 # autostreamtree
 
-`autoStreamTree` is a Python package meant for analysing genomic variant (e.g., SNPs, microhaplotypes) differentiation in geospatial networks such as riverscapes. 
+`autoStreamTree` is a Python package meant for analysing genomic variants (e.g., SNPs, microhaplotypes) within geospatial network contexts, such as river systems or other dendritic environments. It provides a way to visualize reach- or segment- level contributions given a matrix of pairwise distances.
 
-An input geospatial network (as shapefile, geodatabase, or .gpkg) is first used to compute a minimally representative graph structure for all least-cost paths between your sampling locations. Pairwise genomic distances (e.g., Fst) are then 'fitted' to this graph by calculating the contribution of each graph segment, using the least-squares algorithm from Kalinowsky et al. (2008).
+An input geospatial network (as shapefile, geodatabase, or .gpkg) is first used to compute a minimally representative graph structure for all least-cost paths between your sampling locations. Pairwise genomic distances (e.g., Fst) are then 'fitted' to this graph by calculating the contribution of each graph segment, using the least-squares algorithm from Kalinowsky et al. (2008), similarly to the manner used to fit branch lengths within a neighbor-joining phylogeny.
 
 `autoStreamTree` automates what was previously a manual process, while also integrating new functionality such as per-locus or per-site fitted distances, which can be used for downstream outlier analysis.
 
