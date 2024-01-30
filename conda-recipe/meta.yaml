@@ -6,7 +6,7 @@ channels:
 
 package:
   name: autostreamtree
-  version: "1.1.0"
+  version: "$VERSION"
 
 source:
   path: ../ 
@@ -33,6 +33,7 @@ requirements:
   - networkx >3
   - mantel
   - pysam
+  - arrow
   - scikit-learn >1
 
 build:
