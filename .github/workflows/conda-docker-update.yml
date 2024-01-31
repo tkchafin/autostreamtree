@@ -1,11 +1,11 @@
-name: Conda Build and Upload
+name: Conda and Docker Update
 
 on:
   release:
     types: [published]
 
 jobs:
-  build-and-upload:
+  build-and-upload-conda:
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Code
@@ -41,3 +41,23 @@ jobs:
         run: |
           anaconda upload --user ecoevoinfo --label main ./build/noarch/*.tar.bz2
 
+  build-and-push-docker:
+    needs: build-and-upload-conda
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Out Repo
+      uses: actions/checkout@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: true
+        tags: tkchafin/autostreamtree:latest,tkchafin/autostreamtree:${{ github.event.release.tag_name }}
