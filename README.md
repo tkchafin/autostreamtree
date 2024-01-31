@@ -121,6 +121,20 @@ Then install `autostreamtree`:
 conda install -c ecoevoinfo -c conda-forge -c bioconda autostreamtree
 ```
 
+### Running with Docker
+
+Docker images are also built and hosted for all releases on DockerHub. To run using the latest release:
+```
+docker run -it tkchafin/autostreamtree:latest
+```
+
+If you require a certain release, you can reference the tag by changing the image name like so:
+```
+docker run -it tkchafin/autostreamtree:v1.1.2
+```
+
+
+
 ## 2. Usage <a name="ast"></a>
 
 ### Command-line interface <a name="ast_cli"></a>
