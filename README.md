@@ -485,7 +485,7 @@ Here are some recommended readings and resources:
 
 ## 5. Contributing <a name="contrib"></a>
 
-If you are interested in contributing to autoStreamTree, first of all thank you! Any form of contribution is always welcome, be that bug reports, code review, bug fixes, or even adding new features! 
+If you are interested in contributing to autoStreamTree, first of all thank you! Any form of contribution is always welcome, be that bug reports, code review, bug fixes, or even adding new features! For reference, API documentation can be found at https://tkchafin.github.io/autostreamtree/, which will be re-built upon each update to the repository.
 
 If you encounter a problem in using or installing autoStreamTree, please post to the [GitHub Issues](https://github.com/tkchafin/autostreamtree/issues) page. If you do so, please be sure to share the full steps which led to your problem, and the full output (including any error messages). In some instances it may be necessary to see your input files. 
 

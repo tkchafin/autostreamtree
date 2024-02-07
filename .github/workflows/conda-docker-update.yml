@@ -18,8 +18,10 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Stripped version: ${VERSION}"
 
-      - name: Set CI Version Environment Variable
-        run: echo "CI_VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
+      - name: Set Package Version
+        shell: bash
+        run: |
+          echo "__version__ = '${{ env.VERSION }}'" > ./version.py
 
       - name: Update Version in Conda Recipe
         shell: bash

@@ -1,11 +1,14 @@
 import os
 from setuptools import setup, find_packages
 
-version = os.getenv('CI_VERSION', '0.0.1-dev')
+
+directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(directory, 'version.py'), 'r') as f:
+    exec(f.read())
 
 setup(
     name='autostreamtree',
-    version=version,
+    version=__version__,
     packages=find_packages(),
     entry_points={
         'console_scripts': [
