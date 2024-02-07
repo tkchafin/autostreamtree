@@ -14,12 +14,15 @@ jobs:
       - name: Set Package Version
         shell: bash
         run: |
-          echo "__version__ = '${{ github.event.release.tag_name }}'" > ./version.py
+          echo "__version__ = '${{ github.event.release.tag_name }}'" > version.py
 
       - name: Update Version in Conda Recipe
         shell: bash
         run: |
           sed -i "s/\$VERSION/${{ github.event.release.tag_name }}/g" conda-recipe/meta.yaml
+
+      - name: Validate versions
+        run: cat conda-recipe/meta.yaml; cat version.py
 
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v2
