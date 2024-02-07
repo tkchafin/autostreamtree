@@ -10,23 +10,16 @@ jobs:
     steps:
       - name: Check Out Code
         uses: actions/checkout@v2
-      
-      - name: Extract Version from Tag
-        shell: bash
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}  # Strip 'refs/tags/v' to get the version number
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "Stripped version: ${VERSION}"
 
       - name: Set Package Version
         shell: bash
         run: |
-          echo "__version__ = '${{ env.VERSION }}'" > ./version.py
+          echo "__version__ = '${{ github.event.release.tag_name }}'" > ./version.py
 
       - name: Update Version in Conda Recipe
         shell: bash
         run: |
-          sed -i "s/\$VERSION/${{ env.VERSION }}/g" conda-recipe/meta.yaml
+          sed -i "s/\$VERSION/${{ github.event.release.tag_name }}/g" conda-recipe/meta.yaml
 
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v2
@@ -68,5 +61,5 @@ jobs:
         context: .
         file: ./docker/Dockerfile
         push: true
-        tags: tkchafin/autostreamtree:latest,tkchafin/autostreamtree:${{ env.VERSION }}
+        tags: tkchafin/autostreamtree:latest,tkchafin/autostreamtree:${{ github.event.release.tag_name }}
 
