@@ -1,8 +1,11 @@
+import os
 from setuptools import setup, find_packages
+
+version = os.getenv('CI_VERSION', '0.0.1-dev')
 
 setup(
     name='autostreamtree',
-    version='$VERSION',  # Placeholder
+    version=version,
     packages=find_packages(),
     entry_points={
         'console_scripts': [
