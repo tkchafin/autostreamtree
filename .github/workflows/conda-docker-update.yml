@@ -11,17 +11,15 @@ jobs:
       - name: Check Out Code
         uses: actions/checkout@v2
       
-      - name: Extract Version from Tag and Strip "v"
+      - name: Extract Version from Tag
         shell: bash
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}  # Strip 'refs/tags/v' to get the version number
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Stripped version: ${VERSION}"
 
-      - name: Set Package Version in setup.py
-        shell: bash
-        run: |
-          sed -i "s/\$VERSION/${{ env.VERSION }}/g" setup.py
+      - name: Set CI Version Environment Variable
+        run: echo "CI_VERSION=${{ env.VERSION }}" >> $GITHUB_ENV
 
       - name: Update Version in Conda Recipe
         shell: bash
