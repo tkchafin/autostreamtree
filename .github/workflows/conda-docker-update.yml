@@ -18,6 +18,11 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "Stripped version: ${VERSION}"
 
+      - name: Set Package Version
+        shell: bash
+        run: |
+          echo "__version__ = '${{ env.VERSION }}'" > ./version.py
+
       - name: Update Version in Conda Recipe
         shell: bash
         run: |
@@ -33,8 +38,6 @@ jobs:
 
       - name: Build Conda Package
         shell: bash -l {0}
-        env:
-          CI_VERSION: ${{ env.VERSION }}
         run: |
           conda install conda-build anaconda-client
           conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda
@@ -68,5 +71,3 @@ jobs:
           tags: |
             tkchafin/autostreamtree:latest
             tkchafin/autostreamtree:${{ env.VERSION }}  # Use stripped version
-          build-args: |
-            CI_VERSION=${{ env.VERSION }}
