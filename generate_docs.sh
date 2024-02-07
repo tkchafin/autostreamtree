@@ -3,23 +3,12 @@
 # Package name
 PACKAGE_NAME="autostreamtree"
 
-# Version number 
-VERSION_NUMBER="v1.1.0"
+# Generate documentation in HTML
+pdoc --html --output-dir ./docs $PACKAGE_NAME
 
-PDF_OUTPUT_NAME="${PACKAGE_NAME}_${VERSION_NUMBER}_$(date +%Y-%m-%d).pdf"
+# Assuming pdoc generates a folder with the package name, move it to the root of /docs
+mv ./docs/$PACKAGE_NAME/* ./docs/
 
-# Generate documentation and convert it to PDF
-pdoc --pdf $PACKAGE_NAME > pdf.md 
-pandoc \
-    --metadata=title:"${PACKAGE_NAME} ${VERSION_NUMBER} $(date +%Y-%m-%d)" \
-    --from=markdown+abbreviations+tex_math_single_backslash \
-    --pdf-engine=xelatex \
-    --variable=mainfont:"Helvetica" \
-    --toc \
-    --toc-depth=4 \
-    --output=./docs/$PDF_OUTPUT_NAME pdf.md
-rm pdf.md
-
-echo "PDF documentation generated at ./docs/$PDF_OUTPUT_NAME"
+echo "HTML documentation generated in ./docs/"
 
 
