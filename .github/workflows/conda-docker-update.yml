@@ -36,7 +36,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install conda-build anaconda-client conda-verify
-          conda build -c ecoevoinfo -c conda-forge -c biocondaconda-recipe --output-folder ./build 
+          conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda 
 
       - name: Upload Conda Package to Anaconda Cloud
         shell: bash -l {0}
