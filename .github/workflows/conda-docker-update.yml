@@ -11,9 +11,17 @@ jobs:
       - name: Check Out Code
         uses: actions/checkout@v2
       
-      - name: Extract Version from Tag
+      - name: Extract Version from Tag and Strip "v"
         shell: bash
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}  # Strip 'refs/tags/v' to get the version number
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Stripped version: ${VERSION}"
+
+      - name: Set Package Version in setup.py
+        shell: bash
+        run: |
+          sed -i "s/\$VERSION/${{ env.VERSION }}/g" setup.py
 
       - name: Update Version in Conda Recipe
         shell: bash
@@ -45,19 +53,21 @@ jobs:
     needs: build-and-upload-conda
     runs-on: ubuntu-latest
     steps:
-    - name: Check Out Repo
-      uses: actions/checkout@v2
+      - name: Check Out Repo
+        uses: actions/checkout@v2
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v2
-      with:
-        context: .
-        file: ./docker/Dockerfile
-        push: true
-        tags: tkchafin/autostreamtree:latest,tkchafin/autostreamtree:${{ github.event.release.tag_name }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: |
+            tkchafin/autostreamtree:latest
+            tkchafin/autostreamtree:${{ env.VERSION }}  # Use stripped version
