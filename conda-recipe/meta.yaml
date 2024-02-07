@@ -33,7 +33,7 @@ requirements:
   - networkx >3
   - mantel
   - pysam
-  - arrow
+  - pyarrow
   - pdoc3
   - scikit-learn >1
 
