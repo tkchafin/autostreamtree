@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>autostreamtree.cli API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>autostreamtree.cli</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sys
+import pandas as pd
+import numpy as np
+import geopandas as gpd
+import pyogrio
+import random
+import matplotlib.pyplot as plt
+import time
+
+import autostreamtree.functions as ast
+from autostreamtree.params import parseArgs
+import autostreamtree.cluster_pops as clust
+import autostreamtree.report_refs as ref
+import autostreamtree.aggregators as agg
+
+
+def main():
+
+    params = parseArgs()
+
+    # Set the seed for random number generation
+    if params.seed is not None:
+        np.random.seed(params.seed)
+        random.seed(params.seed)
+    else:
+        # Use clock time to seed RNG if params.seed is None
+        clock_seed = int(time.time() * 1000) % (2**32)
+        np.random.seed(clock_seed)
+        random.seed(clock_seed)
+
+    # Step 1: Reading in datasets
+    print(&#34;Running autostream tree&#34;, params.run, &#34;workflow\n&#34;)
+    G = ast.read_network(params.network, params.shapefile)
+    # prune graph if list of edges passed
+    if params.edge_list:
+        df = pd.read_csv(params.edge_list, sep=&#39;\t&#39;)
+        edge_list = df[params.reachid_col].tolist()
+        G = ast.prune_graph(G, edge_list, params.reachid_col)
+
+    # read point coordinate data
+    points = pd.read_csv(params.geodb, sep=&#34;\t&#34;, header=0)
+    (point_coords, pop_coords, popmap) = ast.process_samples(params, points, G)
+
+    # read genetic data from VCF
+    if params.run != &#34;STREAMDIST&#34;:
+        seqs = ast.read_vcf(params.vcf, concat=params.concat, popmap=popmap)
+
+    # Step 2: Calculating genetic distance matrix(-ces)
+    # Optional: Calculate separately for each locus
+
+    gen = None
+    pop_gen = None
+    # calculate genetic distance matrix
+    if params.run != &#34;STREAMDIST&#34; and params.run != &#34;RUNLOCI&#34;:
+        if not params.genmat:
+            print(&#34;\nCalculating genetic distances...&#34;)
+            (gen, pop_gen) = ast.get_gendist_mats(params, point_coords, popmap,
+                                                  seqs)
+        else:
+            print(&#34;\nReading genetic distances from provided matrix:&#34;,
+                  params.genmat)
+            inmat = pd.read_csv(params.genmat, header=0, index_col=0, sep=&#34;\t&#34;)
+            (gen, pop_gen) = ast.parse_input_genmat(params, inmat,
+                                                    point_coords, popmap, seqs)
+
+        ast.report_genmats(params, gen, pop_gen, point_coords, pop_coords)
+
+        # exit if this was the only step requested
+        if params.run == &#34;GENDIST&#34;:
+            sys.exit(0)
+
+    # IMPORTANT NOTE: This function will silently skip any loci for which
+    # calculations aren&#39;t possible (e.g., population having no data)
+    if params.run == &#34;RUNLOCI&#34;:
+        genlist = list()
+        popgenlist = list()
+        for loc in ast.get_loc_data(seqs):
+            try:
+                (gen, pop_gen) = ast.get_gendist_mats(params, point_coords,
+                                                      popmap, loc)
+                genlist.append(gen)
+                popgenlist.append(pop_gen)
+            except Exception:
+                pass
+        print(
+            &#34;\nCalculating average of locus-wise genetic distance matrices...&#34;
+        )
+        if genlist[0] is not None:
+            gen = np.mean(genlist, axis=0)
+        else:
+            gen = genlist[0]
+        if popgenlist[0] is not None:
+            pop_gen = np.mean(popgenlist, axis=0)
+        else:
+            pop_gen = popgenlist[0]
+
+        ast.report_genmats_list(params, genlist, popgenlist, point_coords,
+                                pop_coords)
+
+    # Step 4: Constructing a minimal subgraph
+
+    # Extract subgraph if needed
+    if params.run != &#34;GENDIST&#34;:
+        K = ast.parse_subgraph_from_points(params, point_coords, pop_coords, G)
+
+    # Step 5: Construct stream distance matrix
+    # Optional: Mantel test
+
+    # calculate pairwise observed stream distances and indence matrix
+    # calculate incidence matrix X, which takes the form:
+    # nrows = rows in column vector form of D
+    # ncols = number of collapsed branches in stream network K
+    if params.run in [&#34;STREAMDIST&#34;, &#34;DISTANCES&#34;, &#34;STREAMTREE&#34;, &#34;IBD&#34;, &#34;ALL&#34;,
+                      &#34;RUNLOCI&#34;]:
+        if params.pop or params.geopop or params.clusterpop:
+            points = pop_coords
+            gen = pop_gen
+        else:
+            points = point_coords
+
+        # calculate stream distances and incidence matrix
+        (sdist, inc) = ast.get_stream_mats(points, K, params.length_col)
+        print(&#34;\nStream distances:&#34;)
+        print(sdist)
+        sDF = pd.DataFrame(sdist, columns=list(points.keys()),
+                           index=list(points.keys()))
+        sDF.to_csv((str(params.out) + &#34;.streamDistMat.txt&#34;), sep=&#34;\t&#34;,
+                   index=True)
+        del sDF
+        if params.run == &#34;STREAMDIST&#34;:
+            sys.exit(0)
+
+        # if user requested testing isolation-by-distance:
+        if params.run in [&#39;ALL&#39;, &#39;IBD&#39;]:
+            # IBD calculations and plots
+            print(&#34;\nTesting for isolation-by-distance using Mantel test with&#34;,
+                  params.permutations, &#34;permutations&#34;)
+            ast.test_ibd(gen, sdist, params.out, params.permutations)
+
+            # plot geographic x genetic DISTANCES
+            ast.plot_gen_by_geo(gen, sdist, params.out)
+
+            # if log request, re-do with logged geographic distances
+            if params.and_log:
+                print(&#34;\nTesting for isolation-by-distance with log&#34;,
+                      &#34;geographic distances using Mantel test with&#34;,
+                      params.permutations, &#34;permutations&#34;)
+                out = params.out+&#34;.log&#34;
+                ast.test_ibd(gen, sdist, out, params.permutations, log=True)
+                ast.plot_gen_by_geo(gen, sdist, out, log=True)
+
+    #########################################################
+    # Step 6: Least-squares fitting
+    # Optional: Weighted least-squares
+    # Optional: Fit for each locus
+    #########################################################
+
+    if params.run in [&#34;STREAMTREE&#34;, &#34;ALL&#34;, &#34;RUNLOCI&#34;]:
+        if params.pop or params.geopop or params.clusterpop:
+            gen = pop_gen
+        print(&#34;\nIncidence matrix:&#34;)
+        print(inc)
+        ofh = params.out+&#34;.incidenceMatrix.txt&#34;
+        with np.printoptions(precision=0, suppress=True):
+            np.savetxt(ofh, inc, delimiter=&#34;\t&#34;)
+        print(&#34;Incidence matrix dimensions:&#34;)
+        print(inc.shape)
+
+        # fit least-squares branch lengths
+        if params.run != &#34;RUNLOCI&#34;:
+            print()
+            R = ast.fit_least_squares_distances(gen, inc.astype(int),
+                                                params.iterative,
+                                                params.out, params.weight)
+            print(&#34;\nFitted least-squares distances:&#34;)
+            print(R)
+        else:
+            print()
+            if params.pop or params.geopop or params.clusterpop:
+                genlist = popgenlist
+            print(&#34;Fitting StreamTree distances on per-locus matrices...&#34;)
+            Rlist = list()
+            ast.block_print()
+            for gen in genlist:
+                r = ast.fit_least_squares_distances(gen, inc.astype(int),
+                                                    params.iterative,
+                                                    params.out, params.weight)
+                Rlist.append(r)
+            ast.enable_print()
+
+            # aggregate locus distances (mean)
+            print(&#34;\nCalculating average fitted distances across loci using:&#34;,
+                  params.loc_agg)
+            averageR = np.array(
+                [agg.aggregate_dist(params.loc_agg, col) for
+                 col in zip(*Rlist)])
+            print(averageR)
+
+            # get standard-deviation locus distances as well
+            print(&#34;\nCalculating standard-deviation of fitted distances&#34;,
+                  &#34;across loci using:&#34;, params.loc_agg)
+            sdR = np.array([agg.aggregate_dist(&#34;SD&#34;, col) for
+                            col in zip(*Rlist)])
+            print(sdR)
+
+        # check observed versus fitted distances:
+        if params.run == &#34;RUNLOCI&#34;:
+            R = averageR
+        pred = ast.get_fitted_d(points, gen, inc, R)
+        print(&#34;\nComparing observed versus predicted genetic distances:&#34;)
+        print(pred)
+        ast.output_fitted_d(pred, params.out)
+
+        # Step 7: Outputs
+
+        # Now, annotate originate geoDF with dissolved reach IDs
+        # also, need to collect up the stream tree fitted D to each reach
+        # finally, could add residuals of fitting D vs LENGTH_KM?
+        # maybe include logDxlength, DxlogLength, logDxlogLength as well?
+
+        # get list of all REACHIDs to extract from geoDF
+        # edge_data = nx.get_edge_attributes(K,params.reachid_col)
+        reach_to_edge = dict()
+        i = 0
+        edges = list()
+        for e in K.edges():
+            edge_data = K[e[0]][e[1]][params.reachid_col]
+            for r in edge_data:
+                reach_to_edge[r] = str(i)
+            edges.append(i)
+            i += 1
+        del edge_data
+
+        # save reach_to_edge table to file
+        r2eDF = pd.DataFrame(list(reach_to_edge.items()),
+                             columns=[params.reachid_col, &#39;EDGE_ID&#39;])
+        r2eDF.to_csv((str(params.out)+&#34;.reachToEdgeTable.txt&#34;),
+                     sep=&#34;\t&#34;, index=False)
+
+        # read in original shapefile as geoDF and subset it
+        print(&#34;\nExtracting attributes from original dataframe...&#34;)
+        # geoDF = gpd.read_file(params.shapefile)
+        geoDF = pyogrio.read_dataframe(params.shapefile)
+        mask = geoDF[params.reachid_col].isin(list(reach_to_edge.keys()))
+        temp = geoDF.loc[mask]
+        del mask
+        del reach_to_edge
+
+        # join EDGE_ID to geoDF
+        geoDF = temp.merge(r2eDF, on=params.reachid_col, how=&#39;left&#39;)
+        for col in geoDF.columns:
+            if col.endswith(&#39;_x&#39;):
+                geoDF.drop(col, axis=1, inplace=True)
+            elif col.endswith(&#39;_y&#39;):
+                geoDF.rename(columns={col: col.rstrip(&#39;_y&#39;)}, inplace=True)
+        print(geoDF)
+        del temp
+        del r2eDF
+
+        # plot by edge ID
+        base = geoDF.plot(column=&#34;EDGE_ID&#34;, cmap=&#34;prism&#34;)
+        coords = clust.coords_to_dataframe(points)
+        geo_coords = gpd.GeoDataFrame(coords,
+                                      geometry=gpd.points_from_xy(coords.long,
+                                                                  coords.lat))
+        geo_coords.plot(ax=base, marker=&#39;o&#39;, color=&#39;black&#39;, markersize=10,
+                        zorder=10)
+
+        plt.title(&#34;Stream network colored by EDGE_ID&#34;)
+        plt.savefig((str(params.out)+&#34;.streamsByEdgeID.pdf&#34;))
+
+        # add in fitted distances &amp; plot
+        print(&#34;\nPlotting StreamTree fitted distances and writing new&#34;,
+              &#34;shapefile...&#34;)
+
+        if params.run == &#34;RUNLOCI&#34;:
+            fittedD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;fittedD&#39;: R})
+            sdD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;stdevD&#39;: sdR})
+            i = 1
+            for locfit in Rlist:
+                name = &#34;locD_&#34; + str(i)
+                fittedD[name] = locfit
+                i += 1
+        else:
+            fittedD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;fittedD&#39;: R})
+        geoDF[&#39;EDGE_ID&#39;] = geoDF[&#39;EDGE_ID&#39;].astype(int)
+        # geoDF.drop(columns=[&#34;EDGE_ID_x&#34;, &#34;EDGE_ID_y&#34;], inplace=True)
+        geoDF = geoDF.merge(fittedD, on=&#39;EDGE_ID&#39;, how=&#34;left&#34;)
+        for col in geoDF.columns:
+            if col.endswith(&#39;_x&#39;):
+                geoDF.drop(col, axis=1, inplace=True)
+            elif col.endswith(&#39;_y&#39;):
+                geoDF.rename(columns={col: col.rstrip(&#39;_y&#39;)}, inplace=True)
+        if params.run == &#34;RUNLOCI&#34;:
+            geoDF = geoDF.merge(sdD, on=&#39;EDGE_ID&#39;)
+            geoDF.plot(column=&#34;stdevD&#34;, cmap=&#34;RdYlGn_r&#34;, legend=True)
+            plt.title(&#34;Stream network colored by standard deviation of&#34;,
+                      &#34;StreamTree fitted distances&#34;)
+            plt.savefig((str(params.out)+&#34;.streamsBystdevD.pdf&#34;))
+        geoDF.plot(column=&#34;fittedD&#34;, cmap=&#34;RdYlGn_r&#34;, legend=True)
+        plt.title(&#34;Stream network colored by StreamTree fitted distances&#34;)
+        plt.savefig((str(params.out)+&#34;.streamsByFittedD.pdf&#34;))
+
+        # output a final annotated stream network layer
+        geoDF.to_csv((str(params.out)+&#34;.streamTree.txt&#34;), sep=&#34;\t&#34;,
+                     index=False)
+        ast.write_geodataframe(geoDF, (str(params.out)+&#34;.streamTree&#34;),
+                               params.output_driver)
+
+    refs = ref.fetch_references(params)
+    print(refs)
+
+    print(&#34;\nDone!\n&#34;)
+
+
+# Call main function
+if __name__ == &#39;__main__&#39;:
+    main()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="autostreamtree.cli.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main():
+
+    params = parseArgs()
+
+    # Set the seed for random number generation
+    if params.seed is not None:
+        np.random.seed(params.seed)
+        random.seed(params.seed)
+    else:
+        # Use clock time to seed RNG if params.seed is None
+        clock_seed = int(time.time() * 1000) % (2**32)
+        np.random.seed(clock_seed)
+        random.seed(clock_seed)
+
+    # Step 1: Reading in datasets
+    print(&#34;Running autostream tree&#34;, params.run, &#34;workflow\n&#34;)
+    G = ast.read_network(params.network, params.shapefile)
+    # prune graph if list of edges passed
+    if params.edge_list:
+        df = pd.read_csv(params.edge_list, sep=&#39;\t&#39;)
+        edge_list = df[params.reachid_col].tolist()
+        G = ast.prune_graph(G, edge_list, params.reachid_col)
+
+    # read point coordinate data
+    points = pd.read_csv(params.geodb, sep=&#34;\t&#34;, header=0)
+    (point_coords, pop_coords, popmap) = ast.process_samples(params, points, G)
+
+    # read genetic data from VCF
+    if params.run != &#34;STREAMDIST&#34;:
+        seqs = ast.read_vcf(params.vcf, concat=params.concat, popmap=popmap)
+
+    # Step 2: Calculating genetic distance matrix(-ces)
+    # Optional: Calculate separately for each locus
+
+    gen = None
+    pop_gen = None
+    # calculate genetic distance matrix
+    if params.run != &#34;STREAMDIST&#34; and params.run != &#34;RUNLOCI&#34;:
+        if not params.genmat:
+            print(&#34;\nCalculating genetic distances...&#34;)
+            (gen, pop_gen) = ast.get_gendist_mats(params, point_coords, popmap,
+                                                  seqs)
+        else:
+            print(&#34;\nReading genetic distances from provided matrix:&#34;,
+                  params.genmat)
+            inmat = pd.read_csv(params.genmat, header=0, index_col=0, sep=&#34;\t&#34;)
+            (gen, pop_gen) = ast.parse_input_genmat(params, inmat,
+                                                    point_coords, popmap, seqs)
+
+        ast.report_genmats(params, gen, pop_gen, point_coords, pop_coords)
+
+        # exit if this was the only step requested
+        if params.run == &#34;GENDIST&#34;:
+            sys.exit(0)
+
+    # IMPORTANT NOTE: This function will silently skip any loci for which
+    # calculations aren&#39;t possible (e.g., population having no data)
+    if params.run == &#34;RUNLOCI&#34;:
+        genlist = list()
+        popgenlist = list()
+        for loc in ast.get_loc_data(seqs):
+            try:
+                (gen, pop_gen) = ast.get_gendist_mats(params, point_coords,
+                                                      popmap, loc)
+                genlist.append(gen)
+                popgenlist.append(pop_gen)
+            except Exception:
+                pass
+        print(
+            &#34;\nCalculating average of locus-wise genetic distance matrices...&#34;
+        )
+        if genlist[0] is not None:
+            gen = np.mean(genlist, axis=0)
+        else:
+            gen = genlist[0]
+        if popgenlist[0] is not None:
+            pop_gen = np.mean(popgenlist, axis=0)
+        else:
+            pop_gen = popgenlist[0]
+
+        ast.report_genmats_list(params, genlist, popgenlist, point_coords,
+                                pop_coords)
+
+    # Step 4: Constructing a minimal subgraph
+
+    # Extract subgraph if needed
+    if params.run != &#34;GENDIST&#34;:
+        K = ast.parse_subgraph_from_points(params, point_coords, pop_coords, G)
+
+    # Step 5: Construct stream distance matrix
+    # Optional: Mantel test
+
+    # calculate pairwise observed stream distances and indence matrix
+    # calculate incidence matrix X, which takes the form:
+    # nrows = rows in column vector form of D
+    # ncols = number of collapsed branches in stream network K
+    if params.run in [&#34;STREAMDIST&#34;, &#34;DISTANCES&#34;, &#34;STREAMTREE&#34;, &#34;IBD&#34;, &#34;ALL&#34;,
+                      &#34;RUNLOCI&#34;]:
+        if params.pop or params.geopop or params.clusterpop:
+            points = pop_coords
+            gen = pop_gen
+        else:
+            points = point_coords
+
+        # calculate stream distances and incidence matrix
+        (sdist, inc) = ast.get_stream_mats(points, K, params.length_col)
+        print(&#34;\nStream distances:&#34;)
+        print(sdist)
+        sDF = pd.DataFrame(sdist, columns=list(points.keys()),
+                           index=list(points.keys()))
+        sDF.to_csv((str(params.out) + &#34;.streamDistMat.txt&#34;), sep=&#34;\t&#34;,
+                   index=True)
+        del sDF
+        if params.run == &#34;STREAMDIST&#34;:
+            sys.exit(0)
+
+        # if user requested testing isolation-by-distance:
+        if params.run in [&#39;ALL&#39;, &#39;IBD&#39;]:
+            # IBD calculations and plots
+            print(&#34;\nTesting for isolation-by-distance using Mantel test with&#34;,
+                  params.permutations, &#34;permutations&#34;)
+            ast.test_ibd(gen, sdist, params.out, params.permutations)
+
+            # plot geographic x genetic DISTANCES
+            ast.plot_gen_by_geo(gen, sdist, params.out)
+
+            # if log request, re-do with logged geographic distances
+            if params.and_log:
+                print(&#34;\nTesting for isolation-by-distance with log&#34;,
+                      &#34;geographic distances using Mantel test with&#34;,
+                      params.permutations, &#34;permutations&#34;)
+                out = params.out+&#34;.log&#34;
+                ast.test_ibd(gen, sdist, out, params.permutations, log=True)
+                ast.plot_gen_by_geo(gen, sdist, out, log=True)
+
+    #########################################################
+    # Step 6: Least-squares fitting
+    # Optional: Weighted least-squares
+    # Optional: Fit for each locus
+    #########################################################
+
+    if params.run in [&#34;STREAMTREE&#34;, &#34;ALL&#34;, &#34;RUNLOCI&#34;]:
+        if params.pop or params.geopop or params.clusterpop:
+            gen = pop_gen
+        print(&#34;\nIncidence matrix:&#34;)
+        print(inc)
+        ofh = params.out+&#34;.incidenceMatrix.txt&#34;
+        with np.printoptions(precision=0, suppress=True):
+            np.savetxt(ofh, inc, delimiter=&#34;\t&#34;)
+        print(&#34;Incidence matrix dimensions:&#34;)
+        print(inc.shape)
+
+        # fit least-squares branch lengths
+        if params.run != &#34;RUNLOCI&#34;:
+            print()
+            R = ast.fit_least_squares_distances(gen, inc.astype(int),
+                                                params.iterative,
+                                                params.out, params.weight)
+            print(&#34;\nFitted least-squares distances:&#34;)
+            print(R)
+        else:
+            print()
+            if params.pop or params.geopop or params.clusterpop:
+                genlist = popgenlist
+            print(&#34;Fitting StreamTree distances on per-locus matrices...&#34;)
+            Rlist = list()
+            ast.block_print()
+            for gen in genlist:
+                r = ast.fit_least_squares_distances(gen, inc.astype(int),
+                                                    params.iterative,
+                                                    params.out, params.weight)
+                Rlist.append(r)
+            ast.enable_print()
+
+            # aggregate locus distances (mean)
+            print(&#34;\nCalculating average fitted distances across loci using:&#34;,
+                  params.loc_agg)
+            averageR = np.array(
+                [agg.aggregate_dist(params.loc_agg, col) for
+                 col in zip(*Rlist)])
+            print(averageR)
+
+            # get standard-deviation locus distances as well
+            print(&#34;\nCalculating standard-deviation of fitted distances&#34;,
+                  &#34;across loci using:&#34;, params.loc_agg)
+            sdR = np.array([agg.aggregate_dist(&#34;SD&#34;, col) for
+                            col in zip(*Rlist)])
+            print(sdR)
+
+        # check observed versus fitted distances:
+        if params.run == &#34;RUNLOCI&#34;:
+            R = averageR
+        pred = ast.get_fitted_d(points, gen, inc, R)
+        print(&#34;\nComparing observed versus predicted genetic distances:&#34;)
+        print(pred)
+        ast.output_fitted_d(pred, params.out)
+
+        # Step 7: Outputs
+
+        # Now, annotate originate geoDF with dissolved reach IDs
+        # also, need to collect up the stream tree fitted D to each reach
+        # finally, could add residuals of fitting D vs LENGTH_KM?
+        # maybe include logDxlength, DxlogLength, logDxlogLength as well?
+
+        # get list of all REACHIDs to extract from geoDF
+        # edge_data = nx.get_edge_attributes(K,params.reachid_col)
+        reach_to_edge = dict()
+        i = 0
+        edges = list()
+        for e in K.edges():
+            edge_data = K[e[0]][e[1]][params.reachid_col]
+            for r in edge_data:
+                reach_to_edge[r] = str(i)
+            edges.append(i)
+            i += 1
+        del edge_data
+
+        # save reach_to_edge table to file
+        r2eDF = pd.DataFrame(list(reach_to_edge.items()),
+                             columns=[params.reachid_col, &#39;EDGE_ID&#39;])
+        r2eDF.to_csv((str(params.out)+&#34;.reachToEdgeTable.txt&#34;),
+                     sep=&#34;\t&#34;, index=False)
+
+        # read in original shapefile as geoDF and subset it
+        print(&#34;\nExtracting attributes from original dataframe...&#34;)
+        # geoDF = gpd.read_file(params.shapefile)
+        geoDF = pyogrio.read_dataframe(params.shapefile)
+        mask = geoDF[params.reachid_col].isin(list(reach_to_edge.keys()))
+        temp = geoDF.loc[mask]
+        del mask
+        del reach_to_edge
+
+        # join EDGE_ID to geoDF
+        geoDF = temp.merge(r2eDF, on=params.reachid_col, how=&#39;left&#39;)
+        for col in geoDF.columns:
+            if col.endswith(&#39;_x&#39;):
+                geoDF.drop(col, axis=1, inplace=True)
+            elif col.endswith(&#39;_y&#39;):
+                geoDF.rename(columns={col: col.rstrip(&#39;_y&#39;)}, inplace=True)
+        print(geoDF)
+        del temp
+        del r2eDF
+
+        # plot by edge ID
+        base = geoDF.plot(column=&#34;EDGE_ID&#34;, cmap=&#34;prism&#34;)
+        coords = clust.coords_to_dataframe(points)
+        geo_coords = gpd.GeoDataFrame(coords,
+                                      geometry=gpd.points_from_xy(coords.long,
+                                                                  coords.lat))
+        geo_coords.plot(ax=base, marker=&#39;o&#39;, color=&#39;black&#39;, markersize=10,
+                        zorder=10)
+
+        plt.title(&#34;Stream network colored by EDGE_ID&#34;)
+        plt.savefig((str(params.out)+&#34;.streamsByEdgeID.pdf&#34;))
+
+        # add in fitted distances &amp; plot
+        print(&#34;\nPlotting StreamTree fitted distances and writing new&#34;,
+              &#34;shapefile...&#34;)
+
+        if params.run == &#34;RUNLOCI&#34;:
+            fittedD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;fittedD&#39;: R})
+            sdD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;stdevD&#39;: sdR})
+            i = 1
+            for locfit in Rlist:
+                name = &#34;locD_&#34; + str(i)
+                fittedD[name] = locfit
+                i += 1
+        else:
+            fittedD = pd.DataFrame({&#39;EDGE_ID&#39;: list(edges), &#39;fittedD&#39;: R})
+        geoDF[&#39;EDGE_ID&#39;] = geoDF[&#39;EDGE_ID&#39;].astype(int)
+        # geoDF.drop(columns=[&#34;EDGE_ID_x&#34;, &#34;EDGE_ID_y&#34;], inplace=True)
+        geoDF = geoDF.merge(fittedD, on=&#39;EDGE_ID&#39;, how=&#34;left&#34;)
+        for col in geoDF.columns:
+            if col.endswith(&#39;_x&#39;):
+                geoDF.drop(col, axis=1, inplace=True)
+            elif col.endswith(&#39;_y&#39;):
+                geoDF.rename(columns={col: col.rstrip(&#39;_y&#39;)}, inplace=True)
+        if params.run == &#34;RUNLOCI&#34;:
+            geoDF = geoDF.merge(sdD, on=&#39;EDGE_ID&#39;)
+            geoDF.plot(column=&#34;stdevD&#34;, cmap=&#34;RdYlGn_r&#34;, legend=True)
+            plt.title(&#34;Stream network colored by standard deviation of&#34;,
+                      &#34;StreamTree fitted distances&#34;)
+            plt.savefig((str(params.out)+&#34;.streamsBystdevD.pdf&#34;))
+        geoDF.plot(column=&#34;fittedD&#34;, cmap=&#34;RdYlGn_r&#34;, legend=True)
+        plt.title(&#34;Stream network colored by StreamTree fitted distances&#34;)
+        plt.savefig((str(params.out)+&#34;.streamsByFittedD.pdf&#34;))
+
+        # output a final annotated stream network layer
+        geoDF.to_csv((str(params.out)+&#34;.streamTree.txt&#34;), sep=&#34;\t&#34;,
+                     index=False)
+        ast.write_geodataframe(geoDF, (str(params.out)+&#34;.streamTree&#34;),
+                               params.output_driver)
+
+    refs = ref.fetch_references(params)
+    print(refs)
+
+    print(&#34;\nDone!\n&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="autostreamtree" href="index.html">autostreamtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="autostreamtree.cli.main" href="#autostreamtree.cli.main">main</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

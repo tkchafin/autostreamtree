@@ -21,5 +21,6 @@ dependencies:
   - networkx >3
   - mantel
   - pysam
+  - pdoc3
   - scikit-learn >1
   - flake8

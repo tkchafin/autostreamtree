@@ -1,0 +1,3345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>autostreamtree.functions API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>autostreamtree.functions</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import sys
+import os
+import itertools
+import traceback
+import math
+import momepy
+import warnings
+import pyogrio
+import pandas as pd
+import numpy as np
+import networkx as nx
+import seaborn as sns
+from pysam import VariantFile
+from scipy import stats
+from sortedcontainers import SortedDict
+from networkx import NodeNotFound
+import matplotlib.pyplot as plt
+import pickle
+import mantel
+import geopandas as gpd
+from math import radians, sin, cos, acos
+
+import autostreamtree.cluster_pops as clust
+import autostreamtree.sequence as seq
+import autostreamtree.genetic_distances as gendist
+
+
+# suppress irrelevant warning from momepy
+def custom_warn_handler(message, category, filename, lineno, file=None,
+                        line=None):
+    if &#34;momepy/utils.py&#34; in filename and issubclass(category, UserWarning):
+        return
+    return original_showwarning(message, category, filename, lineno, file,
+                                line)
+
+
+original_showwarning = warnings.showwarning
+warnings.showwarning = custom_warn_handler
+
+
+def read_vcf(vcf, concat=&#34;none&#34;, popmap=None):
+    &#34;&#34;&#34;
+    Reads a VCF file and returns a dictionary of sample genotypes.
+
+    ARgs:
+        vcf: Path to the input VCF file.
+        concat: Specifies the concatenation mode for genotypes. Options are
+                &#34;all&#34;, &#34;loc&#34;, and &#34;none&#34;.
+                   &#34;all&#34;: Concatenate genotypes of all loci for each sample.
+                   &#34;loc&#34;: Concatenate genotypes within the same chromosome for
+                          each sample.
+                   &#34;none&#34;: Do not concatenate genotypes.
+        popmap: Optional dictionary that maps populations to a list of samples.
+                If provided, only samples in the popmap will be retained in the
+                output dictionary.
+    Returns:
+        A dictionary with sample names as keys and lists of genotypes as values
+    &#34;&#34;&#34;
+
+    bcf_in = VariantFile(vcf)
+
+    # get all samples in the VCF
+    vcf_samples = list(bcf_in.header.samples)
+
+    # set up data dict
+    dat = dict()
+    samples = list((bcf_in.header.samples))
+    for s in samples:
+        if concat == &#34;all&#34;:
+            dat[s] = list()
+            dat[s].append([&#34;&#34;, &#34;&#34;])
+        else:
+            dat[s] = list()
+
+    # if popmap, make list of samples to drop that aren&#39;t in a pop
+    if popmap:
+        keep = list()
+        for pop in popmap:
+            keep.extend(popmap[pop])
+        keep = [s for s in keep if s in vcf_samples]
+        bcf_in.subset_samples(keep)
+
+    chrom = &#34;FIRST&#34;
+    for record in bcf_in.fetch():
+        for i, sample in enumerate(record.samples):
+            if concat == &#34;all&#34;:
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
+            elif concat == &#34;loc&#34;:
+                if record.chrom != chrom:
+                    dat[sample].append([&#34;&#34;, &#34;&#34;])
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
+            else:
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts)
+                dat[sample].append(loc)
+        chrom = record.chrom
+    if concat != &#34;none&#34;:
+        for sample in dat:
+            dat[sample] = [&#34;/&#34;.join(x) for x in dat[sample]]
+    for sample in list(dat.keys()):
+        if len(dat[sample]) &lt; 1:
+            del dat[sample]
+        elif len(dat[sample]) == 1 and dat[sample][0][0] == &#34;&#34;:
+            del dat[sample]
+    return dat
+
+
+def prune_graph(G, edge_list, reachid_col):
+    &#34;&#34;&#34;
+    Prunes a graph to only retain edges whose &#39;reachid_col&#39; matches values in
+    &#39;edge_list&#39;.
+
+    Args:
+        G: The input NetworkX Graph.
+        edge_list: A list of values to filter edges.
+        reachid_col: The edge attribute to be checked against &#39;edge_list&#39;.
+
+    Returns:
+        A pruned NetworkX Graph.
+    &#34;&#34;&#34;
+    for u, v in G.edges():
+        _ = G.get_edge_data(u, v)
+        # print(f&#34;Edge ({u}, {v}): {data}&#34;)
+    # Get edges to be retained using get_edge_data method
+    edges_to_keep = [(u, v) for u, v in G.edges() if
+                     G.get_edge_data(u, v).get(reachid_col) in edge_list]
+
+    # Check if there are no edges to keep
+    if not edges_to_keep:
+        raise ValueError(
+            &#34;There are no edges to retain based on the given edge&#34;,
+            &#34;list and attribute.&#34;
+        )
+
+    # Create a new graph with only the edges to be retained
+    pruned_G = G.edge_subgraph(edges_to_keep).copy()
+
+    # Remove isolated nodes
+    isolated_nodes = list(nx.isolates(pruned_G))
+    pruned_G.remove_nodes_from(isolated_nodes)
+
+    return pruned_G
+
+
+def read_network(network, shapefile):
+    &#34;&#34;&#34;
+    Reads a network from a saved file or builds a network from a shapefile.
+
+    Args:
+        network: Path to the saved network file (pickle format). If provided,
+                  the function will read the network from this file.
+        shapefile: Path to the shapefile to build the network from. This is
+                   used if the `network` parameter is not provided.
+    Returns:
+        A NetworkX Graph object representing the network.
+    &#34;&#34;&#34;
+
+    # Check if a saved network file is provided
+    if network:
+        print(&#34;Reading network from saved file: &#34;, network)
+        # Read the network from the saved file and convert it to an undirected
+        # graph
+        with open(network, &#39;rb&#39;) as f:
+            G = nx.Graph(pickle.load(f)).to_undirected()
+    else:
+        # If no saved network file is provided, build the network from the
+        # shapefile
+        print(&#34;Building network from shapefile:&#34;, shapefile)
+        print(&#34;WARNING: This can take a while with very large files!&#34;)
+        # Read the shapefile
+        # rivers = gpd.read_file(shapefile)
+        rivers = pyogrio.read_dataframe(shapefile)
+        # print(rivers.head())
+        # Convert the GeoDataFrame to a NetworkX Graph object
+        G = momepy.gdf_to_nx(rivers, approach=&#34;primal&#34;, directed=False,
+                             multigraph=False)
+
+    return G
+
+
+def parse_subgraph_from_points(params, point_coords, pop_coords, G):
+    &#34;&#34;&#34;
+    Extracts a subgraph from a given graph based on input points.
+
+    Args:
+        params: A custom object containing various input parameters.
+        point_coords: A list of point coordinates to use for extracting the
+                      subgraph.
+        pop_coords: A list of population coordinates to use for extracting the
+                    subgraph.
+        G: A NetworkX Graph object representing the input graph.
+
+    Returns:
+        A NetworkX Graph object representing the extracted subgraph.
+    &#34;&#34;&#34;
+
+    # Choose the appropriate set of points based on input parameters
+    if params.pop or params.geopop or params.clusterpop:
+        points = pop_coords
+    else:
+        points = point_coords
+
+    # Output points to a table
+    p = get_point_table(points)
+    p.to_csv((str(params.out) + &#34;.pointCoords.txt&#34;), sep=&#34;\t&#34;, index=False)
+    del p
+
+    # First pass extracts a subgraph from the master shapefile graph
+    print(&#34;\nExtracting full subgraph...&#34;)
+    ktemp = path_subgraph(G, points, extract_full_subgraph, params.reachid_col,
+                          params.length_col)
+    del G
+
+    # Second pass to simplify subgraph and collapse redundant nodes
+    print(&#34;\nMerging redundant paths...\n&#34;)
+    K = path_subgraph(ktemp, points, extract_minimal_subgraph,
+                      params.reachid_col, params.length_col)
+
+    # Grab real coordinates as node positions for plotting
+    pos = {n: n for n in K.nodes}
+
+    # Make a color map to color sample points and junctions differently
+    color_map = [&#34;blue&#34; if node in points.values() else &#34;black&#34; for node in K]
+
+    # Draw networkx
+    nx.draw_networkx(K, pos, with_labels=False, node_color=color_map,
+                     node_size=50)
+
+    # Get LENGTH_KM attributes for labelling edges
+    edge_labels = nx.get_edge_attributes(K, params.length_col)
+    for e in edge_labels:
+        edge_labels[e] = &#34;{:.2f}&#34;.format(edge_labels[e])
+
+    nx.draw_networkx_edge_labels(K, pos, edge_labels=edge_labels, font_size=6)
+
+    # Save minimized network to file (unless we already read from one)
+    if not params.network or params.overwrite:
+        net_out = str(params.out) + &#34;.network&#34;
+        with open(net_out, &#39;wb&#39;) as f:
+            pickle.dump(K, f, pickle.HIGHEST_PROTOCOL)
+        net_full_out = str(params.out) + &#34;.full.network&#34;
+        with open(net_full_out, &#39;wb&#39;) as f:
+            pickle.dump(ktemp, f, pickle.HIGHEST_PROTOCOL)
+    else:
+        print(
+            &#34;NOTE: Not over-writing existing network. To change this, use&#34;,
+            &#34;--overwrite&#34;
+            )
+
+    network_plot = str(params.out) + &#34;.subGraph.pdf&#34;
+    plt.savefig(network_plot)
+
+    del ktemp
+    return K
+
+
+def report_genmats(params, gen, pop_gen, point_coords, pop_coords):
+    &#34;&#34;&#34;
+    Prints genetic distance matrices and writes them to files.
+
+    ARgs:
+        params: A custom object containing various input parameters.
+        gen: A NumPy array representing the individual genetic distance matrix.
+        pop_gen: A NumPy array representing the population genetic distance
+                 matrix.
+        point_coords: A dictionary containing individual point coordinates.
+        pop_coords: A dictionary containing population point coordinates.
+    &#34;&#34;&#34;
+
+    # If the individual genetic distance matrix is not None, print and write
+    # it to file
+    if gen is not None:
+        print(&#34;Genetic distances:&#34;)
+        np.set_printoptions(precision=3)
+        print(gen, &#34;\n&#34;)
+
+        # Write individual genetic distances to file
+        ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                 index=list(point_coords.keys()))
+        ind_genDF.to_csv((str(params.out) + &#34;.indGenDistMat.txt&#34;), sep=&#34;\t&#34;,
+                         index=True)
+
+    # If the population genetic distance matrix is not None, print and write
+    # it to file
+    if pop_gen is not None:
+        print(&#34;Population genetic distances:&#34;)
+        np.set_printoptions(precision=3)
+        print(pop_gen, &#34;\n&#34;)
+
+        # Write population genetic distances to file
+        pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                 index=list(pop_coords.keys()))
+        pop_genDF.to_csv((str(params.out) + &#34;.popGenDistMat.txt&#34;), sep=&#34;\t&#34;,
+                         index=True)
+        del pop_genDF
+
+
+def get_loc_data(seqs):
+    &#34;&#34;&#34;
+    Generator function that yields a dictionary of individual loci data for
+    each locus in the input sequences.
+
+    Args:
+        seqs: A dictionary containing sequences as values and individual
+        identifiers as keys.
+
+    Returns:
+        A generator that yields a dictionary with individual identifiers as
+        keys and a list containing the
+             corresponding locus as the value.
+    &#34;&#34;&#34;
+
+    # Iterate through the loci in the sequences
+    for loc in range(0, len(seqs[list(seqs.keys())[0]])):
+        d = dict()
+
+        # Iterate through the individuals in the sequences
+        for ind in seqs.keys():
+            # Add the locus data for the individual to the dictionary
+            d[ind] = [seqs[ind][loc]]
+
+        # Yield the dictionary containing the locus data for the current locus
+        yield d
+
+
+def report_genmats_list(params, genlist, popgenlist, point_coords, pop_coords):
+    &#34;&#34;&#34;
+    Writes individual and population genetic distance matrices to files for
+    each locus in genlist and popgenlist.
+
+    Args:
+        params: A namespace object containing parameters, including the output
+                directory.
+        genlist: A list of individual genetic distance matrices for each locus.
+        popgenlist: A list of population genetic distance matrices for each
+                    locus.
+        point_coords: A dictionary containing individual point coordinates.
+        pop_coords: A dictionary containing population point coordinates.
+    &#34;&#34;&#34;
+
+    # Create an output directory for the genetic distance matrices
+    dir = str(params.out) + &#34;_locmats&#34;
+    os.makedirs(dir, exist_ok=True)
+
+    i = 0
+    # Iterate through the individual genetic distance matrices
+    for gen in genlist:
+        if gen is not None:
+            # Write individual genetic distances to a file
+            ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                     index=list(point_coords.keys()))
+            ind_genDF.to_csv((str(dir) + &#34;/loc_&#34; + str(i) +
+                              &#34;.indGenDistMat.txt&#34;), sep=&#34;\t&#34;, index=True)
+            del ind_genDF
+            i += 1
+
+    j = 0
+    # Iterate through the population genetic distance matrices
+    for pop_gen in popgenlist:
+        if pop_gen is not None:
+            # Write population genetic distances to a file
+            pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                     index=list(pop_coords.keys()))
+            pop_genDF.to_csv((str(dir) + &#34;/loc_&#34; + str(j) +
+                              &#34;.popGenDistMat.txt&#34;), sep=&#34;\t&#34;, index=True)
+            del pop_genDF
+            j += 1
+
+
+def block_print():
+    &#34;&#34;&#34;
+    Disables standard output by redirecting it to a null device, effectively
+    blocking any print statements.
+    &#34;&#34;&#34;
+    sys.stdout = open(os.devnull, &#39;w&#39;)
+
+
+def enable_print():
+    &#34;&#34;&#34;
+    Restores standard output to its original state, allowing print statements
+    to be displayed again.
+    &#34;&#34;&#34;
+    sys.stdout = sys.__stdout__
+
+
+def parse_input_genmat(params, inmat, point_coords, popmap, seqs=None):
+    &#34;&#34;&#34;
+    Parses an input genetic distance matrix and verifies if it matches the
+    user input parameters. Aggregates individual distances if required by the
+    user input.
+
+    Args:
+        params: Input parameters provided by the user.
+        inmat (pd.DataFrame): The input genetic distance matrix.
+        point_coords (dict): Dictionary containing point coordinates.
+        popmap (dict): Dictionary containing the population map.
+
+    Returns:
+        tuple: A tuple containing the genetic distance matrix (gen) and
+        population genetic distance matrix (pop_gen).
+    &#34;&#34;&#34;
+    gen = None
+    pop_gen = None
+    if params.coercemat:
+        inmat[inmat &lt; 0.0] = 0.0
+    if set(list(inmat.columns.values)) != set(list(inmat.index.values)):
+        print(inmat.columns.values)
+        print(inmat.index.values)
+        print(&#34;Input matrix columns and/ or rows don&#39;t appear to be&#34;,
+              &#34;labelled. Please provide an input matrix with column and row&#34;,
+              &#34;names!&#34;)
+        sys.exit(1)
+    else:
+        agg = False
+        # first check if it fits whatever the user input was (i.e. --pop)
+        if params.pop:
+            if len(inmat.columns) != len(popmap.keys()):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of populations from popmap.&#34;)
+                if (len(inmat.columns)) != len(point_coords):
+                    print(&#34;Doesn&#39;t match number of individuals either! Please&#34;,
+                          &#34;check your matrix format.&#34;)
+                    sys.exit(1)
+                else:
+                    print(&#34;Assuming input matrix has individual distances...&#34;,
+                          &#34;Aggregating using the following (--pop_agg):&#34;,
+                          str(params.pop_agg))
+                    agg = True
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(popmap.keys()))
+                inmat = inmat[list(popmap.keys())]
+                pop_gen = inmat.to_numpy()
+                del inmat
+        elif params.geopop or params.clusterpop:
+            if (len(inmat.columns)) != len(point_coords):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of individuals.&#34;)
+                print(&#34;When using --geopop or --clusterpop, the provided&#34;,
+                      &#34;matrix must represent individual-level distances.&#34;)
+                sys.exit(1)
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(point_coords.keys()))
+                inmat = inmat[list(point_coords.keys())]
+                gen = inmat.to_numpy()
+                agg = True
+                del inmat
+        else:
+            if (len(inmat.columns)) != len(point_coords):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of individuals.&#34;)
+                sys.exit(1)
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(point_coords.keys()))
+                inmat = inmat[list(point_coords.keys())]
+                gen = inmat.to_numpy()
+                del inmat
+        # if --geopop or --clusterpop, it should be an ind matrix
+        # if so, need to aggregate according to --pop_agg
+        # print(pop_gen)
+        if agg:
+            print(&#34;Aggregating user-provided individual-level distance matrix&#34;,
+                  &#34;using:&#34;, params.pop_agg)
+            pop_gen = gendist.get_pop_genmat(&#34;PDIST&#34;, gen, popmap,
+                                             point_coords, seqs,
+                                             pop_agg=params.pop_agg,
+                                             loc_agg=params.loc_agg,
+                                             ploidy=params.ploidy,
+                                             global_het=params.global_het)
+
+    return (gen, pop_gen)
+
+
+def read_popmap(popmap):
+    &#34;&#34;&#34;
+    Reads a population map file and returns a dictionary with individuals as
+    keys and populations as values.
+
+    Args:
+        popmap (str): Path to the population map file.
+
+    Returns:
+        dict: A dictionary with individuals as keys and populations as values.
+    &#34;&#34;&#34;
+    popdict = dict()
+    with open(popmap, &#34;r&#34;) as fin:
+        for line in fin:
+            line = line.strip()
+            if not line:
+                continue
+            cols = line.split()
+            ind = cols[0]
+            pop = cols[1]
+            popdict[ind] = pop
+    return popdict
+
+
+def process_samples(params, points, G):
+    &#34;&#34;&#34;
+    Processes input sample data by snapping points to a graph, calculating
+    coordinates, and processing populations if required.
+
+    Args:
+        params: Input parameters provided by the user.
+        points (pd.DataFrame): DataFrame containing sample points.
+        G (networkx.Graph): Graph object representing the road network.
+
+    Returns:
+        tuple: A tuple containing point coordinates, population coordinates,
+        and the population map.
+    &#34;&#34;&#34;
+    popmap = SortedDict()
+    point_coords = SortedDict()
+    pop_coords = SortedDict()
+    snapDists = dict()
+
+    if params.pop:
+        popmap_temp = read_popmap(params.pop)
+        mask = points[points.columns[0]].isin(popmap_temp)
+        points = points[mask]
+
+    for _, row in points.iterrows():
+        name = None
+        data = None
+        row[&#34;lat&#34;] = float(row[&#34;lat&#34;])
+        row[&#34;long&#34;] = float(row[&#34;long&#34;])
+        if params.run == &#34;GENDIST&#34;:
+            name = row[&#34;sample&#34;]
+            data = tuple([row[&#34;long&#34;], row[&#34;lat&#34;]])
+        else:
+            if not params.pop and not params.clusterpop:
+                # --geopop and individual-level snap coordinates to nodes here
+                node = snap_to_node(G, tuple([row[&#34;long&#34;], row[&#34;lat&#34;]]))
+                snapDists[row[&#34;sample&#34;]] = great_circle(node[0], node[1],
+                                                        row[&#34;long&#34;],
+                                                        row[&#34;lat&#34;])
+            else:
+                # if pop or clusterpop, extract centroid later
+                node = tuple([row[&#34;long&#34;], row[&#34;lat&#34;]])
+            data = node
+            name = row[&#34;sample&#34;]
+        point_coords[name] = data
+
+        # Process population-level analyses
+        if params.geopop:
+            if point_coords[name] not in popmap:
+                names = [name]
+                popmap[point_coords[name]] = names
+            else:
+                popmap[point_coords[name]].append(row[&#34;sample&#34;])
+        elif params.pop:
+            if popmap_temp[row.iloc[0]] not in popmap:
+                names = [name]
+                popmap[popmap_temp[row.iloc[0]]] = names
+            else:
+                popmap[popmap_temp[row.iloc[0]]].append(name)
+
+    print(&#34;Read&#34;, str(len(point_coords.keys())), &#34;individuals.&#34;)
+    print()
+
+    if params.pop or params.geopop:
+        print(&#34;Read&#34;, str(len(popmap.keys())), &#34;populations.&#34;)
+        print()
+
+    # For population-level analyses, generate population maps and centroids
+    # here according to user-input options: --pop, --geopop, --clusterpop
+    # get population centroid
+    if params.pop or params.geopop or params.clusterpop:
+        if params.clusterpop:
+            # create population clusters using DBSCAN
+            print(&#34;Running DBSCAN clustering with min_samples=&#34;,
+                  params.min_samples, &#34;and epsilon=&#34;, params.epsilon)
+            popmap = clust.dbscan_cluster(point_coords, params.epsilon,
+                                          params.min_samples)
+            num_clusters = len(popmap.keys())
+            print(&#34;Found&#34;, str(num_clusters), &#34;clusters!&#34;)
+
+            # calculate centroids for clusters
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
+
+        elif params.pop or params.geopop:
+            # popmap generated earlier when parsing input file!
+            # still need to calculate centroids:
+            print(&#34;Calculating population centroids...&#34;)
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
+            # note in the case of --geopop the centroid is the joint
+            # snapped-to location
+
+        # now, snap pop_coords to nodes
+        pop_coords = SortedDict()
+        for p in pop_temp:
+            node = snap_to_node(G, pop_temp[p])
+            snapDists[p] = great_circle(node[0], node[1], pop_temp[p][0],
+                                        pop_temp[p][1])
+            pop_coords[p] = node
+        # write popmap to file
+        flat = clust.flatten_popmap(popmap)
+        temp = pd.DataFrame(list(flat.items()), columns=[&#39;IND_ID&#39;, &#39;POP_ID&#39;])
+        temp.to_csv((str(params.out) + &#34;.popmap.txt&#34;), sep=&#34;\t&#34;, index=False)
+        del flat
+        del temp
+
+        # plot grouped samples
+        clust.plot_clustered_points(point_coords, popmap, params.out,
+                                    pop_coords)
+
+    # Plot histogram of snap distances and write snap distances to a file
+    clust.plot_histogram(list(snapDists.values()), params.out)
+    dtemp = pd.DataFrame(list(snapDists.items()), columns=[&#39;name&#39;, &#39;km&#39;])
+    dtout = str(params.out) + &#34;.snapDistances.txt&#34;
+    dtemp.to_csv(dtout, sep=&#34;\t&#34;, index=False)
+    del dtemp
+    del dtout
+    del snapDists
+
+    # return everything
+    return point_coords, pop_coords, popmap
+
+
+def get_gendist_mats(params, point_coords, popmap, seqs):
+    &#34;&#34;&#34;Returns population genetic distance matrices.
+
+    Args:
+        params (object): An object that contains parameters for the analysis.
+        point_coords (list): A list of coordinates for the sampled points.
+        popmap (dict): A dictionary that maps each sample to its corresponding
+                       population.
+        seqs (list): A list of DNA sequences for the sampled points.
+
+    Returns:
+        tuple: A tuple containing two matrices. The first is a pairwise
+               distance matrix for all
+        samples. The second is a matrix of pairwise genetic distances between
+                 populations.
+
+    Raises:
+        SystemExit: If distance metric is not possible without population data.
+
+    &#34;&#34;&#34;
+    gen = None  # Initialize variable to hold pairwise dist matrix
+    pop_gen = None  # Initialize variable to hold population dist matrix
+
+    if params.dist in [&#34;PDIST&#34;, &#34;TN84&#34;, &#34;TN93&#34;, &#34;K2P&#34;, &#34;JC69&#34;]:
+        # Calculate pairwise distance matrix using selected method
+        gen = gendist.get_genmat(params.dist, point_coords, seqs,
+                                 ploidy=params.ploidy, het=params.het,
+                                 loc_agg=params.loc_agg)
+
+        if params.pop or params.geopop or params.clusterpop:
+            print(&#34;Aggregating pairwise population genetic distances from&#34;,
+                  &#34;individual distances using:&#34;, params.pop_agg)
+
+    else:
+        # If distance metric requires population data, but none is provided
+        if not params.pop and not params.geopop:
+            print(&#34;ERROR: Distance metric&#34;, params.dist,
+                  &#34;not possible without population data.&#34;)
+            sys.exit(1)
+
+    # Calculate population genetic distance matrix
+    if params.pop or params.geopop or params.clusterpop:
+        pop_gen = gendist.get_pop_genmat(params.dist, gen, popmap,
+                                         point_coords, seqs,
+                                         pop_agg=params.pop_agg,
+                                         loc_agg=params.loc_agg,
+                                         ploidy=params.ploidy,
+                                         global_het=params.global_het)
+
+    # Return pairwise distance matrix and population genetic distance matrix
+    return gen, pop_gen
+
+
+def get_point_table(points):
+    &#34;&#34;&#34;Returns a pandas DataFrame from a dictionary of points.
+
+    Args:
+        points (dict): A dictionary of points with their latitude and longitude
+                       values.
+
+    Returns:
+        pandas.DataFrame: A dataframe with columns for &#39;sample&#39;, &#39;lat&#39;, and
+                          &#39;long&#39;.
+
+    &#34;&#34;&#34;
+    temp = []  # Initialize list to hold temporary values
+    for p in points:
+        # Append values for each point to temporary list
+        temp.append([p, points[p][1], points[p][0]])
+    p = pd.DataFrame(temp, columns=[&#39;sample&#39;, &#39;lat&#39;, &#39;long&#39;])
+    return p
+
+
+def r2(x, y):
+    &#34;&#34;&#34;Returns the Pearson correlation coefficient squared between two arrays.
+
+    Args:
+        x (array): An array of values.
+        y (array): An array of values.
+
+    Returns:
+        float: The squared Pearson correlation coefficient between the two
+               arrays.
+
+    &#34;&#34;&#34;
+    return (stats.pearsonr(x, y)[0] ** 2)
+
+
+def get_fitted_d(points, genmat, inc, r):
+    &#34;&#34;&#34;Calculates predicted genetic distances based on fitted streamtree
+    distances.
+
+    Args:
+        points (dict): A dictionary of points with their latitude and
+                       longitude values.
+        genmat (ndarray): A pairwise genetic distance matrix.
+        inc (ndarray): An incidence matrix representing the presence or absence
+                       of streams for each point.
+        r (ndarray): A fitted streamtree distance matrix.
+
+    Returns:
+        pandas.DataFrame: A dataframe with columns for &#39;from&#39;, &#39;to&#39;,
+                          &#39;observed_D&#39;, &#39;predicted_D&#39;, and &#39;abs_diff&#39;.
+
+    &#34;&#34;&#34;
+    rows = []  # Initialize list to hold temporary values
+    names = list(points.keys())  # Get names of points
+
+    # Iterate over all pairwise combinations of points
+    inc_row = 0  # tracks what ROW (pair) we are in the incidence matrix
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        obs = genmat[ia, ib]
+        inc_streams = inc[inc_row,]
+        pred_dist = np.sum(r[inc_streams == 1])
+        inc_row += 1
+        rows.append([names[ia], names[ib], obs, pred_dist,
+                     np.abs(obs-pred_dist)])
+    # Create dataframe from temporary list and return it
+    D = pd.DataFrame(rows, columns=[&#39;from&#39;, &#39;to&#39;, &#39;observed_D&#39;,
+                                    &#39;predicted_D&#39;, &#39;abs_diff&#39;])
+    return D
+
+
+def plot_gen_by_geo(gen, sdist, out, log=False):
+    &#34;&#34;&#34;
+    Plots genetic distance against geographic distance to visualize isolation
+    by distance.
+
+    Args:
+        gen (numpy.ndarray): Genetic distance matrix.
+        sdist (numpy.ndarray): Spatial distance matrix.
+        out (str): Output file prefix for the generated plot.
+        log (bool, optional): If True, the geographic distance axis will be
+                              log-transformed. Defaults to False.
+    &#34;&#34;&#34;
+
+    genetic_distance = get_lower_tri(gen)
+    geographic_distance = get_lower_tri(sdist)
+
+    data = pd.DataFrame({&#39;Geographic Distance&#39;: geographic_distance,
+                         &#39;Genetic Distance&#39;: genetic_distance})
+
+    if not log:
+        sns.jointplot(data=data, x=&#39;Geographic Distance&#39;, y=&#39;Genetic Distance&#39;,
+                      kind=&#34;reg&#34;)
+        plt.savefig(str(out) + &#34;.isolationByDistance.pdf&#34;)
+    else:
+        geographic_distance = replace_zeroes(geographic_distance)
+        log_geo = np.log(geographic_distance)
+        data[&#39;Log Geographic Distance&#39;] = log_geo
+
+        sns.jointplot(data=data, x=&#39;Log Geographic Distance&#39;,
+                      y=&#39;Genetic Distance&#39;, kind=&#34;reg&#34;)
+        plt.savefig(str(out) + &#34;.isolationByDistance.pdf&#34;)
+
+    del geographic_distance
+    del genetic_distance
+
+
+def great_circle(lon1, lat1, lon2, lat2, thresh=0.0000001):
+    &#34;&#34;&#34;
+    Calculates the great circle distance between two points on a sphere, using
+    their longitudes and latitudes.
+
+    Args:
+        lon1 (float): Longitude of the first point.
+        lat1 (float): Latitude of the first point.
+        lon2 (float): Longitude of the second point.
+        lat2 (float): Latitude of the second point.
+        thresh (float, optional): Threshold for determining if the points are
+                                  the same. Defaults to 0.0000001.
+
+    Returns:
+        float: Great circle distance in kilometers.
+    &#34;&#34;&#34;
+    if (abs(lon1 - lon2)) &lt; thresh and (abs(lat1 - lat2)) &lt; thresh:
+        return 0.0
+    else:
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+        return 6371 * (
+            acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
+                 cos(lon1 - lon2))
+        )
+
+
+def get_lower_tri(mat):
+    &#34;&#34;&#34;
+    Extracts the lower triangular elements from a square matrix.
+
+    Args:
+        mat (numpy.ndarray): Input square matrix.
+
+    Returns:
+        numpy.ndarray: 1D array containing the lower triangular elements of
+                       the input matrix.
+    &#34;&#34;&#34;
+    n = mat.shape[0]
+    i = np.tril_indices(n, -1)
+    return mat[i]
+
+
+def replace_zeroes(data):
+    &#34;&#34;&#34;
+    Replaces zeroes in the input array with the smallest non-zero value.
+
+    Args:
+        data (numpy.ndarray): Input array.
+
+    Returns:
+        numpy.ndarray: Array with zeroes replaced by the smallest non-zero
+                       value.
+    &#34;&#34;&#34;
+    min_nonzero = np.min(data[np.nonzero(data)])
+    data[data == 0] = min_nonzero
+    return data
+
+
+# function computes Mantel test using various transformations
+def test_ibd(gen, geo, out, perms, log=False):
+    # get flattened lower triangle of each matrix
+    gen = get_lower_tri(gen)
+    geo = get_lower_tri(geo)
+
+    if log is True:
+        geo = replace_zeroes(geo)
+        geo = np.log(geo)
+
+    # non-log pearson
+    res = mantel.test(geo, gen, perms=int(perms), method=&#39;pearson&#39;)
+    rows = list()
+    rows.append([&#39;genXgeo&#39;, &#39;pearson&#39;, str(perms), res.r, res.p, res.z])
+
+    # non-log spearman
+    res = mantel.test(geo, gen, perms=int(perms), method=&#39;spearman&#39;)
+    rows.append([&#39;genXgeo&#39;, &#39;spearman&#39;, str(perms), res.r, res.p, res.z])
+
+    ibd = pd.DataFrame(rows,  columns=[&#39;test&#39;, &#39;method&#39;, &#39;perms&#39;, &#39;r&#39;, &#39;p&#39;,
+                                       &#39;z&#39;])
+    print(&#34;Mantel test results:&#34;)
+    print(ibd)
+    ibd.to_csv((str(out) + &#34;.isolationByDistance.txt&#34;), sep=&#34;\t&#34;, index=False)
+    print()
+
+
+def output_fitted_d(pred, out):
+    pred.to_csv((str(out)+&#34;.obsVersusFittedD.txt&#34;), sep=&#34;\t&#34;, index=False)
+    sns.jointplot(x=&#34;observed_D&#34;, y=&#34;predicted_D&#34;, data=pred, kind=&#34;reg&#34;)
+    plt.savefig((str(out)+&#34;.obsVersusFittedD.pdf&#34;))
+    del pred
+
+
+def fit_least_squares_distances(D, X, iterative, out, weight=&#34;CSE67&#34;):
+    &#34;&#34;&#34;
+    Computes least-squares branch lengths from a vector of genetic distances D
+    and incidence matrix X. When iterative=True, negative distances are
+    constrained to 0 and then recomputed.
+
+    Args:
+        D (numpy.ndarray): Vector of genetic distances.
+        X (numpy.ndarray): Incidence matrix.
+        iterative (bool): Whether to use an iterative approach to constrain
+                          negative distances.
+        out (str): Output file prefix.
+        weight: Weight type. Defaults to CSE67.
+
+    Returns:
+        numpy.ndarray: Least-squared optimized distances.
+    &#34;&#34;&#34;
+    num_segments = (np.size(X, 1))
+    ls = np.zeros(num_segments)
+    d = vectorize_mat(D)
+
+    # calculate weights matrix and write to file
+    W = generate_weights_matrix(d, weight)
+    print(&#34;Weights matrix:&#34;)
+    print(W)
+    # ofh=out+&#34;.weightsMatrix.txt&#34;
+    # np.savetxt(ofh, W, delimiter=&#34;\t&#34;)
+
+    # weighted least-squares optimization
+    ls = np.matmul(np.linalg.inv(
+        np.matmul(np.matmul(X.transpose(), W), X)),
+        np.matmul(np.matmul(X.transpose(), W), d))
+
+    if iterative:
+        ls_old = ls
+        if (np.count_nonzero(ls &lt; 0.0) &gt; 0):
+            print(&#34;\nLS-optimized distances contain negative values: Using&#34;,
+                  &#34;iterative approach to re-calculate...&#34;)
+        constrains = list()  # save indices of all constrained values
+
+        # if negative distances, use iterative procedure to re-calculate
+        while (np.count_nonzero(ls &lt; 0.0) &gt; 0):
+            bad_ind = np.argmin(ls)
+            constrains.append(bad_ind)
+            # constrain to 0 by removing from incidence matrix
+            X = np.delete(X, bad_ind, 1)
+            # re-compute values
+            ls = np.matmul(np.linalg.inv(
+                np.matmul(np.matmul(X.transpose(), W), X)),
+                np.matmul(np.matmul(X.transpose(), W), d))
+        for i in reversed(constrains):
+            ls = np.insert(ls, i, 0.0)
+        # print(ls)
+
+        # write original and constrained results to log file
+        ofh = out+&#34;.leastSquaresConstrained.txt&#34;
+        df = pd.DataFrame({&#39;LS.original&#39;: ls_old, &#39;LS.constrained&#39;: ls})
+        df.to_csv(ofh, sep=&#34;\t&#34;, index=False)
+
+        return ls
+    else:
+        return ls
+
+
+def generate_weights_matrix(d, weight):
+    &#34;&#34;&#34;
+    Generates a weights matrix for the least-squares method, where weights are
+    on the diagonals.
+
+    Args:
+        d (numpy.ndarray): Vector of genetic distances.
+        weight (str): Weighting method to use, options: &#39;CSE67&#39;, &#39;BEYER74&#39;,
+                      &#39;FM67&#39;.
+
+    Returns:
+        numpy.ndarray: Weights matrix.
+    &#34;&#34;&#34;
+    W = np.zeros((len(d), len(d)), dtype=float)
+    row, col = np.diag_indices(W.shape[0])
+
+    if weight.upper() == &#34;CSE67&#34;:
+        W[row, col] = np.ones(len(d))
+    elif weight.upper() == &#34;BEYER74&#34;:
+        if np.count_nonzero(d == 0) &gt; 0:
+            print(
+                &#34;WARNING: Divide-by-zero in weighted least-squares.&#34;
+            )
+        W[row, col] = np.divide(1.0, d, out=np.zeros_like(d, dtype=float),
+                                where=d != 0)
+
+    elif weight.upper() == &#34;FM67&#34;:
+        if np.count_nonzero(d == 0) &gt; 0:
+            print(
+                &#34;WARNING: Divide-by-zero in weighted least-squares.&#34;
+            )
+            W[row, col] = np.divide(1.0, np.square(d), out=np.zeros_like(d,
+                                    dtype=float), where=d != 0)
+
+    else:
+        print(f&#34;ERROR: Weight option {weight} not recognized. Using ordinary&#34;,
+              &#34;least-squares instead.&#34;)
+        W[row, col] = np.ones(len(d))
+
+    return W
+
+
+def vectorize_mat(mat):
+    &#34;&#34;&#34;
+    Converts a pairwise matrix to a 1D vector.
+
+    Args:
+        mat (numpy.ndarray): Pairwise matrix.
+
+    Returns:
+        numpy.ndarray: 1D vector of matrix elements.
+    &#34;&#34;&#34;
+    size = nCr(np.size(mat, 0), 2)
+    vec = np.zeros(size)
+    index = 0
+
+    for ia, ib in itertools.combinations(range(0, np.size(mat, 0)), 2):
+        vec[index] = mat[ia, ib]
+        index += 1
+
+    return vec
+
+
+def get_stream_mats(points, graph, len_col):
+    &#34;&#34;&#34;
+    Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
+    calculations.
+
+    Args:
+        points (dict): Dictionary of point indices and their corresponding node
+                       IDs in the graph.
+        graph (networkx.Graph): NetworkX graph object representing the stream
+                                network.
+        len_col (str): Attribute name for the length of the edges in the graph.
+
+    Returns:
+        tuple: Pair of numpy.ndarray representing the pairwise stream distance
+               matrix and incidence matrix.
+    &#34;&#34;&#34;
+    dist = np.zeros((len(points), len(points)))
+    inc = np.zeros((nCr(len(points), 2), len(graph.edges())), dtype=int)
+
+    # Establish as NaN
+    dist[:] = np.nan
+
+    def dijkstra_weight(left, right, attributes):
+        # Calculates weights for Dijkstra&#39;s shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
+        epsilon = 1e-9
+        return 1 / (attributes[len_col] + epsilon)
+
+    index = 0
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        path = nx.bidirectional_dijkstra(graph, points.values()[ia],
+                                         points.values()[ib],
+                                         weight=dijkstra_weight)
+        if path:
+            dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1],
+                                                          len_col)))
+            dist[ib, ia] = dist[ia, ib]
+
+        # Incidence matrix: assign 1 if edge is in the path, 0 otherwise
+        for ie, edge in enumerate(graph.edges()):
+            if find_pair(path[1], edge[0], edge[1]):
+                inc[index, ie] = 1
+            else:
+                inc[index, ie] = 0
+        index += 1
+
+    np.fill_diagonal(dist, 0.0)
+    return dist, inc
+
+
+def find_pair(lst, x, y):
+    &#34;&#34;&#34;
+    Check if two elements are consecutive in a list, irrespective of their
+    order.
+
+    Args:
+        lst (list): The list to search for the pair.
+        x (Any): The first element of the pair.
+        y (Any): The second element of the pair.
+
+    Returns:
+        bool: True if the elements are consecutive in the list, False otherwise
+    &#34;&#34;&#34;
+    if x not in lst or y not in lst:
+        return False
+    elif abs(lst.index(x) - lst.index(y)) == 1:
+        return True
+    else:
+        return False
+
+
+def nCr(n, k):
+    &#34;&#34;&#34;
+    Calculate the number of combinations, n choose k.
+
+    Args:
+        n (int): The number of elements.
+        k (int): The number of elements to choose.
+
+    Returns:
+        int: The number of possible combinations.
+    &#34;&#34;&#34;
+    f = math.factorial
+    return f(n) // f(k) // f(n - k)
+
+
+def path_edge_attributes(graph, path, attribute):
+    &#34;&#34;&#34;
+    Get the attribute values for edges in a given path.
+
+    Args:
+        graph (NetworkX Graph): The graph containing the edges.
+        path (list): The list of nodes forming the path.
+        attribute (str): The edge attribute to get the values for.
+
+    Returns:
+        list: A list of attribute values for the edges in the path.
+    &#34;&#34;&#34;
+    return [graph[u][v][attribute] for (u, v) in zip(path, path[1:])]
+
+
+def path_subgraph(graph, nodes, method, id_col, len_col):
+    &#34;&#34;&#34;
+    Find and extract paths between points from a graph.
+
+    Args:
+        graph (NetworkX Graph): The input graph.
+        nodes (dict): A dictionary of nodes to extract paths between.
+        method (callable): The method to build the subgraph.
+        id_col (str): The column name for node ID.
+        len_col (str): The column name for edge length.
+
+    Returns:
+        NetworkX Graph: A subgraph containing the extracted paths.
+    &#34;&#34;&#34;
+    k = nx.Graph()
+
+    def dijkstra_weight(left, right, attributes):
+        # Calculates weights for Dijkstra&#39;s shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
+        epsilon = 1e-9
+        return 1 / (attributes[len_col] + epsilon)
+
+    p1 = list(nodes.values())[0]
+    for p2 in list(nodes.values())[1:]:
+        try:
+            # Find the shortest path between the two points
+            path = nx.bidirectional_dijkstra(graph, p1, p2,
+                                             weight=dijkstra_weight)
+
+            # Traverse the nodes in the path to build a minimal set of edges
+            method(k, graph, nodes.values(), id_col, len_col, path[1])
+
+            if p1 not in k:
+                k.add_node(p1)
+            if p2 not in k:
+                k.add_node(p2)
+
+        except NodeNotFound as e:
+            print(&#34;Node not found:&#34;, e)
+        except Exception as e:
+            traceback.print_exc()
+            print(&#34;Something unexpected happened:&#34;, e)
+            sys.exit(1)
+    return k
+
+
+def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
+    &#34;&#34;&#34;
+    Extracts the full subgraph from the given nodes.
+
+    Args:
+        subgraph (NetworkX Graph): The subgraph to be modified.
+        graph (NetworkX Graph): The input graph.
+        nodelist (list): The list of nodes.
+        id_col (str): The column name for node ID.
+        len_col (str): The column name for edge length.
+        path (list): The path between nodes.
+    &#34;&#34;&#34;
+    # Iterate through the nodes in the path
+    for first, second in zip(path, path[1:]):
+        # Add nodes to the subgraph if they are not already present
+        if first not in subgraph:
+            subgraph.add_node(first)
+        if second not in subgraph:
+            subgraph.add_node(second)
+
+        # Add the edge between the nodes with the corresponding edge data
+        dat = graph.get_edge_data(first, second)
+        subgraph.add_edge(first, second, **dat)
+
+
+def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
+    &#34;&#34;&#34;
+    Extracts a simplified subgraph from paths, keeping only terminal and
+    junction nodes.
+
+    Args:
+        subgraph (NetworkX Graph): The subgraph to be modified.
+        graph (NetworkX Graph): The input graph.
+        nodelist (list): The list of nodes.
+        id_col (str): The column name for edge ID.
+        len_col (str): The column name for edge length.
+        path (list): The path between nodes.
+    &#34;&#34;&#34;
+    curr_edge = {id_col: list(), len_col: 0.0}
+    curr_start = None
+
+    # Iterate through each pair of nodes in the path
+    for first, second in zip(path, path[1:]):
+        if not curr_start:
+            curr_start = first
+            if first in nodelist or len(graph[first]) &gt; 2:
+                subgraph.add_node(first)
+
+        # Add path attributes to current edge
+        dat = graph.get_edge_data(first, second)
+        curr_edge[id_col].extend([dat[id_col]] if not
+                                 isinstance(dat[id_col], list) else
+                                 dat[id_col])
+        curr_edge[len_col] = float(curr_edge[len_col]) + float(dat[len_col])
+
+        # If the second node is a STOP node (in nodelist or is a junction)
+        if second in nodelist or len(graph[second]) &gt; 2:
+            # Add node to subgraph
+            subgraph.add_node(second)
+            # Link current attribute data
+            subgraph.add_edge(curr_start, second, **curr_edge)
+            # Empty edge attributes and set current second to curr_start
+            curr_edge = {id_col: list(), len_col: 0}
+            curr_start = second
+        else:
+            # Otherwise, continue building the current edge
+            continue
+
+
+def snap_to_node(graph, pos):
+    &#34;&#34;&#34;
+    Finds the closest node to the given [x, y] coordinates in the graph.
+
+    Args:
+        graph (NetworkX Graph): The input graph.
+        pos (tuple): A tuple of [x, y] coordinates.
+
+    Returns:
+        tuple: The closest node to the input coordinates.
+    &#34;&#34;&#34;
+    nodes = np.array(graph.nodes())
+    node_pos = np.argmin(np.sum((nodes - pos) ** 2, axis=1))
+    return tuple(nodes[node_pos])
+
+
+def write_geodataframe(gdf, output_prefix, output_driver):
+    gpd.options.io_engine = &#34;pyogrio&#34;
+    extension = {
+        &#34;SHP&#34;: &#34;.shp&#34;,
+        &#34;GPKG&#34;: &#34;.gpkg&#34;,
+        &#34;GDB&#34;: &#34;.gdb&#34;
+    }.get(output_driver.upper(), &#34;.gpkg&#34;)  # Default to .gpkg
+    if output_driver.upper() == &#34;SHP&#34;:
+        output_driver = &#34;ESRI Shapefile&#34;
+
+    output_path = f&#34;{output_prefix}{extension}&#34;
+
+    if output_driver == &#39;GDB&#39; and not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    gdf.to_file(output_path, driver=output_driver.upper())</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="autostreamtree.functions.block_print"><code class="name flex">
+<span>def <span class="ident">block_print</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Disables standard output by redirecting it to a null device, effectively
+blocking any print statements.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def block_print():
+    &#34;&#34;&#34;
+    Disables standard output by redirecting it to a null device, effectively
+    blocking any print statements.
+    &#34;&#34;&#34;
+    sys.stdout = open(os.devnull, &#39;w&#39;)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.custom_warn_handler"><code class="name flex">
+<span>def <span class="ident">custom_warn_handler</span></span>(<span>message, category, filename, lineno, file=None, line=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def custom_warn_handler(message, category, filename, lineno, file=None,
+                        line=None):
+    if &#34;momepy/utils.py&#34; in filename and issubclass(category, UserWarning):
+        return
+    return original_showwarning(message, category, filename, lineno, file,
+                                line)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.enable_print"><code class="name flex">
+<span>def <span class="ident">enable_print</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Restores standard output to its original state, allowing print statements
+to be displayed again.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def enable_print():
+    &#34;&#34;&#34;
+    Restores standard output to its original state, allowing print statements
+    to be displayed again.
+    &#34;&#34;&#34;
+    sys.stdout = sys.__stdout__</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.extract_full_subgraph"><code class="name flex">
+<span>def <span class="ident">extract_full_subgraph</span></span>(<span>subgraph, graph, nodelist, id_col, len_col, path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extracts the full subgraph from the given nodes.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>subgraph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The subgraph to be modified.</dd>
+<dt><strong><code>graph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The input graph.</dd>
+<dt><strong><code>nodelist</code></strong> :&ensp;<code>list</code></dt>
+<dd>The list of nodes.</dd>
+<dt><strong><code>id_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for node ID.</dd>
+<dt><strong><code>len_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for edge length.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>list</code></dt>
+<dd>The path between nodes.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
+    &#34;&#34;&#34;
+    Extracts the full subgraph from the given nodes.
+
+    Args:
+        subgraph (NetworkX Graph): The subgraph to be modified.
+        graph (NetworkX Graph): The input graph.
+        nodelist (list): The list of nodes.
+        id_col (str): The column name for node ID.
+        len_col (str): The column name for edge length.
+        path (list): The path between nodes.
+    &#34;&#34;&#34;
+    # Iterate through the nodes in the path
+    for first, second in zip(path, path[1:]):
+        # Add nodes to the subgraph if they are not already present
+        if first not in subgraph:
+            subgraph.add_node(first)
+        if second not in subgraph:
+            subgraph.add_node(second)
+
+        # Add the edge between the nodes with the corresponding edge data
+        dat = graph.get_edge_data(first, second)
+        subgraph.add_edge(first, second, **dat)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.extract_minimal_subgraph"><code class="name flex">
+<span>def <span class="ident">extract_minimal_subgraph</span></span>(<span>subgraph, graph, nodelist, id_col, len_col, path)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extracts a simplified subgraph from paths, keeping only terminal and
+junction nodes.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>subgraph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The subgraph to be modified.</dd>
+<dt><strong><code>graph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The input graph.</dd>
+<dt><strong><code>nodelist</code></strong> :&ensp;<code>list</code></dt>
+<dd>The list of nodes.</dd>
+<dt><strong><code>id_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for edge ID.</dd>
+<dt><strong><code>len_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for edge length.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>list</code></dt>
+<dd>The path between nodes.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
+    &#34;&#34;&#34;
+    Extracts a simplified subgraph from paths, keeping only terminal and
+    junction nodes.
+
+    Args:
+        subgraph (NetworkX Graph): The subgraph to be modified.
+        graph (NetworkX Graph): The input graph.
+        nodelist (list): The list of nodes.
+        id_col (str): The column name for edge ID.
+        len_col (str): The column name for edge length.
+        path (list): The path between nodes.
+    &#34;&#34;&#34;
+    curr_edge = {id_col: list(), len_col: 0.0}
+    curr_start = None
+
+    # Iterate through each pair of nodes in the path
+    for first, second in zip(path, path[1:]):
+        if not curr_start:
+            curr_start = first
+            if first in nodelist or len(graph[first]) &gt; 2:
+                subgraph.add_node(first)
+
+        # Add path attributes to current edge
+        dat = graph.get_edge_data(first, second)
+        curr_edge[id_col].extend([dat[id_col]] if not
+                                 isinstance(dat[id_col], list) else
+                                 dat[id_col])
+        curr_edge[len_col] = float(curr_edge[len_col]) + float(dat[len_col])
+
+        # If the second node is a STOP node (in nodelist or is a junction)
+        if second in nodelist or len(graph[second]) &gt; 2:
+            # Add node to subgraph
+            subgraph.add_node(second)
+            # Link current attribute data
+            subgraph.add_edge(curr_start, second, **curr_edge)
+            # Empty edge attributes and set current second to curr_start
+            curr_edge = {id_col: list(), len_col: 0}
+            curr_start = second
+        else:
+            # Otherwise, continue building the current edge
+            continue</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.find_pair"><code class="name flex">
+<span>def <span class="ident">find_pair</span></span>(<span>lst, x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check if two elements are consecutive in a list, irrespective of their
+order.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>lst</code></strong> :&ensp;<code>list</code></dt>
+<dd>The list to search for the pair.</dd>
+<dt><strong><code>x</code></strong> :&ensp;<code>Any</code></dt>
+<dd>The first element of the pair.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Any</code></dt>
+<dd>The second element of the pair.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>bool</code></dt>
+<dd>True if the elements are consecutive in the list, False otherwise</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def find_pair(lst, x, y):
+    &#34;&#34;&#34;
+    Check if two elements are consecutive in a list, irrespective of their
+    order.
+
+    Args:
+        lst (list): The list to search for the pair.
+        x (Any): The first element of the pair.
+        y (Any): The second element of the pair.
+
+    Returns:
+        bool: True if the elements are consecutive in the list, False otherwise
+    &#34;&#34;&#34;
+    if x not in lst or y not in lst:
+        return False
+    elif abs(lst.index(x) - lst.index(y)) == 1:
+        return True
+    else:
+        return False</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.fit_least_squares_distances"><code class="name flex">
+<span>def <span class="ident">fit_least_squares_distances</span></span>(<span>D, X, iterative, out, weight='CSE67')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes least-squares branch lengths from a vector of genetic distances D
+and incidence matrix X. When iterative=True, negative distances are
+constrained to 0 and then recomputed.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>D</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Vector of genetic distances.</dd>
+<dt><strong><code>X</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Incidence matrix.</dd>
+<dt><strong><code>iterative</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to use an iterative approach to constrain
+negative distances.</dd>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>Output file prefix.</dd>
+<dt><strong><code>weight</code></strong></dt>
+<dd>Weight type. Defaults to CSE67.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>numpy.ndarray</code></dt>
+<dd>Least-squared optimized distances.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_least_squares_distances(D, X, iterative, out, weight=&#34;CSE67&#34;):
+    &#34;&#34;&#34;
+    Computes least-squares branch lengths from a vector of genetic distances D
+    and incidence matrix X. When iterative=True, negative distances are
+    constrained to 0 and then recomputed.
+
+    Args:
+        D (numpy.ndarray): Vector of genetic distances.
+        X (numpy.ndarray): Incidence matrix.
+        iterative (bool): Whether to use an iterative approach to constrain
+                          negative distances.
+        out (str): Output file prefix.
+        weight: Weight type. Defaults to CSE67.
+
+    Returns:
+        numpy.ndarray: Least-squared optimized distances.
+    &#34;&#34;&#34;
+    num_segments = (np.size(X, 1))
+    ls = np.zeros(num_segments)
+    d = vectorize_mat(D)
+
+    # calculate weights matrix and write to file
+    W = generate_weights_matrix(d, weight)
+    print(&#34;Weights matrix:&#34;)
+    print(W)
+    # ofh=out+&#34;.weightsMatrix.txt&#34;
+    # np.savetxt(ofh, W, delimiter=&#34;\t&#34;)
+
+    # weighted least-squares optimization
+    ls = np.matmul(np.linalg.inv(
+        np.matmul(np.matmul(X.transpose(), W), X)),
+        np.matmul(np.matmul(X.transpose(), W), d))
+
+    if iterative:
+        ls_old = ls
+        if (np.count_nonzero(ls &lt; 0.0) &gt; 0):
+            print(&#34;\nLS-optimized distances contain negative values: Using&#34;,
+                  &#34;iterative approach to re-calculate...&#34;)
+        constrains = list()  # save indices of all constrained values
+
+        # if negative distances, use iterative procedure to re-calculate
+        while (np.count_nonzero(ls &lt; 0.0) &gt; 0):
+            bad_ind = np.argmin(ls)
+            constrains.append(bad_ind)
+            # constrain to 0 by removing from incidence matrix
+            X = np.delete(X, bad_ind, 1)
+            # re-compute values
+            ls = np.matmul(np.linalg.inv(
+                np.matmul(np.matmul(X.transpose(), W), X)),
+                np.matmul(np.matmul(X.transpose(), W), d))
+        for i in reversed(constrains):
+            ls = np.insert(ls, i, 0.0)
+        # print(ls)
+
+        # write original and constrained results to log file
+        ofh = out+&#34;.leastSquaresConstrained.txt&#34;
+        df = pd.DataFrame({&#39;LS.original&#39;: ls_old, &#39;LS.constrained&#39;: ls})
+        df.to_csv(ofh, sep=&#34;\t&#34;, index=False)
+
+        return ls
+    else:
+        return ls</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.generate_weights_matrix"><code class="name flex">
+<span>def <span class="ident">generate_weights_matrix</span></span>(<span>d, weight)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates a weights matrix for the least-squares method, where weights are
+on the diagonals.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>d</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Vector of genetic distances.</dd>
+<dt><strong><code>weight</code></strong> :&ensp;<code>str</code></dt>
+<dd>Weighting method to use, options: 'CSE67', 'BEYER74',
+'FM67'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>numpy.ndarray</code></dt>
+<dd>Weights matrix.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_weights_matrix(d, weight):
+    &#34;&#34;&#34;
+    Generates a weights matrix for the least-squares method, where weights are
+    on the diagonals.
+
+    Args:
+        d (numpy.ndarray): Vector of genetic distances.
+        weight (str): Weighting method to use, options: &#39;CSE67&#39;, &#39;BEYER74&#39;,
+                      &#39;FM67&#39;.
+
+    Returns:
+        numpy.ndarray: Weights matrix.
+    &#34;&#34;&#34;
+    W = np.zeros((len(d), len(d)), dtype=float)
+    row, col = np.diag_indices(W.shape[0])
+
+    if weight.upper() == &#34;CSE67&#34;:
+        W[row, col] = np.ones(len(d))
+    elif weight.upper() == &#34;BEYER74&#34;:
+        if np.count_nonzero(d == 0) &gt; 0:
+            print(
+                &#34;WARNING: Divide-by-zero in weighted least-squares.&#34;
+            )
+        W[row, col] = np.divide(1.0, d, out=np.zeros_like(d, dtype=float),
+                                where=d != 0)
+
+    elif weight.upper() == &#34;FM67&#34;:
+        if np.count_nonzero(d == 0) &gt; 0:
+            print(
+                &#34;WARNING: Divide-by-zero in weighted least-squares.&#34;
+            )
+            W[row, col] = np.divide(1.0, np.square(d), out=np.zeros_like(d,
+                                    dtype=float), where=d != 0)
+
+    else:
+        print(f&#34;ERROR: Weight option {weight} not recognized. Using ordinary&#34;,
+              &#34;least-squares instead.&#34;)
+        W[row, col] = np.ones(len(d))
+
+    return W</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_fitted_d"><code class="name flex">
+<span>def <span class="ident">get_fitted_d</span></span>(<span>points, genmat, inc, r)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates predicted genetic distances based on fitted streamtree
+distances.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>points</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary of points with their latitude and
+longitude values.</dd>
+<dt><strong><code>genmat</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>A pairwise genetic distance matrix.</dd>
+<dt><strong><code>inc</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An incidence matrix representing the presence or absence
+of streams for each point.</dd>
+<dt><strong><code>r</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>A fitted streamtree distance matrix.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code></dt>
+<dd>A dataframe with columns for 'from', 'to',
+'observed_D', 'predicted_D', and 'abs_diff'.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_fitted_d(points, genmat, inc, r):
+    &#34;&#34;&#34;Calculates predicted genetic distances based on fitted streamtree
+    distances.
+
+    Args:
+        points (dict): A dictionary of points with their latitude and
+                       longitude values.
+        genmat (ndarray): A pairwise genetic distance matrix.
+        inc (ndarray): An incidence matrix representing the presence or absence
+                       of streams for each point.
+        r (ndarray): A fitted streamtree distance matrix.
+
+    Returns:
+        pandas.DataFrame: A dataframe with columns for &#39;from&#39;, &#39;to&#39;,
+                          &#39;observed_D&#39;, &#39;predicted_D&#39;, and &#39;abs_diff&#39;.
+
+    &#34;&#34;&#34;
+    rows = []  # Initialize list to hold temporary values
+    names = list(points.keys())  # Get names of points
+
+    # Iterate over all pairwise combinations of points
+    inc_row = 0  # tracks what ROW (pair) we are in the incidence matrix
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        obs = genmat[ia, ib]
+        inc_streams = inc[inc_row,]
+        pred_dist = np.sum(r[inc_streams == 1])
+        inc_row += 1
+        rows.append([names[ia], names[ib], obs, pred_dist,
+                     np.abs(obs-pred_dist)])
+    # Create dataframe from temporary list and return it
+    D = pd.DataFrame(rows, columns=[&#39;from&#39;, &#39;to&#39;, &#39;observed_D&#39;,
+                                    &#39;predicted_D&#39;, &#39;abs_diff&#39;])
+    return D</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_gendist_mats"><code class="name flex">
+<span>def <span class="ident">get_gendist_mats</span></span>(<span>params, point_coords, popmap, seqs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns population genetic distance matrices.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong> :&ensp;<code>object</code></dt>
+<dd>An object that contains parameters for the analysis.</dd>
+<dt><strong><code>point_coords</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of coordinates for the sampled points.</dd>
+<dt><strong><code>popmap</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary that maps each sample to its corresponding
+population.</dd>
+<dt><strong><code>seqs</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of DNA sequences for the sampled points.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>A tuple containing two matrices. The first is a pairwise
+distance matrix for all</dd>
+<dt><code>samples. The second is a matrix</code> of <code>pairwise genetic distances between</code></dt>
+<dd>populations.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>SystemExit</code></dt>
+<dd>If distance metric is not possible without population data.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_gendist_mats(params, point_coords, popmap, seqs):
+    &#34;&#34;&#34;Returns population genetic distance matrices.
+
+    Args:
+        params (object): An object that contains parameters for the analysis.
+        point_coords (list): A list of coordinates for the sampled points.
+        popmap (dict): A dictionary that maps each sample to its corresponding
+                       population.
+        seqs (list): A list of DNA sequences for the sampled points.
+
+    Returns:
+        tuple: A tuple containing two matrices. The first is a pairwise
+               distance matrix for all
+        samples. The second is a matrix of pairwise genetic distances between
+                 populations.
+
+    Raises:
+        SystemExit: If distance metric is not possible without population data.
+
+    &#34;&#34;&#34;
+    gen = None  # Initialize variable to hold pairwise dist matrix
+    pop_gen = None  # Initialize variable to hold population dist matrix
+
+    if params.dist in [&#34;PDIST&#34;, &#34;TN84&#34;, &#34;TN93&#34;, &#34;K2P&#34;, &#34;JC69&#34;]:
+        # Calculate pairwise distance matrix using selected method
+        gen = gendist.get_genmat(params.dist, point_coords, seqs,
+                                 ploidy=params.ploidy, het=params.het,
+                                 loc_agg=params.loc_agg)
+
+        if params.pop or params.geopop or params.clusterpop:
+            print(&#34;Aggregating pairwise population genetic distances from&#34;,
+                  &#34;individual distances using:&#34;, params.pop_agg)
+
+    else:
+        # If distance metric requires population data, but none is provided
+        if not params.pop and not params.geopop:
+            print(&#34;ERROR: Distance metric&#34;, params.dist,
+                  &#34;not possible without population data.&#34;)
+            sys.exit(1)
+
+    # Calculate population genetic distance matrix
+    if params.pop or params.geopop or params.clusterpop:
+        pop_gen = gendist.get_pop_genmat(params.dist, gen, popmap,
+                                         point_coords, seqs,
+                                         pop_agg=params.pop_agg,
+                                         loc_agg=params.loc_agg,
+                                         ploidy=params.ploidy,
+                                         global_het=params.global_het)
+
+    # Return pairwise distance matrix and population genetic distance matrix
+    return gen, pop_gen</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_loc_data"><code class="name flex">
+<span>def <span class="ident">get_loc_data</span></span>(<span>seqs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generator function that yields a dictionary of individual loci data for
+each locus in the input sequences.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>seqs</code></strong></dt>
+<dd>A dictionary containing sequences as values and individual</dd>
+</dl>
+<p>identifiers as keys.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>A generator that yields a dictionary with individual identifiers as</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>keys and a list containing the</code></dt>
+<dd>corresponding locus as the value.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_loc_data(seqs):
+    &#34;&#34;&#34;
+    Generator function that yields a dictionary of individual loci data for
+    each locus in the input sequences.
+
+    Args:
+        seqs: A dictionary containing sequences as values and individual
+        identifiers as keys.
+
+    Returns:
+        A generator that yields a dictionary with individual identifiers as
+        keys and a list containing the
+             corresponding locus as the value.
+    &#34;&#34;&#34;
+
+    # Iterate through the loci in the sequences
+    for loc in range(0, len(seqs[list(seqs.keys())[0]])):
+        d = dict()
+
+        # Iterate through the individuals in the sequences
+        for ind in seqs.keys():
+            # Add the locus data for the individual to the dictionary
+            d[ind] = [seqs[ind][loc]]
+
+        # Yield the dictionary containing the locus data for the current locus
+        yield d</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_lower_tri"><code class="name flex">
+<span>def <span class="ident">get_lower_tri</span></span>(<span>mat)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extracts the lower triangular elements from a square matrix.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>mat</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Input square matrix.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>numpy.ndarray</code></dt>
+<dd>1D array containing the lower triangular elements of
+the input matrix.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_lower_tri(mat):
+    &#34;&#34;&#34;
+    Extracts the lower triangular elements from a square matrix.
+
+    Args:
+        mat (numpy.ndarray): Input square matrix.
+
+    Returns:
+        numpy.ndarray: 1D array containing the lower triangular elements of
+                       the input matrix.
+    &#34;&#34;&#34;
+    n = mat.shape[0]
+    i = np.tril_indices(n, -1)
+    return mat[i]</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_point_table"><code class="name flex">
+<span>def <span class="ident">get_point_table</span></span>(<span>points)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a pandas DataFrame from a dictionary of points.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>points</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary of points with their latitude and longitude
+values.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pandas.DataFrame</code></dt>
+<dd>A dataframe with columns for 'sample', 'lat', and
+'long'.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_point_table(points):
+    &#34;&#34;&#34;Returns a pandas DataFrame from a dictionary of points.
+
+    Args:
+        points (dict): A dictionary of points with their latitude and longitude
+                       values.
+
+    Returns:
+        pandas.DataFrame: A dataframe with columns for &#39;sample&#39;, &#39;lat&#39;, and
+                          &#39;long&#39;.
+
+    &#34;&#34;&#34;
+    temp = []  # Initialize list to hold temporary values
+    for p in points:
+        # Append values for each point to temporary list
+        temp.append([p, points[p][1], points[p][0]])
+    p = pd.DataFrame(temp, columns=[&#39;sample&#39;, &#39;lat&#39;, &#39;long&#39;])
+    return p</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.get_stream_mats"><code class="name flex">
+<span>def <span class="ident">get_stream_mats</span></span>(<span>points, graph, len_col)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
+calculations.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>points</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary of point indices and their corresponding node
+IDs in the graph.</dd>
+<dt><strong><code>graph</code></strong> :&ensp;<code>networkx.Graph</code></dt>
+<dd>NetworkX graph object representing the stream
+network.</dd>
+<dt><strong><code>len_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>Attribute name for the length of the edges in the graph.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>Pair of numpy.ndarray representing the pairwise stream distance
+matrix and incidence matrix.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_stream_mats(points, graph, len_col):
+    &#34;&#34;&#34;
+    Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
+    calculations.
+
+    Args:
+        points (dict): Dictionary of point indices and their corresponding node
+                       IDs in the graph.
+        graph (networkx.Graph): NetworkX graph object representing the stream
+                                network.
+        len_col (str): Attribute name for the length of the edges in the graph.
+
+    Returns:
+        tuple: Pair of numpy.ndarray representing the pairwise stream distance
+               matrix and incidence matrix.
+    &#34;&#34;&#34;
+    dist = np.zeros((len(points), len(points)))
+    inc = np.zeros((nCr(len(points), 2), len(graph.edges())), dtype=int)
+
+    # Establish as NaN
+    dist[:] = np.nan
+
+    def dijkstra_weight(left, right, attributes):
+        # Calculates weights for Dijkstra&#39;s shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
+        epsilon = 1e-9
+        return 1 / (attributes[len_col] + epsilon)
+
+    index = 0
+    for ia, ib in itertools.combinations(range(0, len(points)), 2):
+        path = nx.bidirectional_dijkstra(graph, points.values()[ia],
+                                         points.values()[ib],
+                                         weight=dijkstra_weight)
+        if path:
+            dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1],
+                                                          len_col)))
+            dist[ib, ia] = dist[ia, ib]
+
+        # Incidence matrix: assign 1 if edge is in the path, 0 otherwise
+        for ie, edge in enumerate(graph.edges()):
+            if find_pair(path[1], edge[0], edge[1]):
+                inc[index, ie] = 1
+            else:
+                inc[index, ie] = 0
+        index += 1
+
+    np.fill_diagonal(dist, 0.0)
+    return dist, inc</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.great_circle"><code class="name flex">
+<span>def <span class="ident">great_circle</span></span>(<span>lon1, lat1, lon2, lat2, thresh=1e-07)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the great circle distance between two points on a sphere, using
+their longitudes and latitudes.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>lon1</code></strong> :&ensp;<code>float</code></dt>
+<dd>Longitude of the first point.</dd>
+<dt><strong><code>lat1</code></strong> :&ensp;<code>float</code></dt>
+<dd>Latitude of the first point.</dd>
+<dt><strong><code>lon2</code></strong> :&ensp;<code>float</code></dt>
+<dd>Longitude of the second point.</dd>
+<dt><strong><code>lat2</code></strong> :&ensp;<code>float</code></dt>
+<dd>Latitude of the second point.</dd>
+<dt><strong><code>thresh</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>Threshold for determining if the points are
+the same. Defaults to 0.0000001.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>Great circle distance in kilometers.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def great_circle(lon1, lat1, lon2, lat2, thresh=0.0000001):
+    &#34;&#34;&#34;
+    Calculates the great circle distance between two points on a sphere, using
+    their longitudes and latitudes.
+
+    Args:
+        lon1 (float): Longitude of the first point.
+        lat1 (float): Latitude of the first point.
+        lon2 (float): Longitude of the second point.
+        lat2 (float): Latitude of the second point.
+        thresh (float, optional): Threshold for determining if the points are
+                                  the same. Defaults to 0.0000001.
+
+    Returns:
+        float: Great circle distance in kilometers.
+    &#34;&#34;&#34;
+    if (abs(lon1 - lon2)) &lt; thresh and (abs(lat1 - lat2)) &lt; thresh:
+        return 0.0
+    else:
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+        return 6371 * (
+            acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
+                 cos(lon1 - lon2))
+        )</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.nCr"><code class="name flex">
+<span>def <span class="ident">nCr</span></span>(<span>n, k)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate the number of combinations, n choose k.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>n</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of elements.</dd>
+<dt><strong><code>k</code></strong> :&ensp;<code>int</code></dt>
+<dd>The number of elements to choose.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>int</code></dt>
+<dd>The number of possible combinations.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nCr(n, k):
+    &#34;&#34;&#34;
+    Calculate the number of combinations, n choose k.
+
+    Args:
+        n (int): The number of elements.
+        k (int): The number of elements to choose.
+
+    Returns:
+        int: The number of possible combinations.
+    &#34;&#34;&#34;
+    f = math.factorial
+    return f(n) // f(k) // f(n - k)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.output_fitted_d"><code class="name flex">
+<span>def <span class="ident">output_fitted_d</span></span>(<span>pred, out)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def output_fitted_d(pred, out):
+    pred.to_csv((str(out)+&#34;.obsVersusFittedD.txt&#34;), sep=&#34;\t&#34;, index=False)
+    sns.jointplot(x=&#34;observed_D&#34;, y=&#34;predicted_D&#34;, data=pred, kind=&#34;reg&#34;)
+    plt.savefig((str(out)+&#34;.obsVersusFittedD.pdf&#34;))
+    del pred</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.parse_input_genmat"><code class="name flex">
+<span>def <span class="ident">parse_input_genmat</span></span>(<span>params, inmat, point_coords, popmap, seqs=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Parses an input genetic distance matrix and verifies if it matches the
+user input parameters. Aggregates individual distances if required by the
+user input.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong></dt>
+<dd>Input parameters provided by the user.</dd>
+<dt><strong><code>inmat</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>The input genetic distance matrix.</dd>
+<dt><strong><code>point_coords</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary containing point coordinates.</dd>
+<dt><strong><code>popmap</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary containing the population map.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>A tuple containing the genetic distance matrix (gen) and</dd>
+</dl>
+<p>population genetic distance matrix (pop_gen).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_input_genmat(params, inmat, point_coords, popmap, seqs=None):
+    &#34;&#34;&#34;
+    Parses an input genetic distance matrix and verifies if it matches the
+    user input parameters. Aggregates individual distances if required by the
+    user input.
+
+    Args:
+        params: Input parameters provided by the user.
+        inmat (pd.DataFrame): The input genetic distance matrix.
+        point_coords (dict): Dictionary containing point coordinates.
+        popmap (dict): Dictionary containing the population map.
+
+    Returns:
+        tuple: A tuple containing the genetic distance matrix (gen) and
+        population genetic distance matrix (pop_gen).
+    &#34;&#34;&#34;
+    gen = None
+    pop_gen = None
+    if params.coercemat:
+        inmat[inmat &lt; 0.0] = 0.0
+    if set(list(inmat.columns.values)) != set(list(inmat.index.values)):
+        print(inmat.columns.values)
+        print(inmat.index.values)
+        print(&#34;Input matrix columns and/ or rows don&#39;t appear to be&#34;,
+              &#34;labelled. Please provide an input matrix with column and row&#34;,
+              &#34;names!&#34;)
+        sys.exit(1)
+    else:
+        agg = False
+        # first check if it fits whatever the user input was (i.e. --pop)
+        if params.pop:
+            if len(inmat.columns) != len(popmap.keys()):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of populations from popmap.&#34;)
+                if (len(inmat.columns)) != len(point_coords):
+                    print(&#34;Doesn&#39;t match number of individuals either! Please&#34;,
+                          &#34;check your matrix format.&#34;)
+                    sys.exit(1)
+                else:
+                    print(&#34;Assuming input matrix has individual distances...&#34;,
+                          &#34;Aggregating using the following (--pop_agg):&#34;,
+                          str(params.pop_agg))
+                    agg = True
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(popmap.keys()))
+                inmat = inmat[list(popmap.keys())]
+                pop_gen = inmat.to_numpy()
+                del inmat
+        elif params.geopop or params.clusterpop:
+            if (len(inmat.columns)) != len(point_coords):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of individuals.&#34;)
+                print(&#34;When using --geopop or --clusterpop, the provided&#34;,
+                      &#34;matrix must represent individual-level distances.&#34;)
+                sys.exit(1)
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(point_coords.keys()))
+                inmat = inmat[list(point_coords.keys())]
+                gen = inmat.to_numpy()
+                agg = True
+                del inmat
+        else:
+            if (len(inmat.columns)) != len(point_coords):
+                print(&#34;Found&#34;, str(len(inmat.columns)),
+                      &#34;columns in provided matrix. This doesn&#39;t match number&#34;,
+                      &#34;of individuals.&#34;)
+                sys.exit(1)
+            else:
+                # re-order using pop orders
+                inmat = inmat.reindex(list(point_coords.keys()))
+                inmat = inmat[list(point_coords.keys())]
+                gen = inmat.to_numpy()
+                del inmat
+        # if --geopop or --clusterpop, it should be an ind matrix
+        # if so, need to aggregate according to --pop_agg
+        # print(pop_gen)
+        if agg:
+            print(&#34;Aggregating user-provided individual-level distance matrix&#34;,
+                  &#34;using:&#34;, params.pop_agg)
+            pop_gen = gendist.get_pop_genmat(&#34;PDIST&#34;, gen, popmap,
+                                             point_coords, seqs,
+                                             pop_agg=params.pop_agg,
+                                             loc_agg=params.loc_agg,
+                                             ploidy=params.ploidy,
+                                             global_het=params.global_het)
+
+    return (gen, pop_gen)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.parse_subgraph_from_points"><code class="name flex">
+<span>def <span class="ident">parse_subgraph_from_points</span></span>(<span>params, point_coords, pop_coords, G)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extracts a subgraph from a given graph based on input points.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong></dt>
+<dd>A custom object containing various input parameters.</dd>
+<dt><strong><code>point_coords</code></strong></dt>
+<dd>A list of point coordinates to use for extracting the
+subgraph.</dd>
+<dt><strong><code>pop_coords</code></strong></dt>
+<dd>A list of population coordinates to use for extracting the
+subgraph.</dd>
+<dt><strong><code>G</code></strong></dt>
+<dd>A NetworkX Graph object representing the input graph.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A NetworkX Graph object representing the extracted subgraph.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_subgraph_from_points(params, point_coords, pop_coords, G):
+    &#34;&#34;&#34;
+    Extracts a subgraph from a given graph based on input points.
+
+    Args:
+        params: A custom object containing various input parameters.
+        point_coords: A list of point coordinates to use for extracting the
+                      subgraph.
+        pop_coords: A list of population coordinates to use for extracting the
+                    subgraph.
+        G: A NetworkX Graph object representing the input graph.
+
+    Returns:
+        A NetworkX Graph object representing the extracted subgraph.
+    &#34;&#34;&#34;
+
+    # Choose the appropriate set of points based on input parameters
+    if params.pop or params.geopop or params.clusterpop:
+        points = pop_coords
+    else:
+        points = point_coords
+
+    # Output points to a table
+    p = get_point_table(points)
+    p.to_csv((str(params.out) + &#34;.pointCoords.txt&#34;), sep=&#34;\t&#34;, index=False)
+    del p
+
+    # First pass extracts a subgraph from the master shapefile graph
+    print(&#34;\nExtracting full subgraph...&#34;)
+    ktemp = path_subgraph(G, points, extract_full_subgraph, params.reachid_col,
+                          params.length_col)
+    del G
+
+    # Second pass to simplify subgraph and collapse redundant nodes
+    print(&#34;\nMerging redundant paths...\n&#34;)
+    K = path_subgraph(ktemp, points, extract_minimal_subgraph,
+                      params.reachid_col, params.length_col)
+
+    # Grab real coordinates as node positions for plotting
+    pos = {n: n for n in K.nodes}
+
+    # Make a color map to color sample points and junctions differently
+    color_map = [&#34;blue&#34; if node in points.values() else &#34;black&#34; for node in K]
+
+    # Draw networkx
+    nx.draw_networkx(K, pos, with_labels=False, node_color=color_map,
+                     node_size=50)
+
+    # Get LENGTH_KM attributes for labelling edges
+    edge_labels = nx.get_edge_attributes(K, params.length_col)
+    for e in edge_labels:
+        edge_labels[e] = &#34;{:.2f}&#34;.format(edge_labels[e])
+
+    nx.draw_networkx_edge_labels(K, pos, edge_labels=edge_labels, font_size=6)
+
+    # Save minimized network to file (unless we already read from one)
+    if not params.network or params.overwrite:
+        net_out = str(params.out) + &#34;.network&#34;
+        with open(net_out, &#39;wb&#39;) as f:
+            pickle.dump(K, f, pickle.HIGHEST_PROTOCOL)
+        net_full_out = str(params.out) + &#34;.full.network&#34;
+        with open(net_full_out, &#39;wb&#39;) as f:
+            pickle.dump(ktemp, f, pickle.HIGHEST_PROTOCOL)
+    else:
+        print(
+            &#34;NOTE: Not over-writing existing network. To change this, use&#34;,
+            &#34;--overwrite&#34;
+            )
+
+    network_plot = str(params.out) + &#34;.subGraph.pdf&#34;
+    plt.savefig(network_plot)
+
+    del ktemp
+    return K</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.path_edge_attributes"><code class="name flex">
+<span>def <span class="ident">path_edge_attributes</span></span>(<span>graph, path, attribute)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get the attribute values for edges in a given path.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>graph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The graph containing the edges.</dd>
+<dt><strong><code>path</code></strong> :&ensp;<code>list</code></dt>
+<dd>The list of nodes forming the path.</dd>
+<dt><strong><code>attribute</code></strong> :&ensp;<code>str</code></dt>
+<dd>The edge attribute to get the values for.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>A list of attribute values for the edges in the path.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def path_edge_attributes(graph, path, attribute):
+    &#34;&#34;&#34;
+    Get the attribute values for edges in a given path.
+
+    Args:
+        graph (NetworkX Graph): The graph containing the edges.
+        path (list): The list of nodes forming the path.
+        attribute (str): The edge attribute to get the values for.
+
+    Returns:
+        list: A list of attribute values for the edges in the path.
+    &#34;&#34;&#34;
+    return [graph[u][v][attribute] for (u, v) in zip(path, path[1:])]</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.path_subgraph"><code class="name flex">
+<span>def <span class="ident">path_subgraph</span></span>(<span>graph, nodes, method, id_col, len_col)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find and extract paths between points from a graph.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>graph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The input graph.</dd>
+<dt><strong><code>nodes</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary of nodes to extract paths between.</dd>
+<dt><strong><code>method</code></strong> :&ensp;<code>callable</code></dt>
+<dd>The method to build the subgraph.</dd>
+<dt><strong><code>id_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for node ID.</dd>
+<dt><strong><code>len_col</code></strong> :&ensp;<code>str</code></dt>
+<dd>The column name for edge length.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>NetworkX Graph</code></dt>
+<dd>A subgraph containing the extracted paths.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def path_subgraph(graph, nodes, method, id_col, len_col):
+    &#34;&#34;&#34;
+    Find and extract paths between points from a graph.
+
+    Args:
+        graph (NetworkX Graph): The input graph.
+        nodes (dict): A dictionary of nodes to extract paths between.
+        method (callable): The method to build the subgraph.
+        id_col (str): The column name for node ID.
+        len_col (str): The column name for edge length.
+
+    Returns:
+        NetworkX Graph: A subgraph containing the extracted paths.
+    &#34;&#34;&#34;
+    k = nx.Graph()
+
+    def dijkstra_weight(left, right, attributes):
+        # Calculates weights for Dijkstra&#39;s shortest path algorithm by
+        # inverting the edge length with a small constant to avoid division by
+        # zero.
+        epsilon = 1e-9
+        return 1 / (attributes[len_col] + epsilon)
+
+    p1 = list(nodes.values())[0]
+    for p2 in list(nodes.values())[1:]:
+        try:
+            # Find the shortest path between the two points
+            path = nx.bidirectional_dijkstra(graph, p1, p2,
+                                             weight=dijkstra_weight)
+
+            # Traverse the nodes in the path to build a minimal set of edges
+            method(k, graph, nodes.values(), id_col, len_col, path[1])
+
+            if p1 not in k:
+                k.add_node(p1)
+            if p2 not in k:
+                k.add_node(p2)
+
+        except NodeNotFound as e:
+            print(&#34;Node not found:&#34;, e)
+        except Exception as e:
+            traceback.print_exc()
+            print(&#34;Something unexpected happened:&#34;, e)
+            sys.exit(1)
+    return k</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.plot_gen_by_geo"><code class="name flex">
+<span>def <span class="ident">plot_gen_by_geo</span></span>(<span>gen, sdist, out, log=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots genetic distance against geographic distance to visualize isolation
+by distance.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>gen</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Genetic distance matrix.</dd>
+<dt><strong><code>sdist</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Spatial distance matrix.</dd>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>Output file prefix for the generated plot.</dd>
+<dt><strong><code>log</code></strong> :&ensp;<code>bool</code>, optional</dt>
+<dd>If True, the geographic distance axis will be
+log-transformed. Defaults to False.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_gen_by_geo(gen, sdist, out, log=False):
+    &#34;&#34;&#34;
+    Plots genetic distance against geographic distance to visualize isolation
+    by distance.
+
+    Args:
+        gen (numpy.ndarray): Genetic distance matrix.
+        sdist (numpy.ndarray): Spatial distance matrix.
+        out (str): Output file prefix for the generated plot.
+        log (bool, optional): If True, the geographic distance axis will be
+                              log-transformed. Defaults to False.
+    &#34;&#34;&#34;
+
+    genetic_distance = get_lower_tri(gen)
+    geographic_distance = get_lower_tri(sdist)
+
+    data = pd.DataFrame({&#39;Geographic Distance&#39;: geographic_distance,
+                         &#39;Genetic Distance&#39;: genetic_distance})
+
+    if not log:
+        sns.jointplot(data=data, x=&#39;Geographic Distance&#39;, y=&#39;Genetic Distance&#39;,
+                      kind=&#34;reg&#34;)
+        plt.savefig(str(out) + &#34;.isolationByDistance.pdf&#34;)
+    else:
+        geographic_distance = replace_zeroes(geographic_distance)
+        log_geo = np.log(geographic_distance)
+        data[&#39;Log Geographic Distance&#39;] = log_geo
+
+        sns.jointplot(data=data, x=&#39;Log Geographic Distance&#39;,
+                      y=&#39;Genetic Distance&#39;, kind=&#34;reg&#34;)
+        plt.savefig(str(out) + &#34;.isolationByDistance.pdf&#34;)
+
+    del geographic_distance
+    del genetic_distance</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.process_samples"><code class="name flex">
+<span>def <span class="ident">process_samples</span></span>(<span>params, points, G)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Processes input sample data by snapping points to a graph, calculating
+coordinates, and processing populations if required.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong></dt>
+<dd>Input parameters provided by the user.</dd>
+<dt><strong><code>points</code></strong> :&ensp;<code>pd.DataFrame</code></dt>
+<dd>DataFrame containing sample points.</dd>
+<dt><strong><code>G</code></strong> :&ensp;<code>networkx.Graph</code></dt>
+<dd>Graph object representing the road network.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>A tuple containing point coordinates, population coordinates,</dd>
+</dl>
+<p>and the population map.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def process_samples(params, points, G):
+    &#34;&#34;&#34;
+    Processes input sample data by snapping points to a graph, calculating
+    coordinates, and processing populations if required.
+
+    Args:
+        params: Input parameters provided by the user.
+        points (pd.DataFrame): DataFrame containing sample points.
+        G (networkx.Graph): Graph object representing the road network.
+
+    Returns:
+        tuple: A tuple containing point coordinates, population coordinates,
+        and the population map.
+    &#34;&#34;&#34;
+    popmap = SortedDict()
+    point_coords = SortedDict()
+    pop_coords = SortedDict()
+    snapDists = dict()
+
+    if params.pop:
+        popmap_temp = read_popmap(params.pop)
+        mask = points[points.columns[0]].isin(popmap_temp)
+        points = points[mask]
+
+    for _, row in points.iterrows():
+        name = None
+        data = None
+        row[&#34;lat&#34;] = float(row[&#34;lat&#34;])
+        row[&#34;long&#34;] = float(row[&#34;long&#34;])
+        if params.run == &#34;GENDIST&#34;:
+            name = row[&#34;sample&#34;]
+            data = tuple([row[&#34;long&#34;], row[&#34;lat&#34;]])
+        else:
+            if not params.pop and not params.clusterpop:
+                # --geopop and individual-level snap coordinates to nodes here
+                node = snap_to_node(G, tuple([row[&#34;long&#34;], row[&#34;lat&#34;]]))
+                snapDists[row[&#34;sample&#34;]] = great_circle(node[0], node[1],
+                                                        row[&#34;long&#34;],
+                                                        row[&#34;lat&#34;])
+            else:
+                # if pop or clusterpop, extract centroid later
+                node = tuple([row[&#34;long&#34;], row[&#34;lat&#34;]])
+            data = node
+            name = row[&#34;sample&#34;]
+        point_coords[name] = data
+
+        # Process population-level analyses
+        if params.geopop:
+            if point_coords[name] not in popmap:
+                names = [name]
+                popmap[point_coords[name]] = names
+            else:
+                popmap[point_coords[name]].append(row[&#34;sample&#34;])
+        elif params.pop:
+            if popmap_temp[row.iloc[0]] not in popmap:
+                names = [name]
+                popmap[popmap_temp[row.iloc[0]]] = names
+            else:
+                popmap[popmap_temp[row.iloc[0]]].append(name)
+
+    print(&#34;Read&#34;, str(len(point_coords.keys())), &#34;individuals.&#34;)
+    print()
+
+    if params.pop or params.geopop:
+        print(&#34;Read&#34;, str(len(popmap.keys())), &#34;populations.&#34;)
+        print()
+
+    # For population-level analyses, generate population maps and centroids
+    # here according to user-input options: --pop, --geopop, --clusterpop
+    # get population centroid
+    if params.pop or params.geopop or params.clusterpop:
+        if params.clusterpop:
+            # create population clusters using DBSCAN
+            print(&#34;Running DBSCAN clustering with min_samples=&#34;,
+                  params.min_samples, &#34;and epsilon=&#34;, params.epsilon)
+            popmap = clust.dbscan_cluster(point_coords, params.epsilon,
+                                          params.min_samples)
+            num_clusters = len(popmap.keys())
+            print(&#34;Found&#34;, str(num_clusters), &#34;clusters!&#34;)
+
+            # calculate centroids for clusters
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
+
+        elif params.pop or params.geopop:
+            # popmap generated earlier when parsing input file!
+            # still need to calculate centroids:
+            print(&#34;Calculating population centroids...&#34;)
+            pop_temp = clust.get_cluster_centroid(point_coords, popmap,
+                                                  params.out)
+            # note in the case of --geopop the centroid is the joint
+            # snapped-to location
+
+        # now, snap pop_coords to nodes
+        pop_coords = SortedDict()
+        for p in pop_temp:
+            node = snap_to_node(G, pop_temp[p])
+            snapDists[p] = great_circle(node[0], node[1], pop_temp[p][0],
+                                        pop_temp[p][1])
+            pop_coords[p] = node
+        # write popmap to file
+        flat = clust.flatten_popmap(popmap)
+        temp = pd.DataFrame(list(flat.items()), columns=[&#39;IND_ID&#39;, &#39;POP_ID&#39;])
+        temp.to_csv((str(params.out) + &#34;.popmap.txt&#34;), sep=&#34;\t&#34;, index=False)
+        del flat
+        del temp
+
+        # plot grouped samples
+        clust.plot_clustered_points(point_coords, popmap, params.out,
+                                    pop_coords)
+
+    # Plot histogram of snap distances and write snap distances to a file
+    clust.plot_histogram(list(snapDists.values()), params.out)
+    dtemp = pd.DataFrame(list(snapDists.items()), columns=[&#39;name&#39;, &#39;km&#39;])
+    dtout = str(params.out) + &#34;.snapDistances.txt&#34;
+    dtemp.to_csv(dtout, sep=&#34;\t&#34;, index=False)
+    del dtemp
+    del dtout
+    del snapDists
+
+    # return everything
+    return point_coords, pop_coords, popmap</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.prune_graph"><code class="name flex">
+<span>def <span class="ident">prune_graph</span></span>(<span>G, edge_list, reachid_col)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prunes a graph to only retain edges whose 'reachid_col' matches values in
+'edge_list'.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>G</code></strong></dt>
+<dd>The input NetworkX Graph.</dd>
+<dt><strong><code>edge_list</code></strong></dt>
+<dd>A list of values to filter edges.</dd>
+<dt><strong><code>reachid_col</code></strong></dt>
+<dd>The edge attribute to be checked against 'edge_list'.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A pruned NetworkX Graph.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prune_graph(G, edge_list, reachid_col):
+    &#34;&#34;&#34;
+    Prunes a graph to only retain edges whose &#39;reachid_col&#39; matches values in
+    &#39;edge_list&#39;.
+
+    Args:
+        G: The input NetworkX Graph.
+        edge_list: A list of values to filter edges.
+        reachid_col: The edge attribute to be checked against &#39;edge_list&#39;.
+
+    Returns:
+        A pruned NetworkX Graph.
+    &#34;&#34;&#34;
+    for u, v in G.edges():
+        _ = G.get_edge_data(u, v)
+        # print(f&#34;Edge ({u}, {v}): {data}&#34;)
+    # Get edges to be retained using get_edge_data method
+    edges_to_keep = [(u, v) for u, v in G.edges() if
+                     G.get_edge_data(u, v).get(reachid_col) in edge_list]
+
+    # Check if there are no edges to keep
+    if not edges_to_keep:
+        raise ValueError(
+            &#34;There are no edges to retain based on the given edge&#34;,
+            &#34;list and attribute.&#34;
+        )
+
+    # Create a new graph with only the edges to be retained
+    pruned_G = G.edge_subgraph(edges_to_keep).copy()
+
+    # Remove isolated nodes
+    isolated_nodes = list(nx.isolates(pruned_G))
+    pruned_G.remove_nodes_from(isolated_nodes)
+
+    return pruned_G</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.r2"><code class="name flex">
+<span>def <span class="ident">r2</span></span>(<span>x, y)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the Pearson correlation coefficient squared between two arrays.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>array</code></dt>
+<dd>An array of values.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>array</code></dt>
+<dd>An array of values.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float</code></dt>
+<dd>The squared Pearson correlation coefficient between the two
+arrays.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def r2(x, y):
+    &#34;&#34;&#34;Returns the Pearson correlation coefficient squared between two arrays.
+
+    Args:
+        x (array): An array of values.
+        y (array): An array of values.
+
+    Returns:
+        float: The squared Pearson correlation coefficient between the two
+               arrays.
+
+    &#34;&#34;&#34;
+    return (stats.pearsonr(x, y)[0] ** 2)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.read_network"><code class="name flex">
+<span>def <span class="ident">read_network</span></span>(<span>network, shapefile)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reads a network from a saved file or builds a network from a shapefile.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>network</code></strong></dt>
+<dd>Path to the saved network file (pickle format). If provided,
+the function will read the network from this file.</dd>
+<dt><strong><code>shapefile</code></strong></dt>
+<dd>Path to the shapefile to build the network from. This is
+used if the <code>network</code> parameter is not provided.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A NetworkX Graph object representing the network.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_network(network, shapefile):
+    &#34;&#34;&#34;
+    Reads a network from a saved file or builds a network from a shapefile.
+
+    Args:
+        network: Path to the saved network file (pickle format). If provided,
+                  the function will read the network from this file.
+        shapefile: Path to the shapefile to build the network from. This is
+                   used if the `network` parameter is not provided.
+    Returns:
+        A NetworkX Graph object representing the network.
+    &#34;&#34;&#34;
+
+    # Check if a saved network file is provided
+    if network:
+        print(&#34;Reading network from saved file: &#34;, network)
+        # Read the network from the saved file and convert it to an undirected
+        # graph
+        with open(network, &#39;rb&#39;) as f:
+            G = nx.Graph(pickle.load(f)).to_undirected()
+    else:
+        # If no saved network file is provided, build the network from the
+        # shapefile
+        print(&#34;Building network from shapefile:&#34;, shapefile)
+        print(&#34;WARNING: This can take a while with very large files!&#34;)
+        # Read the shapefile
+        # rivers = gpd.read_file(shapefile)
+        rivers = pyogrio.read_dataframe(shapefile)
+        # print(rivers.head())
+        # Convert the GeoDataFrame to a NetworkX Graph object
+        G = momepy.gdf_to_nx(rivers, approach=&#34;primal&#34;, directed=False,
+                             multigraph=False)
+
+    return G</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.read_popmap"><code class="name flex">
+<span>def <span class="ident">read_popmap</span></span>(<span>popmap)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reads a population map file and returns a dictionary with individuals as
+keys and populations as values.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>popmap</code></strong> :&ensp;<code>str</code></dt>
+<dd>Path to the population map file.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>A dictionary with individuals as keys and populations as values.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_popmap(popmap):
+    &#34;&#34;&#34;
+    Reads a population map file and returns a dictionary with individuals as
+    keys and populations as values.
+
+    Args:
+        popmap (str): Path to the population map file.
+
+    Returns:
+        dict: A dictionary with individuals as keys and populations as values.
+    &#34;&#34;&#34;
+    popdict = dict()
+    with open(popmap, &#34;r&#34;) as fin:
+        for line in fin:
+            line = line.strip()
+            if not line:
+                continue
+            cols = line.split()
+            ind = cols[0]
+            pop = cols[1]
+            popdict[ind] = pop
+    return popdict</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.read_vcf"><code class="name flex">
+<span>def <span class="ident">read_vcf</span></span>(<span>vcf, concat='none', popmap=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reads a VCF file and returns a dictionary of sample genotypes.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>vcf</code></strong></dt>
+<dd>Path to the input VCF file.</dd>
+<dt><strong><code>concat</code></strong></dt>
+<dd>Specifies the concatenation mode for genotypes. Options are
+"all", "loc", and "none".
+"all": Concatenate genotypes of all loci for each sample.
+"loc": Concatenate genotypes within the same chromosome for
+each sample.
+"none": Do not concatenate genotypes.</dd>
+<dt><strong><code>popmap</code></strong></dt>
+<dd>Optional dictionary that maps populations to a list of samples.
+If provided, only samples in the popmap will be retained in the
+output dictionary.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>A dictionary with sample names as keys and lists</code> of <code>genotypes as values</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_vcf(vcf, concat=&#34;none&#34;, popmap=None):
+    &#34;&#34;&#34;
+    Reads a VCF file and returns a dictionary of sample genotypes.
+
+    ARgs:
+        vcf: Path to the input VCF file.
+        concat: Specifies the concatenation mode for genotypes. Options are
+                &#34;all&#34;, &#34;loc&#34;, and &#34;none&#34;.
+                   &#34;all&#34;: Concatenate genotypes of all loci for each sample.
+                   &#34;loc&#34;: Concatenate genotypes within the same chromosome for
+                          each sample.
+                   &#34;none&#34;: Do not concatenate genotypes.
+        popmap: Optional dictionary that maps populations to a list of samples.
+                If provided, only samples in the popmap will be retained in the
+                output dictionary.
+    Returns:
+        A dictionary with sample names as keys and lists of genotypes as values
+    &#34;&#34;&#34;
+
+    bcf_in = VariantFile(vcf)
+
+    # get all samples in the VCF
+    vcf_samples = list(bcf_in.header.samples)
+
+    # set up data dict
+    dat = dict()
+    samples = list((bcf_in.header.samples))
+    for s in samples:
+        if concat == &#34;all&#34;:
+            dat[s] = list()
+            dat[s].append([&#34;&#34;, &#34;&#34;])
+        else:
+            dat[s] = list()
+
+    # if popmap, make list of samples to drop that aren&#39;t in a pop
+    if popmap:
+        keep = list()
+        for pop in popmap:
+            keep.extend(popmap[pop])
+        keep = [s for s in keep if s in vcf_samples]
+        bcf_in.subset_samples(keep)
+
+    chrom = &#34;FIRST&#34;
+    for record in bcf_in.fetch():
+        for i, sample in enumerate(record.samples):
+            if concat == &#34;all&#34;:
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
+            elif concat == &#34;loc&#34;:
+                if record.chrom != chrom:
+                    dat[sample].append([&#34;&#34;, &#34;&#34;])
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts, as_list=True)
+                dat[sample][-1][0] = dat[sample][-1][0]+loc[0]
+                dat[sample][-1][1] = dat[sample][-1][1]+loc[1]
+            else:
+                loc = seq.decode(record.samples[i][&#39;GT&#39;], record.ref,
+                                 record.alts)
+                dat[sample].append(loc)
+        chrom = record.chrom
+    if concat != &#34;none&#34;:
+        for sample in dat:
+            dat[sample] = [&#34;/&#34;.join(x) for x in dat[sample]]
+    for sample in list(dat.keys()):
+        if len(dat[sample]) &lt; 1:
+            del dat[sample]
+        elif len(dat[sample]) == 1 and dat[sample][0][0] == &#34;&#34;:
+            del dat[sample]
+    return dat</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.replace_zeroes"><code class="name flex">
+<span>def <span class="ident">replace_zeroes</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Replaces zeroes in the input array with the smallest non-zero value.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>data</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Input array.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>numpy.ndarray</code></dt>
+<dd>Array with zeroes replaced by the smallest non-zero
+value.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def replace_zeroes(data):
+    &#34;&#34;&#34;
+    Replaces zeroes in the input array with the smallest non-zero value.
+
+    Args:
+        data (numpy.ndarray): Input array.
+
+    Returns:
+        numpy.ndarray: Array with zeroes replaced by the smallest non-zero
+                       value.
+    &#34;&#34;&#34;
+    min_nonzero = np.min(data[np.nonzero(data)])
+    data[data == 0] = min_nonzero
+    return data</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.report_genmats"><code class="name flex">
+<span>def <span class="ident">report_genmats</span></span>(<span>params, gen, pop_gen, point_coords, pop_coords)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prints genetic distance matrices and writes them to files.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong></dt>
+<dd>A custom object containing various input parameters.</dd>
+<dt><strong><code>gen</code></strong></dt>
+<dd>A NumPy array representing the individual genetic distance matrix.</dd>
+<dt><strong><code>pop_gen</code></strong></dt>
+<dd>A NumPy array representing the population genetic distance
+matrix.</dd>
+<dt><strong><code>point_coords</code></strong></dt>
+<dd>A dictionary containing individual point coordinates.</dd>
+<dt><strong><code>pop_coords</code></strong></dt>
+<dd>A dictionary containing population point coordinates.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def report_genmats(params, gen, pop_gen, point_coords, pop_coords):
+    &#34;&#34;&#34;
+    Prints genetic distance matrices and writes them to files.
+
+    ARgs:
+        params: A custom object containing various input parameters.
+        gen: A NumPy array representing the individual genetic distance matrix.
+        pop_gen: A NumPy array representing the population genetic distance
+                 matrix.
+        point_coords: A dictionary containing individual point coordinates.
+        pop_coords: A dictionary containing population point coordinates.
+    &#34;&#34;&#34;
+
+    # If the individual genetic distance matrix is not None, print and write
+    # it to file
+    if gen is not None:
+        print(&#34;Genetic distances:&#34;)
+        np.set_printoptions(precision=3)
+        print(gen, &#34;\n&#34;)
+
+        # Write individual genetic distances to file
+        ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                 index=list(point_coords.keys()))
+        ind_genDF.to_csv((str(params.out) + &#34;.indGenDistMat.txt&#34;), sep=&#34;\t&#34;,
+                         index=True)
+
+    # If the population genetic distance matrix is not None, print and write
+    # it to file
+    if pop_gen is not None:
+        print(&#34;Population genetic distances:&#34;)
+        np.set_printoptions(precision=3)
+        print(pop_gen, &#34;\n&#34;)
+
+        # Write population genetic distances to file
+        pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                 index=list(pop_coords.keys()))
+        pop_genDF.to_csv((str(params.out) + &#34;.popGenDistMat.txt&#34;), sep=&#34;\t&#34;,
+                         index=True)
+        del pop_genDF</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.report_genmats_list"><code class="name flex">
+<span>def <span class="ident">report_genmats_list</span></span>(<span>params, genlist, popgenlist, point_coords, pop_coords)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Writes individual and population genetic distance matrices to files for
+each locus in genlist and popgenlist.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>params</code></strong></dt>
+<dd>A namespace object containing parameters, including the output
+directory.</dd>
+<dt><strong><code>genlist</code></strong></dt>
+<dd>A list of individual genetic distance matrices for each locus.</dd>
+<dt><strong><code>popgenlist</code></strong></dt>
+<dd>A list of population genetic distance matrices for each
+locus.</dd>
+<dt><strong><code>point_coords</code></strong></dt>
+<dd>A dictionary containing individual point coordinates.</dd>
+<dt><strong><code>pop_coords</code></strong></dt>
+<dd>A dictionary containing population point coordinates.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def report_genmats_list(params, genlist, popgenlist, point_coords, pop_coords):
+    &#34;&#34;&#34;
+    Writes individual and population genetic distance matrices to files for
+    each locus in genlist and popgenlist.
+
+    Args:
+        params: A namespace object containing parameters, including the output
+                directory.
+        genlist: A list of individual genetic distance matrices for each locus.
+        popgenlist: A list of population genetic distance matrices for each
+                    locus.
+        point_coords: A dictionary containing individual point coordinates.
+        pop_coords: A dictionary containing population point coordinates.
+    &#34;&#34;&#34;
+
+    # Create an output directory for the genetic distance matrices
+    dir = str(params.out) + &#34;_locmats&#34;
+    os.makedirs(dir, exist_ok=True)
+
+    i = 0
+    # Iterate through the individual genetic distance matrices
+    for gen in genlist:
+        if gen is not None:
+            # Write individual genetic distances to a file
+            ind_genDF = pd.DataFrame(gen, columns=list(point_coords.keys()),
+                                     index=list(point_coords.keys()))
+            ind_genDF.to_csv((str(dir) + &#34;/loc_&#34; + str(i) +
+                              &#34;.indGenDistMat.txt&#34;), sep=&#34;\t&#34;, index=True)
+            del ind_genDF
+            i += 1
+
+    j = 0
+    # Iterate through the population genetic distance matrices
+    for pop_gen in popgenlist:
+        if pop_gen is not None:
+            # Write population genetic distances to a file
+            pop_genDF = pd.DataFrame(pop_gen, columns=list(pop_coords.keys()),
+                                     index=list(pop_coords.keys()))
+            pop_genDF.to_csv((str(dir) + &#34;/loc_&#34; + str(j) +
+                              &#34;.popGenDistMat.txt&#34;), sep=&#34;\t&#34;, index=True)
+            del pop_genDF
+            j += 1</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.snap_to_node"><code class="name flex">
+<span>def <span class="ident">snap_to_node</span></span>(<span>graph, pos)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Finds the closest node to the given [x, y] coordinates in the graph.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>graph</code></strong> :&ensp;<code>NetworkX Graph</code></dt>
+<dd>The input graph.</dd>
+<dt><strong><code>pos</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>A tuple of [x, y] coordinates.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>tuple</code></dt>
+<dd>The closest node to the input coordinates.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def snap_to_node(graph, pos):
+    &#34;&#34;&#34;
+    Finds the closest node to the given [x, y] coordinates in the graph.
+
+    Args:
+        graph (NetworkX Graph): The input graph.
+        pos (tuple): A tuple of [x, y] coordinates.
+
+    Returns:
+        tuple: The closest node to the input coordinates.
+    &#34;&#34;&#34;
+    nodes = np.array(graph.nodes())
+    node_pos = np.argmin(np.sum((nodes - pos) ** 2, axis=1))
+    return tuple(nodes[node_pos])</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.test_ibd"><code class="name flex">
+<span>def <span class="ident">test_ibd</span></span>(<span>gen, geo, out, perms, log=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def test_ibd(gen, geo, out, perms, log=False):
+    # get flattened lower triangle of each matrix
+    gen = get_lower_tri(gen)
+    geo = get_lower_tri(geo)
+
+    if log is True:
+        geo = replace_zeroes(geo)
+        geo = np.log(geo)
+
+    # non-log pearson
+    res = mantel.test(geo, gen, perms=int(perms), method=&#39;pearson&#39;)
+    rows = list()
+    rows.append([&#39;genXgeo&#39;, &#39;pearson&#39;, str(perms), res.r, res.p, res.z])
+
+    # non-log spearman
+    res = mantel.test(geo, gen, perms=int(perms), method=&#39;spearman&#39;)
+    rows.append([&#39;genXgeo&#39;, &#39;spearman&#39;, str(perms), res.r, res.p, res.z])
+
+    ibd = pd.DataFrame(rows,  columns=[&#39;test&#39;, &#39;method&#39;, &#39;perms&#39;, &#39;r&#39;, &#39;p&#39;,
+                                       &#39;z&#39;])
+    print(&#34;Mantel test results:&#34;)
+    print(ibd)
+    ibd.to_csv((str(out) + &#34;.isolationByDistance.txt&#34;), sep=&#34;\t&#34;, index=False)
+    print()</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.vectorize_mat"><code class="name flex">
+<span>def <span class="ident">vectorize_mat</span></span>(<span>mat)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts a pairwise matrix to a 1D vector.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>mat</code></strong> :&ensp;<code>numpy.ndarray</code></dt>
+<dd>Pairwise matrix.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>numpy.ndarray</code></dt>
+<dd>1D vector of matrix elements.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def vectorize_mat(mat):
+    &#34;&#34;&#34;
+    Converts a pairwise matrix to a 1D vector.
+
+    Args:
+        mat (numpy.ndarray): Pairwise matrix.
+
+    Returns:
+        numpy.ndarray: 1D vector of matrix elements.
+    &#34;&#34;&#34;
+    size = nCr(np.size(mat, 0), 2)
+    vec = np.zeros(size)
+    index = 0
+
+    for ia, ib in itertools.combinations(range(0, np.size(mat, 0)), 2):
+        vec[index] = mat[ia, ib]
+        index += 1
+
+    return vec</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.functions.write_geodataframe"><code class="name flex">
+<span>def <span class="ident">write_geodataframe</span></span>(<span>gdf, output_prefix, output_driver)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def write_geodataframe(gdf, output_prefix, output_driver):
+    gpd.options.io_engine = &#34;pyogrio&#34;
+    extension = {
+        &#34;SHP&#34;: &#34;.shp&#34;,
+        &#34;GPKG&#34;: &#34;.gpkg&#34;,
+        &#34;GDB&#34;: &#34;.gdb&#34;
+    }.get(output_driver.upper(), &#34;.gpkg&#34;)  # Default to .gpkg
+    if output_driver.upper() == &#34;SHP&#34;:
+        output_driver = &#34;ESRI Shapefile&#34;
+
+    output_path = f&#34;{output_prefix}{extension}&#34;
+
+    if output_driver == &#39;GDB&#39; and not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    gdf.to_file(output_path, driver=output_driver.upper())</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="autostreamtree" href="index.html">autostreamtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="autostreamtree.functions.block_print" href="#autostreamtree.functions.block_print">block_print</a></code></li>
+<li><code><a title="autostreamtree.functions.custom_warn_handler" href="#autostreamtree.functions.custom_warn_handler">custom_warn_handler</a></code></li>
+<li><code><a title="autostreamtree.functions.enable_print" href="#autostreamtree.functions.enable_print">enable_print</a></code></li>
+<li><code><a title="autostreamtree.functions.extract_full_subgraph" href="#autostreamtree.functions.extract_full_subgraph">extract_full_subgraph</a></code></li>
+<li><code><a title="autostreamtree.functions.extract_minimal_subgraph" href="#autostreamtree.functions.extract_minimal_subgraph">extract_minimal_subgraph</a></code></li>
+<li><code><a title="autostreamtree.functions.find_pair" href="#autostreamtree.functions.find_pair">find_pair</a></code></li>
+<li><code><a title="autostreamtree.functions.fit_least_squares_distances" href="#autostreamtree.functions.fit_least_squares_distances">fit_least_squares_distances</a></code></li>
+<li><code><a title="autostreamtree.functions.generate_weights_matrix" href="#autostreamtree.functions.generate_weights_matrix">generate_weights_matrix</a></code></li>
+<li><code><a title="autostreamtree.functions.get_fitted_d" href="#autostreamtree.functions.get_fitted_d">get_fitted_d</a></code></li>
+<li><code><a title="autostreamtree.functions.get_gendist_mats" href="#autostreamtree.functions.get_gendist_mats">get_gendist_mats</a></code></li>
+<li><code><a title="autostreamtree.functions.get_loc_data" href="#autostreamtree.functions.get_loc_data">get_loc_data</a></code></li>
+<li><code><a title="autostreamtree.functions.get_lower_tri" href="#autostreamtree.functions.get_lower_tri">get_lower_tri</a></code></li>
+<li><code><a title="autostreamtree.functions.get_point_table" href="#autostreamtree.functions.get_point_table">get_point_table</a></code></li>
+<li><code><a title="autostreamtree.functions.get_stream_mats" href="#autostreamtree.functions.get_stream_mats">get_stream_mats</a></code></li>
+<li><code><a title="autostreamtree.functions.great_circle" href="#autostreamtree.functions.great_circle">great_circle</a></code></li>
+<li><code><a title="autostreamtree.functions.nCr" href="#autostreamtree.functions.nCr">nCr</a></code></li>
+<li><code><a title="autostreamtree.functions.output_fitted_d" href="#autostreamtree.functions.output_fitted_d">output_fitted_d</a></code></li>
+<li><code><a title="autostreamtree.functions.parse_input_genmat" href="#autostreamtree.functions.parse_input_genmat">parse_input_genmat</a></code></li>
+<li><code><a title="autostreamtree.functions.parse_subgraph_from_points" href="#autostreamtree.functions.parse_subgraph_from_points">parse_subgraph_from_points</a></code></li>
+<li><code><a title="autostreamtree.functions.path_edge_attributes" href="#autostreamtree.functions.path_edge_attributes">path_edge_attributes</a></code></li>
+<li><code><a title="autostreamtree.functions.path_subgraph" href="#autostreamtree.functions.path_subgraph">path_subgraph</a></code></li>
+<li><code><a title="autostreamtree.functions.plot_gen_by_geo" href="#autostreamtree.functions.plot_gen_by_geo">plot_gen_by_geo</a></code></li>
+<li><code><a title="autostreamtree.functions.process_samples" href="#autostreamtree.functions.process_samples">process_samples</a></code></li>
+<li><code><a title="autostreamtree.functions.prune_graph" href="#autostreamtree.functions.prune_graph">prune_graph</a></code></li>
+<li><code><a title="autostreamtree.functions.r2" href="#autostreamtree.functions.r2">r2</a></code></li>
+<li><code><a title="autostreamtree.functions.read_network" href="#autostreamtree.functions.read_network">read_network</a></code></li>
+<li><code><a title="autostreamtree.functions.read_popmap" href="#autostreamtree.functions.read_popmap">read_popmap</a></code></li>
+<li><code><a title="autostreamtree.functions.read_vcf" href="#autostreamtree.functions.read_vcf">read_vcf</a></code></li>
+<li><code><a title="autostreamtree.functions.replace_zeroes" href="#autostreamtree.functions.replace_zeroes">replace_zeroes</a></code></li>
+<li><code><a title="autostreamtree.functions.report_genmats" href="#autostreamtree.functions.report_genmats">report_genmats</a></code></li>
+<li><code><a title="autostreamtree.functions.report_genmats_list" href="#autostreamtree.functions.report_genmats_list">report_genmats_list</a></code></li>
+<li><code><a title="autostreamtree.functions.snap_to_node" href="#autostreamtree.functions.snap_to_node">snap_to_node</a></code></li>
+<li><code><a title="autostreamtree.functions.test_ibd" href="#autostreamtree.functions.test_ibd">test_ibd</a></code></li>
+<li><code><a title="autostreamtree.functions.vectorize_mat" href="#autostreamtree.functions.vectorize_mat">vectorize_mat</a></code></li>
+<li><code><a title="autostreamtree.functions.write_geodataframe" href="#autostreamtree.functions.write_geodataframe">write_geodataframe</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

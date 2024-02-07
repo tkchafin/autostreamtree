@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>autostreamtree.sequence API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>autostreamtree.sequence</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from typing import List
+
+
+def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False,
+           as_tuple: bool = False, as_list: bool = False) -&gt; str:
+    &#34;&#34;&#34;
+    Decode a genotype from a VCF file and return the corresponding DNA sequence
+
+    Args:
+        gt (tuple): The genotype as a tuple of integers representing the
+                    indices of the reference and alternate alleles.
+        ref (str): The reference allele.
+        alts (list): A list of alternate alleles.
+        as_iupac (bool): Whether to return the consensus IUPAC symbol if the
+                         genotype is heterozygous. Default is False.
+        as_tuple (bool): Whether to return the result as a tuple of two strings
+                         Default is False.
+        as_list (bool): Whether to return the result as a list of two strings.
+                        Default is False.
+
+    Returns:
+        ret (str): The decoded genotype as a string. By default, this is a
+                   string in the format &#34;ref/alt&#34;, but the format can be
+                   customized using the optional arguments.
+    &#34;&#34;&#34;
+    # initialize return value
+    ret = [None, None]
+
+    # if genotype is missing, set to &#34;N&#34;
+    if gt[0] is None or gt[1] is None:
+        ret = [&#34;N&#34;, &#34;N&#34;]
+    else:
+        # decode each allele
+        if gt[0] == 0:
+            ret[0] = ref
+        else:
+            ret[0] = alts[gt[0] - 1]
+        if gt[1] == 0:
+            ret[1] = ref
+        else:
+            ret[1] = alts[gt[1] - 1]
+
+    # apply optional formatting
+    if as_iupac:
+        return dna_consensus(&#34;/&#34;.join(ret))
+    elif as_tuple:
+        return tuple(ret)
+    elif as_list:
+        return ret
+    else:
+        return &#34;/&#34;.join(ret)
+
+
+def get_nuc_freqs(seqs: dict, ploidy: int) -&gt; list:
+    &#34;&#34;&#34;
+    Compute the nucleotide frequencies of a set of DNA sequences.
+
+    Args:
+        seqs (dict): A dictionary of DNA sequences. The keys are sample names
+                     and the values are strings of nucleotides.
+        ploidy (int): The ploidy of the sequences. If ploidy=1, ambiguities
+                      will be skipped. If ploidy=2, ambiguities will be
+                      resolved.
+
+    Returns:
+        freqs (list): A list of dictionaries, where each dictionary contains
+                      the nucleotide frequencies for a single position in the
+                      sequences.
+
+    Raises:
+        ValueError: If any sequence is empty or contains only invalid
+                    characters, or if sequences are not all the same length.
+    &#34;&#34;&#34;
+    if not all(seqs):
+        raise ValueError(&#34;One or more sequences are empty.&#34;)
+
+    sequence_length = len(seqs[list(seqs.keys())[0]])
+    if not all(len(seq) == sequence_length for seq in seqs.values()):
+        raise ValueError(&#34;Sequences are not all the same length.&#34;)
+
+    freqs = []
+    for loc in range(sequence_length):
+        allnucs = &#34;&#34;
+        for samp in seqs.keys():
+            allnucs += dna_consensus(seqs[samp][loc]).lower()
+
+        badchars = [&#34;?&#34;, &#34;-&#34;, &#34;n&#34;]
+        if ploidy == 1:
+            badchars += [&#34;r&#34;, &#34;y&#34;, &#34;s&#34;, &#34;w&#34;, &#34;k&#34;, &#34;m&#34;, &#34;b&#34;, &#34;d&#34;, &#34;h&#34;, &#34;v&#34;]
+        allnucs = &#39;&#39;.join([nuc for nuc in allnucs if nuc not in badchars])
+
+        if ploidy == 2:
+            iupacs = [&#34;r&#34;, &#34;y&#34;, &#34;s&#34;, &#34;w&#34;, &#34;k&#34;, &#34;m&#34;, &#34;b&#34;, &#34;d&#34;, &#34;h&#34;, &#34;v&#34;]
+            for ambig in iupacs:
+                allnucs = allnucs.replace(
+                    ambig, &#34;&#34;.join(get_iupac_caseless(ambig))
+                )
+            for nuc in [&#34;a&#34;, &#34;c&#34;, &#34;t&#34;, &#34;g&#34;]:
+                allnucs = allnucs.replace(nuc, nuc + nuc)
+
+        total = len(allnucs)
+        counts = {&#34;a&#34;: 0, &#34;g&#34;: 0, &#34;c&#34;: 0, &#34;t&#34;: 0}
+        for c in allnucs:
+            if c in counts:
+                counts[c] += 1
+        if total &lt;= 0:
+            freqs.append({&#34;a&#34;: 0, &#34;g&#34;: 0, &#34;c&#34;: 0, &#34;t&#34;: 0})
+        else:
+            for nuc in counts.keys():
+                counts[nuc] = float(counts[nuc] / total)
+            freqs.append(counts)
+    return freqs
+
+
+def dna_consensus(seq: str) -&gt; str:
+    &#34;&#34;&#34;
+    Make a consensus DNA sequence from alleles separated by a &#34;/&#34; character.
+
+    Args:
+        seq (str): A string of DNA sequences separated by a &#34;/&#34; character.
+
+    Returns:
+        consens (str): A consensus DNA sequence derived from the input
+                       sequences.
+    &#34;&#34;&#34;
+    if not seq:
+        return None
+    if len(seq) &lt;= 0:
+        return None
+    alleles = seq.split(&#34;/&#34;)
+    consens = &#34;&#34;
+    if len(alleles) &lt; 1:
+        return None
+    elif not all(len(x) == len(alleles[0]) for x in alleles):
+        raise ValueError(
+            &#34;Not all alleles are the same length: &#34; + str(alleles)
+        )
+    elif len(alleles) == 1:
+        return alleles[0]
+    else:
+        for i in range(len(alleles[0])):
+            nucs = &#34;&#34;
+            for a in alleles:
+                nucs += a[i]
+            temp = list_to_sort_unique_string(nucs.upper())
+            consens += reverse_iupac_case(temp)
+    return consens
+
+
+def reverse_iupac_case(char: str) -&gt; str:
+    &#34;&#34;&#34;
+    Translate a string of DNA bases to an IUPAC ambiguity code, retaining case.
+
+    Args:
+        char (str): A string of DNA bases.
+
+    Returns:
+        iupac (str): An IUPAC ambiguity code.
+    &#34;&#34;&#34;
+    iupac = {
+        &#39;A&#39;: &#39;A&#39;,
+        &#39;N&#39;: &#39;N&#39;,
+        &#39;-&#39;: &#39;-&#39;,
+        &#39;C&#39;: &#39;C&#39;,
+        &#39;G&#39;: &#39;G&#39;,
+        &#39;T&#39;: &#39;T&#39;,
+        &#39;AG&#39;: &#39;R&#39;,
+        &#39;CT&#39;: &#39;Y&#39;,
+        &#39;AC&#39;: &#39;M&#39;,
+        &#39;GT&#39;: &#39;K&#39;,
+        &#39;AT&#39;: &#39;W&#39;,
+        &#39;CG&#39;: &#39;S&#39;,
+        &#39;CGT&#39;: &#39;B&#39;,
+        &#39;AGT&#39;: &#39;D&#39;,
+        &#39;ACT&#39;: &#39;H&#39;,
+        &#39;ACG&#39;: &#39;V&#39;,
+        &#39;ACGT&#39;: &#39;N&#39;,
+        &#39;a&#39;: &#39;a&#39;,
+        &#39;n&#39;: &#39;n&#39;,
+        &#39;c&#39;: &#39;c&#39;,
+        &#39;g&#39;: &#39;g&#39;,
+        &#39;t&#39;: &#39;t&#39;,
+        &#39;ag&#39;: &#39;r&#39;,
+        &#39;ct&#39;: &#39;y&#39;,
+        &#39;ac&#39;: &#39;m&#39;,
+        &#39;gt&#39;: &#39;k&#39;,
+        &#39;at&#39;: &#39;w&#39;,
+        &#39;cg&#39;: &#39;s&#39;,
+        &#39;cgt&#39;: &#39;b&#39;,
+        &#39;agt&#39;: &#39;d&#39;,
+        &#39;act&#39;: &#39;h&#39;,
+        &#39;acg&#39;: &#39;v&#39;,
+        &#39;acgt&#39;: &#39;n&#39;
+    }
+    return iupac[char]
+
+
+def list_to_sort_unique_string(input: list) -&gt; str:
+    &#34;&#34;&#34;
+    Convert a list of characters to a sorted, unique string.
+
+    Args:
+        l (list): A list of characters.
+
+    Returns:
+        s (str): A string containing the characters from the input list, sorted
+                 and with duplicates removed.
+    &#34;&#34;&#34;
+    s = &#39;&#39;.join(sorted(set(input)))
+    return s
+
+
+def get_iupac_caseless(char: str) -&gt; List[str]:
+    &#34;&#34;&#34;
+    Split a character to IUPAC codes, assuming diploidy.
+
+    Args:
+        char (str): A character to be split.
+
+    Returns:
+        codes (list): A list of IUPAC codes corresponding to the input
+                      character.
+    &#34;&#34;&#34;
+    lower = False
+    if char.islower():
+        lower = True
+        char = char.upper()
+    iupac = {
+        &#34;A&#34;: [&#34;A&#34;],
+        &#34;G&#34;: [&#34;G&#34;],
+        &#34;C&#34;: [&#34;C&#34;],
+        &#34;T&#34;: [&#34;T&#34;],
+        &#34;N&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;?&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;-&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;, &#34;-&#34;],
+        &#34;R&#34;: [&#34;A&#34;, &#34;G&#34;],
+        &#34;Y&#34;: [&#34;C&#34;, &#34;T&#34;],
+        &#34;S&#34;: [&#34;G&#34;, &#34;C&#34;],
+        &#34;W&#34;: [&#34;A&#34;, &#34;T&#34;],
+        &#34;K&#34;: [&#34;G&#34;, &#34;T&#34;],
+        &#34;M&#34;: [&#34;A&#34;, &#34;C&#34;],
+        &#34;B&#34;: [&#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;D&#34;: [&#34;A&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;H&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;T&#34;],
+        &#34;V&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;]
+    }
+    codes = iupac[char]
+    if lower:
+        codes = [c.lower() for c in codes]
+    return codes
+
+
+def phase_snp(snp: str) -&gt; str:
+    &#34;&#34;&#34;
+    Phase a single nucleotide polymorphism (SNP) by splitting its IUPAC code
+    into two alleles.
+
+    Args:
+        snp (str): The IUPAC code for the SNP.
+
+    Returns:
+        phase (str): The SNP alleles separated by a &#34;/&#34; character.
+    &#34;&#34;&#34;
+    nucs = get_iupac_caseless(snp)
+    if len(nucs) &gt; 2 or len(nucs) &lt; 1:
+        return &#34;n/n&#34;
+    elif len(nucs) == 1:
+        phase = nucs[0] + &#39;/&#39; + nucs[0]
+        return phase
+    else:
+        return &#34;/&#34;.join(nucs)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="autostreamtree.sequence.decode"><code class="name flex">
+<span>def <span class="ident">decode</span></span>(<span>gt: tuple, ref: str, alts: list, as_iupac: bool = False, as_tuple: bool = False, as_list: bool = False) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Decode a genotype from a VCF file and return the corresponding DNA sequence</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>gt</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>The genotype as a tuple of integers representing the
+indices of the reference and alternate alleles.</dd>
+<dt><strong><code>ref</code></strong> :&ensp;<code>str</code></dt>
+<dd>The reference allele.</dd>
+<dt><strong><code>alts</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of alternate alleles.</dd>
+<dt><strong><code>as_iupac</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to return the consensus IUPAC symbol if the
+genotype is heterozygous. Default is False.</dd>
+<dt><strong><code>as_tuple</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to return the result as a tuple of two strings
+Default is False.</dd>
+<dt><strong><code>as_list</code></strong> :&ensp;<code>bool</code></dt>
+<dd>Whether to return the result as a list of two strings.
+Default is False.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>ret (str): The decoded genotype as a string. By default, this is a</code></dt>
+<dd>string in the format "ref/alt", but the format can be
+customized using the optional arguments.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def decode(gt: tuple, ref: str, alts: list, as_iupac: bool = False,
+           as_tuple: bool = False, as_list: bool = False) -&gt; str:
+    &#34;&#34;&#34;
+    Decode a genotype from a VCF file and return the corresponding DNA sequence
+
+    Args:
+        gt (tuple): The genotype as a tuple of integers representing the
+                    indices of the reference and alternate alleles.
+        ref (str): The reference allele.
+        alts (list): A list of alternate alleles.
+        as_iupac (bool): Whether to return the consensus IUPAC symbol if the
+                         genotype is heterozygous. Default is False.
+        as_tuple (bool): Whether to return the result as a tuple of two strings
+                         Default is False.
+        as_list (bool): Whether to return the result as a list of two strings.
+                        Default is False.
+
+    Returns:
+        ret (str): The decoded genotype as a string. By default, this is a
+                   string in the format &#34;ref/alt&#34;, but the format can be
+                   customized using the optional arguments.
+    &#34;&#34;&#34;
+    # initialize return value
+    ret = [None, None]
+
+    # if genotype is missing, set to &#34;N&#34;
+    if gt[0] is None or gt[1] is None:
+        ret = [&#34;N&#34;, &#34;N&#34;]
+    else:
+        # decode each allele
+        if gt[0] == 0:
+            ret[0] = ref
+        else:
+            ret[0] = alts[gt[0] - 1]
+        if gt[1] == 0:
+            ret[1] = ref
+        else:
+            ret[1] = alts[gt[1] - 1]
+
+    # apply optional formatting
+    if as_iupac:
+        return dna_consensus(&#34;/&#34;.join(ret))
+    elif as_tuple:
+        return tuple(ret)
+    elif as_list:
+        return ret
+    else:
+        return &#34;/&#34;.join(ret)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.dna_consensus"><code class="name flex">
+<span>def <span class="ident">dna_consensus</span></span>(<span>seq: str) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Make a consensus DNA sequence from alleles separated by a "/" character.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>seq</code></strong> :&ensp;<code>str</code></dt>
+<dd>A string of DNA sequences separated by a "/" character.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>consens (str): A consensus DNA sequence derived from the input</code></dt>
+<dd>sequences.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dna_consensus(seq: str) -&gt; str:
+    &#34;&#34;&#34;
+    Make a consensus DNA sequence from alleles separated by a &#34;/&#34; character.
+
+    Args:
+        seq (str): A string of DNA sequences separated by a &#34;/&#34; character.
+
+    Returns:
+        consens (str): A consensus DNA sequence derived from the input
+                       sequences.
+    &#34;&#34;&#34;
+    if not seq:
+        return None
+    if len(seq) &lt;= 0:
+        return None
+    alleles = seq.split(&#34;/&#34;)
+    consens = &#34;&#34;
+    if len(alleles) &lt; 1:
+        return None
+    elif not all(len(x) == len(alleles[0]) for x in alleles):
+        raise ValueError(
+            &#34;Not all alleles are the same length: &#34; + str(alleles)
+        )
+    elif len(alleles) == 1:
+        return alleles[0]
+    else:
+        for i in range(len(alleles[0])):
+            nucs = &#34;&#34;
+            for a in alleles:
+                nucs += a[i]
+            temp = list_to_sort_unique_string(nucs.upper())
+            consens += reverse_iupac_case(temp)
+    return consens</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.get_iupac_caseless"><code class="name flex">
+<span>def <span class="ident">get_iupac_caseless</span></span>(<span>char: str) -> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Split a character to IUPAC codes, assuming diploidy.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>char</code></strong> :&ensp;<code>str</code></dt>
+<dd>A character to be split.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>codes (list): A list</code> of <code>IUPAC codes corresponding to the input</code></dt>
+<dd>character.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_iupac_caseless(char: str) -&gt; List[str]:
+    &#34;&#34;&#34;
+    Split a character to IUPAC codes, assuming diploidy.
+
+    Args:
+        char (str): A character to be split.
+
+    Returns:
+        codes (list): A list of IUPAC codes corresponding to the input
+                      character.
+    &#34;&#34;&#34;
+    lower = False
+    if char.islower():
+        lower = True
+        char = char.upper()
+    iupac = {
+        &#34;A&#34;: [&#34;A&#34;],
+        &#34;G&#34;: [&#34;G&#34;],
+        &#34;C&#34;: [&#34;C&#34;],
+        &#34;T&#34;: [&#34;T&#34;],
+        &#34;N&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;?&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;-&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;, &#34;T&#34;, &#34;-&#34;],
+        &#34;R&#34;: [&#34;A&#34;, &#34;G&#34;],
+        &#34;Y&#34;: [&#34;C&#34;, &#34;T&#34;],
+        &#34;S&#34;: [&#34;G&#34;, &#34;C&#34;],
+        &#34;W&#34;: [&#34;A&#34;, &#34;T&#34;],
+        &#34;K&#34;: [&#34;G&#34;, &#34;T&#34;],
+        &#34;M&#34;: [&#34;A&#34;, &#34;C&#34;],
+        &#34;B&#34;: [&#34;C&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;D&#34;: [&#34;A&#34;, &#34;G&#34;, &#34;T&#34;],
+        &#34;H&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;T&#34;],
+        &#34;V&#34;: [&#34;A&#34;, &#34;C&#34;, &#34;G&#34;]
+    }
+    codes = iupac[char]
+    if lower:
+        codes = [c.lower() for c in codes]
+    return codes</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.get_nuc_freqs"><code class="name flex">
+<span>def <span class="ident">get_nuc_freqs</span></span>(<span>seqs: dict, ploidy: int) -> list</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute the nucleotide frequencies of a set of DNA sequences.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>seqs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>A dictionary of DNA sequences. The keys are sample names
+and the values are strings of nucleotides.</dd>
+<dt><strong><code>ploidy</code></strong> :&ensp;<code>int</code></dt>
+<dd>The ploidy of the sequences. If ploidy=1, ambiguities
+will be skipped. If ploidy=2, ambiguities will be
+resolved.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>freqs (list): A list</code> of <code>dictionaries, where each dictionary contains</code></dt>
+<dd>the nucleotide frequencies for a single position in the
+sequences.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If any sequence is empty or contains only invalid
+characters, or if sequences are not all the same length.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_nuc_freqs(seqs: dict, ploidy: int) -&gt; list:
+    &#34;&#34;&#34;
+    Compute the nucleotide frequencies of a set of DNA sequences.
+
+    Args:
+        seqs (dict): A dictionary of DNA sequences. The keys are sample names
+                     and the values are strings of nucleotides.
+        ploidy (int): The ploidy of the sequences. If ploidy=1, ambiguities
+                      will be skipped. If ploidy=2, ambiguities will be
+                      resolved.
+
+    Returns:
+        freqs (list): A list of dictionaries, where each dictionary contains
+                      the nucleotide frequencies for a single position in the
+                      sequences.
+
+    Raises:
+        ValueError: If any sequence is empty or contains only invalid
+                    characters, or if sequences are not all the same length.
+    &#34;&#34;&#34;
+    if not all(seqs):
+        raise ValueError(&#34;One or more sequences are empty.&#34;)
+
+    sequence_length = len(seqs[list(seqs.keys())[0]])
+    if not all(len(seq) == sequence_length for seq in seqs.values()):
+        raise ValueError(&#34;Sequences are not all the same length.&#34;)
+
+    freqs = []
+    for loc in range(sequence_length):
+        allnucs = &#34;&#34;
+        for samp in seqs.keys():
+            allnucs += dna_consensus(seqs[samp][loc]).lower()
+
+        badchars = [&#34;?&#34;, &#34;-&#34;, &#34;n&#34;]
+        if ploidy == 1:
+            badchars += [&#34;r&#34;, &#34;y&#34;, &#34;s&#34;, &#34;w&#34;, &#34;k&#34;, &#34;m&#34;, &#34;b&#34;, &#34;d&#34;, &#34;h&#34;, &#34;v&#34;]
+        allnucs = &#39;&#39;.join([nuc for nuc in allnucs if nuc not in badchars])
+
+        if ploidy == 2:
+            iupacs = [&#34;r&#34;, &#34;y&#34;, &#34;s&#34;, &#34;w&#34;, &#34;k&#34;, &#34;m&#34;, &#34;b&#34;, &#34;d&#34;, &#34;h&#34;, &#34;v&#34;]
+            for ambig in iupacs:
+                allnucs = allnucs.replace(
+                    ambig, &#34;&#34;.join(get_iupac_caseless(ambig))
+                )
+            for nuc in [&#34;a&#34;, &#34;c&#34;, &#34;t&#34;, &#34;g&#34;]:
+                allnucs = allnucs.replace(nuc, nuc + nuc)
+
+        total = len(allnucs)
+        counts = {&#34;a&#34;: 0, &#34;g&#34;: 0, &#34;c&#34;: 0, &#34;t&#34;: 0}
+        for c in allnucs:
+            if c in counts:
+                counts[c] += 1
+        if total &lt;= 0:
+            freqs.append({&#34;a&#34;: 0, &#34;g&#34;: 0, &#34;c&#34;: 0, &#34;t&#34;: 0})
+        else:
+            for nuc in counts.keys():
+                counts[nuc] = float(counts[nuc] / total)
+            freqs.append(counts)
+    return freqs</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.list_to_sort_unique_string"><code class="name flex">
+<span>def <span class="ident">list_to_sort_unique_string</span></span>(<span>input: list) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a list of characters to a sorted, unique string.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>l</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of characters.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>s (str): A string containing the characters from the input list, sorted</code></dt>
+<dd>and with duplicates removed.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_to_sort_unique_string(input: list) -&gt; str:
+    &#34;&#34;&#34;
+    Convert a list of characters to a sorted, unique string.
+
+    Args:
+        l (list): A list of characters.
+
+    Returns:
+        s (str): A string containing the characters from the input list, sorted
+                 and with duplicates removed.
+    &#34;&#34;&#34;
+    s = &#39;&#39;.join(sorted(set(input)))
+    return s</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.phase_snp"><code class="name flex">
+<span>def <span class="ident">phase_snp</span></span>(<span>snp: str) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Phase a single nucleotide polymorphism (SNP) by splitting its IUPAC code
+into two alleles.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>snp</code></strong> :&ensp;<code>str</code></dt>
+<dd>The IUPAC code for the SNP.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>phase (str): The SNP alleles separated by a "/" character.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def phase_snp(snp: str) -&gt; str:
+    &#34;&#34;&#34;
+    Phase a single nucleotide polymorphism (SNP) by splitting its IUPAC code
+    into two alleles.
+
+    Args:
+        snp (str): The IUPAC code for the SNP.
+
+    Returns:
+        phase (str): The SNP alleles separated by a &#34;/&#34; character.
+    &#34;&#34;&#34;
+    nucs = get_iupac_caseless(snp)
+    if len(nucs) &gt; 2 or len(nucs) &lt; 1:
+        return &#34;n/n&#34;
+    elif len(nucs) == 1:
+        phase = nucs[0] + &#39;/&#39; + nucs[0]
+        return phase
+    else:
+        return &#34;/&#34;.join(nucs)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.sequence.reverse_iupac_case"><code class="name flex">
+<span>def <span class="ident">reverse_iupac_case</span></span>(<span>char: str) -> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Translate a string of DNA bases to an IUPAC ambiguity code, retaining case.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>char</code></strong> :&ensp;<code>str</code></dt>
+<dd>A string of DNA bases.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>iupac (str): An IUPAC ambiguity code.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reverse_iupac_case(char: str) -&gt; str:
+    &#34;&#34;&#34;
+    Translate a string of DNA bases to an IUPAC ambiguity code, retaining case.
+
+    Args:
+        char (str): A string of DNA bases.
+
+    Returns:
+        iupac (str): An IUPAC ambiguity code.
+    &#34;&#34;&#34;
+    iupac = {
+        &#39;A&#39;: &#39;A&#39;,
+        &#39;N&#39;: &#39;N&#39;,
+        &#39;-&#39;: &#39;-&#39;,
+        &#39;C&#39;: &#39;C&#39;,
+        &#39;G&#39;: &#39;G&#39;,
+        &#39;T&#39;: &#39;T&#39;,
+        &#39;AG&#39;: &#39;R&#39;,
+        &#39;CT&#39;: &#39;Y&#39;,
+        &#39;AC&#39;: &#39;M&#39;,
+        &#39;GT&#39;: &#39;K&#39;,
+        &#39;AT&#39;: &#39;W&#39;,
+        &#39;CG&#39;: &#39;S&#39;,
+        &#39;CGT&#39;: &#39;B&#39;,
+        &#39;AGT&#39;: &#39;D&#39;,
+        &#39;ACT&#39;: &#39;H&#39;,
+        &#39;ACG&#39;: &#39;V&#39;,
+        &#39;ACGT&#39;: &#39;N&#39;,
+        &#39;a&#39;: &#39;a&#39;,
+        &#39;n&#39;: &#39;n&#39;,
+        &#39;c&#39;: &#39;c&#39;,
+        &#39;g&#39;: &#39;g&#39;,
+        &#39;t&#39;: &#39;t&#39;,
+        &#39;ag&#39;: &#39;r&#39;,
+        &#39;ct&#39;: &#39;y&#39;,
+        &#39;ac&#39;: &#39;m&#39;,
+        &#39;gt&#39;: &#39;k&#39;,
+        &#39;at&#39;: &#39;w&#39;,
+        &#39;cg&#39;: &#39;s&#39;,
+        &#39;cgt&#39;: &#39;b&#39;,
+        &#39;agt&#39;: &#39;d&#39;,
+        &#39;act&#39;: &#39;h&#39;,
+        &#39;acg&#39;: &#39;v&#39;,
+        &#39;acgt&#39;: &#39;n&#39;
+    }
+    return iupac[char]</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="autostreamtree" href="index.html">autostreamtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="autostreamtree.sequence.decode" href="#autostreamtree.sequence.decode">decode</a></code></li>
+<li><code><a title="autostreamtree.sequence.dna_consensus" href="#autostreamtree.sequence.dna_consensus">dna_consensus</a></code></li>
+<li><code><a title="autostreamtree.sequence.get_iupac_caseless" href="#autostreamtree.sequence.get_iupac_caseless">get_iupac_caseless</a></code></li>
+<li><code><a title="autostreamtree.sequence.get_nuc_freqs" href="#autostreamtree.sequence.get_nuc_freqs">get_nuc_freqs</a></code></li>
+<li><code><a title="autostreamtree.sequence.list_to_sort_unique_string" href="#autostreamtree.sequence.list_to_sort_unique_string">list_to_sort_unique_string</a></code></li>
+<li><code><a title="autostreamtree.sequence.phase_snp" href="#autostreamtree.sequence.phase_snp">phase_snp</a></code></li>
+<li><code><a title="autostreamtree.sequence.reverse_iupac_case" href="#autostreamtree.sequence.reverse_iupac_case">reverse_iupac_case</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

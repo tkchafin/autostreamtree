@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>autostreamtree.cluster_pops API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>autostreamtree.cluster_pops</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
+from shapely.geometry import MultiPoint
+from sortedcontainers import SortedDict
+
+from typing import Tuple, Dict, Optional
+
+
+# credit to Geoff Boeing at
+# https://geoffboeing.com/2014/08/clustering-to-reduce-spatial-data-set-size/
+# for the tutorial
+# here coords should be a dictionary with key=ID and value=tuple of lat,long
+# epsilon=max distance (in km) between points in a cluster
+def dbscan_cluster(coords: Dict[str, Tuple[float, float]], epsilon: float,
+                   min_samples: int, out: Optional[str] = None) -&gt; SortedDict:
+    &#34;&#34;&#34;
+    Cluster geographic coordinates using DBSCAN algorithm.
+
+    Parameters:
+    coords (Dict[str, Tuple[float, float]]): A dictionary of coordinate pairs
+                                             with the key as the location
+                                             identifier and values as tuples of
+                                             (latitude, longitude).
+    epsilon (float): Maximum distance between two samples for them to be
+                     considered as in the same neighborhood.
+    min_samples (int): The number of samples (or total weight) in a
+                       neighborhood for a point to be considered as a core
+                       point.
+    out (Optional[str]): Output file path to save cluster labels.
+
+    Returns:
+    SortedDict: A sorted dictionary of cluster labels with keys as cluster name
+                and values as lists of location identifiers in that cluster.
+
+    Raises:
+    ValueError: If any coordinate value is missing or not a float.
+
+    Examples:
+    &gt;&gt;&gt; coords = {&#39;A&#39;: (33.4484, -112.0740), &#39;B&#39;: (37.7749,
+                  -122.4194), &#39;C&#39;: (40.7128, -74.0060)}
+    &gt;&gt;&gt; dbscan_cluster(coords, 300, 2)
+    SortedDict({&#39;DB_-1&#39;: [&#39;C&#39;], &#39;DB_0&#39;: [&#39;A&#39;], &#39;DB_1&#39;: [&#39;B&#39;]})
+    &#34;&#34;&#34;
+    # Check if coordinates have correct values
+    for k, v in coords.items():
+        if not isinstance(v, tuple) or len(v) != 2:
+            raise ValueError(
+                f&#34;Coordinate value for &#39;{k}&#39; is missing or&#34;,
+                &#34;not a tuple of size 2.&#34;
+            )
+        if not all(isinstance(coord, float) for coord in v):
+            raise ValueError(
+                f&#34;Coordinate value for &#39;{k}&#39; has non-float values.&#34;
+            )
+
+    # Convert coordinates to a numpy array for clustering
+    points = np.array(list(coords.values()))
+    kms_per_radian = 6371.0088
+    eps = epsilon / kms_per_radian
+
+    # Run DBSCAN clustering
+    db = DBSCAN(
+        eps=eps, min_samples=min_samples, algorithm=&#39;ball_tree&#39;,
+        metric=&#39;haversine&#39;).fit(np.radians(points))
+
+    # Save cluster labels
+    cluster_labels = db.labels_
+
+    # Build SortedDict to return
+    popmap = SortedDict()
+    for i, k in enumerate(coords.keys()):
+        pop = &#34;DB_&#34; + str(cluster_labels[i])
+        if pop not in popmap:
+            names = [k]
+            popmap[pop] = names
+        else:
+            popmap[pop].append(k)
+
+    # Save cluster labels to file if output path provided
+    if out:
+        with open(out, &#39;w&#39;) as f:
+            for i, k in enumerate(coords.keys()):
+                f.write(f&#34;{k}\t{cluster_labels[i]}\n&#34;)
+
+    return popmap
+
+
+def coords_to_matrix(coords):
+    &#34;&#34;&#34;
+    Convert a dictionary of geographic coordinates to a NumPy array.
+
+    Args:
+    - coords (dict): A dictionary containing the coordinates in the format
+                     {id:(long, lat)}.
+
+    Returns:
+    - A NumPy array of coordinates in the format [[long, lat], ...].
+
+    &#34;&#34;&#34;
+    if not coords:
+        return np.array([], dtype=float).reshape(0, 2)
+
+    return pd.DataFrame(
+        [[coords[k][0], coords[k][1]] for k in coords],
+        columns=[&#34;long&#34;, &#34;lat&#34;]).to_numpy()
+
+
+def coords_to_dataframe(coords):
+    &#34;&#34;&#34;
+    Convert a dictionary of geographic coordinates to a Pandas DataFrame.
+
+    Args:
+    - coords (dict): A dictionary containing the coordinates in the format
+                     {id:(long, lat)}.
+
+    Returns:
+    - A Pandas DataFrame of coordinates with columns &#34;long&#34; and &#34;lat&#34;.
+
+    &#34;&#34;&#34;
+    df = pd.DataFrame(
+        [[coords[k][0], coords[k][1]] for k in coords],
+        index=list(coords.keys()),
+        columns=[&#34;long&#34;, &#34;lat&#34;]
+    )
+    if df.empty:
+        df = df.astype({&#39;long&#39;: &#39;float64&#39;, &#39;lat&#39;: &#39;float64&#39;})
+    return df
+
+
+# function to find the centroid of a set of points
+# requires a SortedDict of coordinates and a SortedDict giving population IDs
+# &#34;&#34;&#34;Coords:
+#     key     value
+#     SampleName    Tuple(Lat, Long)
+#     popmap:
+#     PopulationName    list(SampleName,...)
+# &#34;&#34;&#34;
+def get_cluster_centroid(coords, popmap, out=None):
+    centroids = SortedDict()
+    ofh = None
+    if out:
+        ofh = out + &#34;.clusterCentroids.txt&#34;
+    log = &#34;&#34;
+    for i, pop in enumerate(list(popmap.keys())):
+        cluster = get_pop_coords_matrix(coords, popmap[pop])
+        if len(cluster) &lt; 1:
+            raise ValueError(f&#34;No coordinates in cluster: {pop}&#34;)
+
+        # add cluster to logfile (if provided)
+        log = log + &#34;Population=&#34; + str(i) + &#34;\n&#34;
+        log = log + str(cluster) + &#34;\n&#34;
+
+        # get centroid point
+        centroid = (
+            MultiPoint(cluster).centroid.x, MultiPoint(cluster).centroid.y
+        )
+        log = log + &#34;Centroid=&#34; + str(centroid) + &#34;\n&#34;
+        centroids[pop] = centroid
+
+    # write optional logfile
+    if out:
+        f = open(ofh, &#34;w&#34;)
+        f.write(log)
+        f.close()
+    return centroids
+
+
+def get_pop_coords_matrix(d, subset):
+    if not isinstance(d, dict):
+        raise TypeError(&#34;Expected &#39;d&#39; to be a dictionary&#34;)
+    if not isinstance(subset, list):
+        raise TypeError(&#34;Expected &#39;subset&#39; to be a list&#34;)
+
+    ret = []
+    for k in subset:
+        if k in d:
+            if isinstance(d[k], tuple) and len(d[k]) == 2:
+                ret.append([d[k][0], d[k][1]])
+            else:
+                raise ValueError(f&#34;Invalid coordinate format for key: {k}&#34;)
+        else:
+            raise ValueError(f&#34;Key not found in dictionary: {k}&#34;)
+
+    return np.array(ret, dtype=float).reshape(-1, 2)
+
+
+# function plots clustered coordinates given a SortedDict of coords and a
+# population map
+def plot_clustered_points(point_coords, popmap, out, centroids=None):
+    # set output file name
+    ofh = out+&#34;.clusteredPoints.pdf&#34;
+    sns.set(style=&#34;ticks&#34;)
+
+    # get 1D popmap
+    pmap = flatten_popmap(popmap)
+
+    df = pd.DataFrame(
+        [[ind, pmap[ind], point_coords[ind][0], point_coords[ind][1]]
+         for ind in point_coords], columns=[&#34;sample&#34;, &#34;pop&#34;, &#34;long&#34;, &#34;lat&#34;])
+
+    ax = sns.scatterplot(x=&#34;long&#34;, y=&#34;lat&#34;, hue=&#34;pop&#34;, palette=&#34;Set2&#34;, data=df)
+
+    # plot centroid positions if available
+    if centroids:
+        cdf = pd.DataFrame(
+            [[p, centroids[p][0], centroids[p][1]] for p in centroids],
+            columns=[&#34;pop&#34;, &#34;long&#34;, &#34;lat&#34;])
+        sns.scatterplot(
+            x=&#34;long&#34;, y=&#34;lat&#34;, hue=&#34;pop&#34;, palette=&#34;Set2&#34;, data=cdf,
+            legend=False, marker=&#34;X&#34;, ax=ax
+        )
+
+    plt.savefig(ofh)
+    plt.clf()
+
+
+def plot_histogram(dat, out):
+    &#34;&#34;&#34;
+    Plots a histogram of snap distances and saves to a PDF file.
+
+    Args:
+        dat (list): List of snap distances.
+        out (str): Output file path without extension.
+
+    Returns:
+        None
+    &#34;&#34;&#34;
+    of = f&#34;{out}.snapDistances.pdf&#34;
+    sns.set(style=&#34;ticks&#34;)
+
+    x = pd.Series(dat, name=&#34;Snap distance (km)&#34;)
+    _ = sns.displot(x, kde=True, rug=True)
+    plt.savefig(of)
+    plt.clf()
+
+
+def flatten_popmap(popmap):
+    &#34;&#34;&#34;
+    Flattens the popmap dictionary from a form of key=pop; value=list(inds) to
+    key=ind; value=pop.
+
+    Args:
+        popmap (dict): Dictionary in key=pop; value=list(inds) format.
+
+    Returns:
+        dict: Dictionary in key=ind; value=pop format.
+    &#34;&#34;&#34;
+    new_popmap = {}
+    for k, v in popmap.items():
+        for i in v:
+            new_popmap[i] = k
+    return new_popmap</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="autostreamtree.cluster_pops.coords_to_dataframe"><code class="name flex">
+<span>def <span class="ident">coords_to_dataframe</span></span>(<span>coords)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a dictionary of geographic coordinates to a Pandas DataFrame.</p>
+<p>Args:
+- coords (dict): A dictionary containing the coordinates in the format
+{id:(long, lat)}.</p>
+<p>Returns:
+- A Pandas DataFrame of coordinates with columns "long" and "lat".</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coords_to_dataframe(coords):
+    &#34;&#34;&#34;
+    Convert a dictionary of geographic coordinates to a Pandas DataFrame.
+
+    Args:
+    - coords (dict): A dictionary containing the coordinates in the format
+                     {id:(long, lat)}.
+
+    Returns:
+    - A Pandas DataFrame of coordinates with columns &#34;long&#34; and &#34;lat&#34;.
+
+    &#34;&#34;&#34;
+    df = pd.DataFrame(
+        [[coords[k][0], coords[k][1]] for k in coords],
+        index=list(coords.keys()),
+        columns=[&#34;long&#34;, &#34;lat&#34;]
+    )
+    if df.empty:
+        df = df.astype({&#39;long&#39;: &#39;float64&#39;, &#39;lat&#39;: &#39;float64&#39;})
+    return df</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.coords_to_matrix"><code class="name flex">
+<span>def <span class="ident">coords_to_matrix</span></span>(<span>coords)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert a dictionary of geographic coordinates to a NumPy array.</p>
+<p>Args:
+- coords (dict): A dictionary containing the coordinates in the format
+{id:(long, lat)}.</p>
+<p>Returns:
+- A NumPy array of coordinates in the format [[long, lat], &hellip;].</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coords_to_matrix(coords):
+    &#34;&#34;&#34;
+    Convert a dictionary of geographic coordinates to a NumPy array.
+
+    Args:
+    - coords (dict): A dictionary containing the coordinates in the format
+                     {id:(long, lat)}.
+
+    Returns:
+    - A NumPy array of coordinates in the format [[long, lat], ...].
+
+    &#34;&#34;&#34;
+    if not coords:
+        return np.array([], dtype=float).reshape(0, 2)
+
+    return pd.DataFrame(
+        [[coords[k][0], coords[k][1]] for k in coords],
+        columns=[&#34;long&#34;, &#34;lat&#34;]).to_numpy()</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.dbscan_cluster"><code class="name flex">
+<span>def <span class="ident">dbscan_cluster</span></span>(<span>coords: Dict[str, Tuple[float, float]], epsilon: float, min_samples: int, out: Optional[str] = None) -> sortedcontainers.sorteddict.SortedDict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Cluster geographic coordinates using DBSCAN algorithm.</p>
+<p>Parameters:
+coords (Dict[str, Tuple[float, float]]): A dictionary of coordinate pairs
+with the key as the location
+identifier and values as tuples of
+(latitude, longitude).
+epsilon (float): Maximum distance between two samples for them to be
+considered as in the same neighborhood.
+min_samples (int): The number of samples (or total weight) in a
+neighborhood for a point to be considered as a core
+point.
+out (Optional[str]): Output file path to save cluster labels.</p>
+<p>Returns:
+SortedDict: A sorted dictionary of cluster labels with keys as cluster name
+and values as lists of location identifiers in that cluster.</p>
+<p>Raises:
+ValueError: If any coordinate value is missing or not a float.</p>
+<p>Examples:</p>
+<pre><code class="language-python">&gt;&gt;&gt; coords = {'A': (33.4484, -112.0740), 'B': (37.7749,
+              -122.4194), 'C': (40.7128, -74.0060)}
+&gt;&gt;&gt; dbscan_cluster(coords, 300, 2)
+SortedDict({'DB_-1': ['C'], 'DB_0': ['A'], 'DB_1': ['B']})
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dbscan_cluster(coords: Dict[str, Tuple[float, float]], epsilon: float,
+                   min_samples: int, out: Optional[str] = None) -&gt; SortedDict:
+    &#34;&#34;&#34;
+    Cluster geographic coordinates using DBSCAN algorithm.
+
+    Parameters:
+    coords (Dict[str, Tuple[float, float]]): A dictionary of coordinate pairs
+                                             with the key as the location
+                                             identifier and values as tuples of
+                                             (latitude, longitude).
+    epsilon (float): Maximum distance between two samples for them to be
+                     considered as in the same neighborhood.
+    min_samples (int): The number of samples (or total weight) in a
+                       neighborhood for a point to be considered as a core
+                       point.
+    out (Optional[str]): Output file path to save cluster labels.
+
+    Returns:
+    SortedDict: A sorted dictionary of cluster labels with keys as cluster name
+                and values as lists of location identifiers in that cluster.
+
+    Raises:
+    ValueError: If any coordinate value is missing or not a float.
+
+    Examples:
+    &gt;&gt;&gt; coords = {&#39;A&#39;: (33.4484, -112.0740), &#39;B&#39;: (37.7749,
+                  -122.4194), &#39;C&#39;: (40.7128, -74.0060)}
+    &gt;&gt;&gt; dbscan_cluster(coords, 300, 2)
+    SortedDict({&#39;DB_-1&#39;: [&#39;C&#39;], &#39;DB_0&#39;: [&#39;A&#39;], &#39;DB_1&#39;: [&#39;B&#39;]})
+    &#34;&#34;&#34;
+    # Check if coordinates have correct values
+    for k, v in coords.items():
+        if not isinstance(v, tuple) or len(v) != 2:
+            raise ValueError(
+                f&#34;Coordinate value for &#39;{k}&#39; is missing or&#34;,
+                &#34;not a tuple of size 2.&#34;
+            )
+        if not all(isinstance(coord, float) for coord in v):
+            raise ValueError(
+                f&#34;Coordinate value for &#39;{k}&#39; has non-float values.&#34;
+            )
+
+    # Convert coordinates to a numpy array for clustering
+    points = np.array(list(coords.values()))
+    kms_per_radian = 6371.0088
+    eps = epsilon / kms_per_radian
+
+    # Run DBSCAN clustering
+    db = DBSCAN(
+        eps=eps, min_samples=min_samples, algorithm=&#39;ball_tree&#39;,
+        metric=&#39;haversine&#39;).fit(np.radians(points))
+
+    # Save cluster labels
+    cluster_labels = db.labels_
+
+    # Build SortedDict to return
+    popmap = SortedDict()
+    for i, k in enumerate(coords.keys()):
+        pop = &#34;DB_&#34; + str(cluster_labels[i])
+        if pop not in popmap:
+            names = [k]
+            popmap[pop] = names
+        else:
+            popmap[pop].append(k)
+
+    # Save cluster labels to file if output path provided
+    if out:
+        with open(out, &#39;w&#39;) as f:
+            for i, k in enumerate(coords.keys()):
+                f.write(f&#34;{k}\t{cluster_labels[i]}\n&#34;)
+
+    return popmap</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.flatten_popmap"><code class="name flex">
+<span>def <span class="ident">flatten_popmap</span></span>(<span>popmap)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Flattens the popmap dictionary from a form of key=pop; value=list(inds) to
+key=ind; value=pop.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>popmap</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Dictionary in key=pop; value=list(inds) format.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>dict</code></dt>
+<dd>Dictionary in key=ind; value=pop format.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def flatten_popmap(popmap):
+    &#34;&#34;&#34;
+    Flattens the popmap dictionary from a form of key=pop; value=list(inds) to
+    key=ind; value=pop.
+
+    Args:
+        popmap (dict): Dictionary in key=pop; value=list(inds) format.
+
+    Returns:
+        dict: Dictionary in key=ind; value=pop format.
+    &#34;&#34;&#34;
+    new_popmap = {}
+    for k, v in popmap.items():
+        for i in v:
+            new_popmap[i] = k
+    return new_popmap</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.get_cluster_centroid"><code class="name flex">
+<span>def <span class="ident">get_cluster_centroid</span></span>(<span>coords, popmap, out=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_cluster_centroid(coords, popmap, out=None):
+    centroids = SortedDict()
+    ofh = None
+    if out:
+        ofh = out + &#34;.clusterCentroids.txt&#34;
+    log = &#34;&#34;
+    for i, pop in enumerate(list(popmap.keys())):
+        cluster = get_pop_coords_matrix(coords, popmap[pop])
+        if len(cluster) &lt; 1:
+            raise ValueError(f&#34;No coordinates in cluster: {pop}&#34;)
+
+        # add cluster to logfile (if provided)
+        log = log + &#34;Population=&#34; + str(i) + &#34;\n&#34;
+        log = log + str(cluster) + &#34;\n&#34;
+
+        # get centroid point
+        centroid = (
+            MultiPoint(cluster).centroid.x, MultiPoint(cluster).centroid.y
+        )
+        log = log + &#34;Centroid=&#34; + str(centroid) + &#34;\n&#34;
+        centroids[pop] = centroid
+
+    # write optional logfile
+    if out:
+        f = open(ofh, &#34;w&#34;)
+        f.write(log)
+        f.close()
+    return centroids</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.get_pop_coords_matrix"><code class="name flex">
+<span>def <span class="ident">get_pop_coords_matrix</span></span>(<span>d, subset)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_pop_coords_matrix(d, subset):
+    if not isinstance(d, dict):
+        raise TypeError(&#34;Expected &#39;d&#39; to be a dictionary&#34;)
+    if not isinstance(subset, list):
+        raise TypeError(&#34;Expected &#39;subset&#39; to be a list&#34;)
+
+    ret = []
+    for k in subset:
+        if k in d:
+            if isinstance(d[k], tuple) and len(d[k]) == 2:
+                ret.append([d[k][0], d[k][1]])
+            else:
+                raise ValueError(f&#34;Invalid coordinate format for key: {k}&#34;)
+        else:
+            raise ValueError(f&#34;Key not found in dictionary: {k}&#34;)
+
+    return np.array(ret, dtype=float).reshape(-1, 2)</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.plot_clustered_points"><code class="name flex">
+<span>def <span class="ident">plot_clustered_points</span></span>(<span>point_coords, popmap, out, centroids=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_clustered_points(point_coords, popmap, out, centroids=None):
+    # set output file name
+    ofh = out+&#34;.clusteredPoints.pdf&#34;
+    sns.set(style=&#34;ticks&#34;)
+
+    # get 1D popmap
+    pmap = flatten_popmap(popmap)
+
+    df = pd.DataFrame(
+        [[ind, pmap[ind], point_coords[ind][0], point_coords[ind][1]]
+         for ind in point_coords], columns=[&#34;sample&#34;, &#34;pop&#34;, &#34;long&#34;, &#34;lat&#34;])
+
+    ax = sns.scatterplot(x=&#34;long&#34;, y=&#34;lat&#34;, hue=&#34;pop&#34;, palette=&#34;Set2&#34;, data=df)
+
+    # plot centroid positions if available
+    if centroids:
+        cdf = pd.DataFrame(
+            [[p, centroids[p][0], centroids[p][1]] for p in centroids],
+            columns=[&#34;pop&#34;, &#34;long&#34;, &#34;lat&#34;])
+        sns.scatterplot(
+            x=&#34;long&#34;, y=&#34;lat&#34;, hue=&#34;pop&#34;, palette=&#34;Set2&#34;, data=cdf,
+            legend=False, marker=&#34;X&#34;, ax=ax
+        )
+
+    plt.savefig(ofh)
+    plt.clf()</code></pre>
+</details>
+</dd>
+<dt id="autostreamtree.cluster_pops.plot_histogram"><code class="name flex">
+<span>def <span class="ident">plot_histogram</span></span>(<span>dat, out)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plots a histogram of snap distances and saves to a PDF file.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>dat</code></strong> :&ensp;<code>list</code></dt>
+<dd>List of snap distances.</dd>
+<dt><strong><code>out</code></strong> :&ensp;<code>str</code></dt>
+<dd>Output file path without extension.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>None</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_histogram(dat, out):
+    &#34;&#34;&#34;
+    Plots a histogram of snap distances and saves to a PDF file.
+
+    Args:
+        dat (list): List of snap distances.
+        out (str): Output file path without extension.
+
+    Returns:
+        None
+    &#34;&#34;&#34;
+    of = f&#34;{out}.snapDistances.pdf&#34;
+    sns.set(style=&#34;ticks&#34;)
+
+    x = pd.Series(dat, name=&#34;Snap distance (km)&#34;)
+    _ = sns.displot(x, kde=True, rug=True)
+    plt.savefig(of)
+    plt.clf()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="autostreamtree" href="index.html">autostreamtree</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="autostreamtree.cluster_pops.coords_to_dataframe" href="#autostreamtree.cluster_pops.coords_to_dataframe">coords_to_dataframe</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.coords_to_matrix" href="#autostreamtree.cluster_pops.coords_to_matrix">coords_to_matrix</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.dbscan_cluster" href="#autostreamtree.cluster_pops.dbscan_cluster">dbscan_cluster</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.flatten_popmap" href="#autostreamtree.cluster_pops.flatten_popmap">flatten_popmap</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.get_cluster_centroid" href="#autostreamtree.cluster_pops.get_cluster_centroid">get_cluster_centroid</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.get_pop_coords_matrix" href="#autostreamtree.cluster_pops.get_pop_coords_matrix">get_pop_coords_matrix</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.plot_clustered_points" href="#autostreamtree.cluster_pops.plot_clustered_points">plot_clustered_points</a></code></li>
+<li><code><a title="autostreamtree.cluster_pops.plot_histogram" href="#autostreamtree.cluster_pops.plot_histogram">plot_histogram</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
