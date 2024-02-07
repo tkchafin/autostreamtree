@@ -39,7 +39,7 @@ jobs:
       - name: Build Conda Package
         shell: bash -l {0}
         run: |
-          conda install conda-build anaconda-client conda-verify
+          conda install conda-build anaconda-client
           conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda
 
       - name: Upload Conda Package to Anaconda Cloud
@@ -53,21 +53,20 @@ jobs:
     needs: build-and-upload-conda
     runs-on: ubuntu-latest
     steps:
-      - name: Check Out Repo
-        uses: actions/checkout@v2
+    - name: Check Out Repo
+      uses: actions/checkout@v2
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./docker/Dockerfile
-          push: true
-          tags: |
-            tkchafin/autostreamtree:latest
-            tkchafin/autostreamtree:${{ env.VERSION }}  # Use stripped version
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: true
+        tags: tkchafin/autostreamtree:latest,tkchafin/autostreamtree:${{ env.VERSION }}
+
