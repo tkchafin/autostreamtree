@@ -35,7 +35,7 @@ jobs:
       - name: Install Dependencies
         shell: bash -l {0} 
         run: |
-          conda install conda-build>=24.1.0 anaconda-client conda-verify
+          conda install -y conda-build>=24.1.0 anaconda-client conda-verify
 
       - name: Build Conda Package
         shell: bash -l {0} 
