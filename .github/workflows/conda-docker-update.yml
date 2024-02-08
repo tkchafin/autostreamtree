@@ -35,7 +35,7 @@ jobs:
       - name: Build Conda Package
         shell: bash
         run: |
-          conda install conda-build anaconda-client conda-verify
+          conda install conda-build>=24.1.0 anaconda-client conda-verify
           conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda 
 
       - name: Upload Conda Package to Anaconda Cloud
