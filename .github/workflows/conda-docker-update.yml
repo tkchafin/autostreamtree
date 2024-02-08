@@ -33,13 +33,13 @@ jobs:
           miniconda-version: latest
 
       - name: Build Conda Package
-        shell: bash -l {0}
+        shell: bash
         run: |
           conda install conda-build anaconda-client conda-verify
           conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda 
 
       - name: Upload Conda Package to Anaconda Cloud
-        shell: bash -l {0}
+        shell: bash
         env:
           ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
