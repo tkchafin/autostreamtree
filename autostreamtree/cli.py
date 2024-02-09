@@ -181,8 +181,8 @@ def main():
             print("Fitting StreamTree distances on per-locus matrices...")
             Rlist = list()
             ast.block_print()
-            for gen in genlist:
-                r = ast.fit_least_squares_distances(gen, inc.astype(int),
+            for locgen in genlist:
+                r = ast.fit_least_squares_distances(locgen, inc.astype(int),
                                                     params.iterative,
                                                     params.out, params.weight)
                 Rlist.append(r)
