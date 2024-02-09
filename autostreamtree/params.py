@@ -155,9 +155,6 @@ class parseArgs():
                 self.overwrite = True
             elif opt == "perm":
                 self.permutations = int(arg)
-            elif opt == "method":
-                print("Sorry: Option --method is not yet implemented.")
-                sys.exit(0)
             elif opt in ("plot", "plots"):
                 self.plots = True
             elif opt == "phased":
