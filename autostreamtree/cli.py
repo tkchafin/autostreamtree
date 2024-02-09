@@ -294,8 +294,8 @@ def main():
         if params.run == "RUNLOCI":
             geoDF = geoDF.merge(sdD, on='EDGE_ID')
             geoDF.plot(column="stdevD", cmap="RdYlGn_r", legend=True)
-            plt.title("Stream network colored by standard deviation of",
-                      "StreamTree fitted distances")
+            plt.title("Stream network colored by standard deviation of"+
+                      " StreamTree fitted distances")
             plt.savefig((str(params.out)+".streamsBystdevD.pdf"))
         geoDF.plot(column="fittedD", cmap="RdYlGn_r", legend=True)
         plt.title("Stream network colored by StreamTree fitted distances")
