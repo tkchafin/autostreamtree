@@ -96,7 +96,7 @@ def main():
 
         ast.report_genmats_list(params, genlist, popgenlist, point_coords,
                                 pop_coords)
-
+        ast.report_genmats(params, gen, pop_gen, point_coords, pop_coords)
     # Step 4: Constructing a minimal subgraph
 
     # Extract subgraph if needed
