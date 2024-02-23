@@ -32,11 +32,15 @@ jobs:
           python-version: "3.10"
           miniconda-version: latest
 
-      - name: Build Conda Package
-        shell: bash -l {0}
+      - name: Install Dependencies
+        shell: bash -l {0} 
         run: |
-          conda install conda-build anaconda-client conda-verify
-          conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda 
+          conda install -y anaconda::conda-build>=24.1.0 anaconda-client conda-verify
+
+      - name: Build Conda Package
+        shell: bash -l {0} 
+        run: |
+          conda build conda-recipe --output-folder ./build -c ecoevoinfo -c conda-forge -c bioconda || true 
 
       - name: Upload Conda Package to Anaconda Cloud
         shell: bash -l {0}

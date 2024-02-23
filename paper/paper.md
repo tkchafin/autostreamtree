@@ -61,7 +61,7 @@ Users may also provide pre-computed genetic distance matrices either directly at
 
 ## Empirical case study
 
-To demonstrate autoStreamTree, we employed existing SNP data for Speckled Dace (*Rhinichthys osculus*)[@Mussmann2018]. Data represent 13,219 SNPs from N=762 individuals across 78 localities in the Colorado River ecosystem.
+To demonstrate autoStreamTree, we employed existing SNP data for Speckled Dace (*Rhinichthys osculus*)[@Mussmann2018]. Data represent 5,742 SNPs from N=762 individuals across 78 localities in the Colorado River ecosystem, after removing those with >=50% missing data or minor allele frequency (MAF) < 0.1.
 
 Stream networks were parsed directly as a minimal sub-graph from RiverATLAS, which contains various local-scale environmental/ hydrological features as annotations (i.e., physiography, climate, land-cover, geology, anthropogenic effects) [@Linke2019]. Genetic distances were computed globally and per-locus among sites as linearized *F*~ST~ [@Weir1984] (=*F*~ST~/1-*F*~ST~). To compare with @Kalinowski2008, we used unweighted least-squares, iterative negative distance correction, and replicated analyses using linearized *F*~ST~ independently recalculated in Adegenet [@Jombart2008].
 

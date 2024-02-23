@@ -96,7 +96,7 @@ def main():
 
         ast.report_genmats_list(params, genlist, popgenlist, point_coords,
                                 pop_coords)
-
+        ast.report_genmats(params, gen, pop_gen, point_coords, pop_coords)
     # Step 4: Constructing a minimal subgraph
 
     # Extract subgraph if needed
@@ -181,8 +181,8 @@ def main():
             print("Fitting StreamTree distances on per-locus matrices...")
             Rlist = list()
             ast.block_print()
-            for gen in genlist:
-                r = ast.fit_least_squares_distances(gen, inc.astype(int),
+            for locgen in genlist:
+                r = ast.fit_least_squares_distances(locgen, inc.astype(int),
                                                     params.iterative,
                                                     params.out, params.weight)
                 Rlist.append(r)
@@ -300,8 +300,8 @@ def main():
         if params.run == "RUNLOCI":
             geoDF = geoDF.merge(sdD, on='EDGE_ID')
             geoDF.plot(column="stdevD", cmap="RdYlGn_r", legend=True)
-            plt.title("Stream network colored by standard deviation of",
-                      "StreamTree fitted distances")
+            plt.title("Stream network colored by standard deviation of"+
+                      " StreamTree fitted distances")
             plt.savefig((str(params.out)+".streamsBystdevD.pdf"))
         geoDF.plot(column="fittedD", cmap="RdYlGn_r", legend=True)
         plt.title("Stream network colored by StreamTree fitted distances")
