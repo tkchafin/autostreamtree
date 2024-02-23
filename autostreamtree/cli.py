@@ -276,11 +276,17 @@ def main():
         if params.run == "RUNLOCI":
             fittedD = pd.DataFrame({'EDGE_ID': list(edges), 'fittedD': R})
             sdD = pd.DataFrame({'EDGE_ID': list(edges), 'stdevD': sdR})
+
+            # Initialize an empty dictionary to collect DataFrames
+            additional_columns = {}
             i = 1
             for locfit in Rlist:
                 name = "locD_" + str(i)
-                fittedD[name] = locfit
+                additional_columns[name] = locfit
                 i += 1
+
+            additional_columns_df = pd.DataFrame(additional_columns)
+            fittedD = pd.concat([fittedD, additional_columns_df], axis=1)
         else:
             fittedD = pd.DataFrame({'EDGE_ID': list(edges), 'fittedD': R})
         geoDF['EDGE_ID'] = geoDF['EDGE_ID'].astype(int)
