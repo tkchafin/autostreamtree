@@ -302,10 +302,10 @@ def main():
             geoDF.plot(column="stdevD", cmap="RdYlGn_r", legend=True)
             plt.title("Stream network colored by standard deviation of"+
                       " StreamTree fitted distances")
-            plt.savefig((str(params.out)+".streamsBystdevD.pdf"))
+            plt.savefig((str(params.out) + ".streamsBystdevD.pdf"))
         geoDF.plot(column="fittedD", cmap="RdYlGn_r", legend=True)
         plt.title("Stream network colored by StreamTree fitted distances")
-        plt.savefig((str(params.out)+".streamsByFittedD.pdf"))
+        plt.savefig((str(params.out) + ".streamsByFittedD.pdf"))
 
         # output a final annotated stream network layer
         geoDF.to_csv((str(params.out)+".streamTree.txt"), sep="\t",
