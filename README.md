@@ -388,7 +388,7 @@ This will produce a number of output text files and plots using the prefix provi
 
 `autoStreamTree` is designed to aid in the downstream analysis of genetic differentiation, adaptation, and ecological aspects of aquatic species, although it is versatile enough to be applicable to any dataset structured as a network. 
 
-A key use case involves the examination of locus-wise genetic distances across network segments. This is efficiently done by importing the out.streamTree.tsv file, which is an output of autoStreamTree using the `-r LOC` option, into R or a similar analytical platform. Moreover, if autoStreamTree is run with an annotated geodatabase, such as HydroRIVERS, the resultant fitted distances are enriched with additional attributes. These attributes are particularly useful in conducting in-depth analyses to understand how environmental covariates influence genetic patterns, for instance, through methods like redundancy analysis. This multifaceted approach makes autoStreamTree a robust tool for exploring and interpreting complex genetic and ecological data in aquatic species.
+A key use case involves the examination of locus-wise genetic distances across network segments. This is efficiently done by importing the geodatabase output of autoStreamTree using the `-r LOC` option into R or a similar analytical platform. An example of analysing variation among fitted locus-wise distances as a function of environmental variables included in the HydroATLAS dataset is provided as a [`NextFlow`](https://www.nextflow.io) pipeline, using forward-selection to reduce features and redundancy analysis (RDA) implemented in [ecopy](https://github.com/Auerilas/ecopy), can be found [here](https://osf.io/9bkgr/).
 
 ### Utility scripts <a name="utils"></a>
 
@@ -442,7 +442,7 @@ All utilities from `autoStreamTree` are intended to be easy to run within an aut
 
 For example, in the `run_spd.smk` file, you will find an example of fitting distances for regional subsets of samples for an empirical ddRADseq dataset, and then performing downstream environmental resistance modelling on each using [`ResistNet`](https://github.com/tkchafin/resistnet)
 
-We hope to provide some more `SnakeMake` example pipelines soon!
+
 ## 5. References <a name="ast_refs"></a>
 ### Citations for autoStreamTree methods
 Below is a full list of citations for the various methods used. Apologies to anyone I missed - please let me know if you notice any discrepancies.
