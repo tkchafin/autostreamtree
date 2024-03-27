@@ -21,11 +21,11 @@ authors:
     orcid: 0000-0001-9670-7825
     affiliation: 3  
 affiliations:
-  - name: Biomathematics and Statistics Scotland, Edinburgh, UK 
+  - name: Biomathematics and Statistics Scotland, Edinburgh, United Kingdom
     index: 1
-  - name: (current address) Abernathy Fish Technology Center, U.S. Fish & Wildlife Service, Longview, WA, USA 
+  - name: (current address) Abernathy Fish Technology Center, U.S. Fish & Wildlife Service, Longview, WA, United States of America
     index: 2
-  - name: Department of Biological Sciences, University of Arkansas, Fayetteville, AR, USA 
+  - name: Department of Biological Sciences, University of Arkansas, Fayetteville, AR, United States of America
     index: 3
 date: 3 November 2023
 bibliography: paper.bib
