@@ -28,7 +28,7 @@ setup(
         "momepy",
         "scipy",
         "scikit-learn",
-        "mantel",
+        "mantel>=2.2.1",
         "pysam",
         "sortedcontainers"
     ],

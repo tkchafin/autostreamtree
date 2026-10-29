@@ -19,7 +19,7 @@ dependencies:
   - sortedcontainers
   - momepy
   - networkx >3
-  - mantel
+  - mantel >=2.2.1
   - pysam
   - pdoc3
   - scikit-learn >1
