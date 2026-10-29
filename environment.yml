@@ -19,7 +19,9 @@ dependencies:
   - sortedcontainers
   - momepy
   - networkx >3
-  - mantel >=2.2.1
+  # mantel >= 2.2.1 is needed with numpy 2 (setup.py requires it); the
+  # ecoevoinfo channel has 2.2.0
+  - mantel
   - pysam
   - pdoc3
   - scikit-learn >1
