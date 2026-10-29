@@ -1071,6 +1071,25 @@ def vectorize_mat(mat):
     return vec
 
 
+def river_length(len_col):
+    """
+    Edge weight for shortest paths along the river: each edge's length
+    (len_col). On a network without loops (e.g. HydroRIVERS) the path
+    between two nodes is unique; with loops (braided channels, canals), the
+    shortest path by river length is used. (The weight was the inverse of
+    the length, which picked the route through the longest edges.)
+
+    Args:
+        len_col (str): Attribute giving each edge's length.
+
+    Returns:
+        callable: The weight function, for networkx.
+    """
+    def weight(u, v, attributes):
+        return float(attributes[len_col])
+    return weight
+
+
 def get_stream_mats(points, graph, len_col):
     """
     Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
@@ -1093,18 +1112,11 @@ def get_stream_mats(points, graph, len_col):
     # Establish as NaN
     dist[:] = np.nan
 
-    def dijkstra_weight(left, right, attributes):
-        # Calculates weights for Dijkstra's shortest path algorithm by
-        # inverting the edge length with a small constant to avoid division by
-        # zero.
-        epsilon = 1e-9
-        return 1 / (attributes[len_col] + epsilon)
-
     index = 0
     for ia, ib in itertools.combinations(range(0, len(points)), 2):
         path = nx.bidirectional_dijkstra(graph, points.values()[ia],
                                          points.values()[ib],
-                                         weight=dijkstra_weight)
+                                         weight=river_length(len_col))
         if path:
             dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1],
                                                           len_col)))
@@ -1189,19 +1201,12 @@ def path_subgraph(graph, nodes, method, id_col, len_col):
     """
     k = nx.Graph()
 
-    def dijkstra_weight(left, right, attributes):
-        # Calculates weights for Dijkstra's shortest path algorithm by
-        # inverting the edge length with a small constant to avoid division by
-        # zero.
-        epsilon = 1e-9
-        return 1 / (attributes[len_col] + epsilon)
-
     p1 = list(nodes.values())[0]
     for p2 in list(nodes.values())[1:]:
         try:
             # Find the shortest path between the two points
             path = nx.bidirectional_dijkstra(graph, p1, p2,
-                                             weight=dijkstra_weight)
+                                             weight=river_length(len_col))
 
             # Traverse the nodes in the path to build a minimal set of edges
             method(k, graph, nodes.values(), id_col, len_col, path[1])

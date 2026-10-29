@@ -592,3 +592,21 @@ def test_read_network_multipart(shapefile_path, tmp_path):
         {multi["HYRIV_ID"].iloc[0]}
     ends = {tuple(p.coords[i])[:2] for p in parts for i in (0, -1)}
     assert {n[:2] for n in G.nodes()} == ends
+
+
+def test_paths_follow_river_length():
+    # With a loop (two routes from a to b: 1 km in two reaches, or one
+    # 10 km reach), paths and stream distances follow the shorter route
+    G = nx.Graph()
+    G.add_edge("a", "x", LENGTH_KM=0.5, EDGE_ID=1)
+    G.add_edge("x", "b", LENGTH_KM=0.5, EDGE_ID=2)
+    G.add_edge("a", "b", LENGTH_KM=10.0, EDGE_ID=3)
+    points = SortedDict({0: "a", 1: "b"})
+    dist, inc = funcs.get_stream_mats(points, G, "LENGTH_KM")
+    assert dist[0, 1] == pytest.approx(1.0)
+    on = {d["EDGE_ID"] for (u, v, d), used in
+          zip(G.edges(data=True), inc[0]) if used}
+    assert on == {1, 2}
+    k = funcs.path_subgraph(G, points, funcs.extract_full_subgraph,
+                            "EDGE_ID", "LENGTH_KM")
+    assert {d["EDGE_ID"] for _, _, d in k.edges(data=True)} == {1, 2}
