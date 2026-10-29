@@ -173,7 +173,7 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
         else:
             raise ValueError(f"Unsupported distance option {dist}")
     np.fill_diagonal(genmat, 0.0)
-    if 0.0 in genmat:
+    if (genmat < 0.0).any():
         print("WARNING: Coercing negative distances to 0.0")
         genmat[genmat < 0.0] = 0.0
     return genmat
