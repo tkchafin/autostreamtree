@@ -148,18 +148,53 @@ def prune_graph(G, edge_list, reachid_col):
     return pruned_G
 
 
-def read_network(network, shapefile):
+def _reach_ids(edge_list, reachid_col):
+    """
+    The reach IDs of an edge list (a DataFrame with reachid_col, or any
+    iterable of IDs) as a list, without missing values; None if no edge
+    list.
+    """
+    if edge_list is None:
+        return None
+    if isinstance(edge_list, pd.DataFrame):
+        if reachid_col not in edge_list.columns:
+            raise ValueError(f"{reachid_col} not found in the edge list")
+        return edge_list[reachid_col].dropna().tolist()
+    return pd.Series(list(edge_list)).dropna().tolist()
+
+
+def _where_in(col, ids):
+    """An OGR SQL filter selecting the features whose col is in ids."""
+    if all(isinstance(x, (int, float, np.integer, np.floating))
+           and not isinstance(x, bool) for x in ids):
+        values = ",".join(str(x) for x in ids)
+    else:
+        values = ",".join("'" + str(x).replace("'", "''") + "'"
+                          for x in ids)
+    return f"{col} IN ({values})"
+
+
+def read_network(network, shapefile, reachid_col="HYRIV_ID",
+                 edge_list=None):
     """
     Reads a network from a saved file or builds a network from a shapefile.
 
     Args:
         network: Path to the saved network file (pickle format). If provided,
                   the function will read the network from this file.
-        shapefile: Path to the shapefile to build the network from. This is
-                   used if the `network` parameter is not provided.
+        shapefile: Path to the shapefile (or other vector file) to build the
+                   network from. This is used if the `network` parameter is
+                   not provided.
+        reachid_col: Attribute giving each reach's ID.
+        edge_list: Optional reaches to keep (a DataFrame with reachid_col, or
+                   an iterable of IDs). From a shapefile, only these reaches
+                   are read; a saved network is pruned to them (see
+                   prune_graph()).
+
     Returns:
         A NetworkX Graph object representing the network.
     """
+    ids = _reach_ids(edge_list, reachid_col)
 
     # Check if a saved network file is provided
     if network:
@@ -168,19 +203,47 @@ def read_network(network, shapefile):
         # graph
         with open(network, 'rb') as f:
             G = nx.Graph(pickle.load(f)).to_undirected()
-    else:
-        # If no saved network file is provided, build the network from the
-        # shapefile
-        print("Building network from shapefile:", shapefile)
-        print("WARNING: This can take a while with very large files!")
-        # Read the shapefile
-        # rivers = gpd.read_file(shapefile)
-        rivers = pyogrio.read_dataframe(shapefile)
-        # print(rivers.head())
-        # Convert the GeoDataFrame to a NetworkX Graph object
-        G = momepy.gdf_to_nx(rivers, approach="primal", directed=False,
-                             multigraph=False)
+        if ids is not None:
+            G = prune_graph(G, ids, reachid_col)
+        return G
 
+    # If no saved network file is provided, build the network from the
+    # shapefile
+    print("Building network from shapefile:", shapefile)
+    print("WARNING: This can take a while with very large files!")
+    if ids is None:
+        rivers = pyogrio.read_dataframe(shapefile)
+    elif not ids:
+        raise ValueError("The edge list has no reach IDs")
+    else:
+        # Read only the listed reaches; if the filter fails or matches
+        # nothing (e.g. IDs stored as text), read all and filter here
+        rivers = None
+        try:
+            rivers = pyogrio.read_dataframe(
+                shapefile, where=_where_in(reachid_col, ids))
+        except Exception as e:
+            print(f"WARNING: filtering reaches while reading failed ({e}); "
+                  "reading all of them instead")
+        if rivers is None or rivers.empty:
+            rivers = pyogrio.read_dataframe(shapefile)
+            if reachid_col not in rivers.columns:
+                raise ValueError(
+                    f"{reachid_col} not found in the shapefile attributes")
+            keep = pd.Series(ids)
+            try:
+                keep = keep.astype(rivers[reachid_col].dtype)
+            except (TypeError, ValueError):
+                rivers[reachid_col] = rivers[reachid_col].astype(str)
+                keep = keep.astype(str)
+            rivers = rivers[rivers[reachid_col].isin(keep)]
+        if rivers.empty:
+            raise ValueError(
+                "None of the reaches in the edge list are in the shapefile")
+    # Convert the GeoDataFrame to a NetworkX Graph object; multi-part
+    # reaches are split into their parts (momepy needs single lines)
+    G = momepy.gdf_to_nx(rivers.explode(index_parts=False),
+                         approach="primal", directed=False, multigraph=False)
     return G
 
 
