@@ -34,7 +34,10 @@ def get_pop_genmat(dist, indmat, popmap, dat, seqs, pop_agg="ARITH",
         elif dist == "JOST" or dist == "HARMD":
             # Arrays to store Hs, Ht, and D for each locus
             hs_vals, ht_vals, d_vals = [], [], []
-            gn = len(popmap)
+            # Jost's (2008) n: the subpopulations compared, two per pair (it
+            # was all populations, so pairwise D was underestimated when
+            # there were more than two)
+            gn = 2
 
             for loc in range(0, len(seqs[popmap.values()[ia][-1]])):
                 seqs1 = get_alleles(
@@ -567,11 +570,13 @@ def two_pop_weir_cockerham_fst(s1, s2):
     r = 2.0  # number of pops
     n1 = float(len(s1))  # pop size of pop 1
     n2 = float(len(s2))  # pop size of pop 2
-    csd = np.std([n1, n2])
-    cm = np.mean([n1, n2])
-    nbar = cm
-    csquare = (csd*csd) / (cm*cm)
-    nC = nbar * (1.0 - (csquare/r))  # coeff of pop size variance
+    nbar = (n1 + n2) / r  # mean sample size
+    # Weir & Cockerham's (1984) n_c: (r nbar - sum(n_i^2) / (r nbar)) /
+    # (r - 1), i.e. nbar (1 - C^2 / r) with C^2 the squared coefficient of
+    # variation of sample sizes using (r - 1); an SD with r in the
+    # denominator halved the correction, so theta was underestimated for
+    # populations of unequal sizes
+    nC = (r * nbar - (n1 * n1 + n2 * n2) / (r * nbar)) / (r - 1.0)
     for allele in uniques:
         ac1 = float(alleles1.count(allele))
         ac2 = float(alleles2.count(allele))
@@ -624,8 +629,10 @@ def two_pop_jost_d(seqs1, seqs2, global_het=False):
     else:
         Ht = get_average_het(seqs1, seqs2)
     Hs = np.mean([get_global_het(seqs1), get_global_het(seqs2)])
-    n = len(seqs1 + seqs2)
-    D = (Ht - Hs) / (1 - Hs) * (n / (n - 1))
+    # Jost (2008, eq. 12): n is the number of subpopulations, here 2 (it
+    # was the number of alleles, so D was underestimated)
+    n = 2.0
+    D = (Ht - Hs) / (1 - Hs) * (n / (n - 1)) if Hs < 1 else 0.0
     return Hs, Ht, D
 
 
