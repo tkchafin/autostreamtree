@@ -539,3 +539,74 @@ def test_replace_zeroes():
     data_all_zeroes = np.array([0, 0, 0])
     with pytest.raises(ValueError):
         _ = funcs.replace_zeroes(data_all_zeroes)
+
+
+def _graph_signature(G, col):
+    return (set(G.nodes()),
+            {frozenset((u, v)): d[col] for u, v, d in G.edges(data=True)})
+
+
+def test_read_network_edge_list(shapefile_path, tmp_path):
+    # Reading only the reaches of an edge list gives the same graph as
+    # reading all of them and pruning to the list
+    full = funcs.read_network(network=None, shapefile=shapefile_path)
+    ids = sorted({d["HYRIV_ID"] for _, _, d in full.edges(data=True)})[::3]
+    pruned = funcs.prune_graph(full, ids, "HYRIV_ID")
+    read = funcs.read_network(None, shapefile_path, "HYRIV_ID", ids)
+    assert _graph_signature(read, "HYRIV_ID") == \
+        _graph_signature(pruned, "HYRIV_ID")
+    # As a DataFrame too
+    read_df = funcs.read_network(None, shapefile_path, "HYRIV_ID",
+                                 pd.DataFrame({"HYRIV_ID": ids}))
+    assert _graph_signature(read_df, "HYRIV_ID") == \
+        _graph_signature(pruned, "HYRIV_ID")
+    # A saved network is pruned to the edge list as well
+    path = tmp_path / "full.network"
+    with open(path, "wb") as fh:
+        pickle.dump(full, fh)
+    saved = funcs.read_network(str(path), None, "HYRIV_ID", ids)
+    assert _graph_signature(saved, "HYRIV_ID") == \
+        _graph_signature(pruned, "HYRIV_ID")
+    # IDs given as text, for a numeric attribute: filtered after reading
+    read_txt = funcs.read_network(None, shapefile_path, "HYRIV_ID",
+                                  [str(i) for i in ids])
+    assert _graph_signature(read_txt, "HYRIV_ID") == \
+        _graph_signature(pruned, "HYRIV_ID")
+    with pytest.raises(ValueError):
+        funcs.read_network(None, shapefile_path, "HYRIV_ID", [-1])
+
+
+def test_read_network_multipart(shapefile_path, tmp_path):
+    # A multi-part reach is split into its parts, each an edge with the
+    # reach's attributes
+    from shapely.geometry import MultiLineString
+    gdf = gpd.read_file(shapefile_path).iloc[:2].copy()
+    parts = list(gdf.geometry)
+    multi = gdf.iloc[:1].copy()
+    multi["geometry"] = [MultiLineString(parts)]
+    path = tmp_path / "multi.gpkg"
+    multi.to_file(path, driver="GPKG")
+    G = funcs.read_network(None, str(path))
+    assert G.number_of_edges() == 2
+    assert {d["HYRIV_ID"] for _, _, d in G.edges(data=True)} == \
+        {multi["HYRIV_ID"].iloc[0]}
+    ends = {tuple(p.coords[i])[:2] for p in parts for i in (0, -1)}
+    assert {n[:2] for n in G.nodes()} == ends
+
+
+def test_paths_follow_river_length():
+    # With a loop (two routes from a to b: 1 km in two reaches, or one
+    # 10 km reach), paths and stream distances follow the shorter route
+    G = nx.Graph()
+    G.add_edge("a", "x", LENGTH_KM=0.5, EDGE_ID=1)
+    G.add_edge("x", "b", LENGTH_KM=0.5, EDGE_ID=2)
+    G.add_edge("a", "b", LENGTH_KM=10.0, EDGE_ID=3)
+    points = SortedDict({0: "a", 1: "b"})
+    dist, inc = funcs.get_stream_mats(points, G, "LENGTH_KM")
+    assert dist[0, 1] == pytest.approx(1.0)
+    on = {d["EDGE_ID"] for (u, v, d), used in
+          zip(G.edges(data=True), inc[0]) if used}
+    assert on == {1, 2}
+    k = funcs.path_subgraph(G, points, funcs.extract_full_subgraph,
+                            "EDGE_ID", "LENGTH_KM")
+    assert {d["EDGE_ID"] for _, _, d in k.edges(data=True)} == {1, 2}

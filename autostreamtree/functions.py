@@ -1,11 +1,7 @@
 import sys
 import os
 import itertools
-import traceback
-import math
-import momepy
 import warnings
-import pyogrio
 import pandas as pd
 import numpy as np
 import networkx as nx
@@ -13,7 +9,6 @@ import seaborn as sns
 from pysam import VariantFile
 from scipy import stats
 from sortedcontainers import SortedDict
-from networkx import NodeNotFound
 import matplotlib.pyplot as plt
 import pickle
 import mantel
@@ -23,6 +18,10 @@ from math import radians, sin, cos, acos
 import autostreamtree.cluster_pops as clust
 import autostreamtree.sequence as seq
 import autostreamtree.genetic_distances as gendist
+from autostreamtree.network import (  # noqa: F401
+    prune_graph, read_network, river_length, get_stream_mats, find_pair, nCr,
+    path_edge_attributes, path_subgraph, extract_full_subgraph,
+    extract_minimal_subgraph, snap_to_node)
 
 
 # suppress irrelevant warning from momepy
@@ -109,79 +108,6 @@ def read_vcf(vcf, concat="none", popmap=None):
         elif len(dat[sample]) == 1 and dat[sample][0][0] == "":
             del dat[sample]
     return dat
-
-
-def prune_graph(G, edge_list, reachid_col):
-    """
-    Prunes a graph to only retain edges whose 'reachid_col' matches values in
-    'edge_list'.
-
-    Args:
-        G: The input NetworkX Graph.
-        edge_list: A list of values to filter edges.
-        reachid_col: The edge attribute to be checked against 'edge_list'.
-
-    Returns:
-        A pruned NetworkX Graph.
-    """
-    for u, v in G.edges():
-        _ = G.get_edge_data(u, v)
-        # print(f"Edge ({u}, {v}): {data}")
-    # Get edges to be retained using get_edge_data method
-    edges_to_keep = [(u, v) for u, v in G.edges() if
-                     G.get_edge_data(u, v).get(reachid_col) in edge_list]
-
-    # Check if there are no edges to keep
-    if not edges_to_keep:
-        raise ValueError(
-            "There are no edges to retain based on the given edge",
-            "list and attribute."
-        )
-
-    # Create a new graph with only the edges to be retained
-    pruned_G = G.edge_subgraph(edges_to_keep).copy()
-
-    # Remove isolated nodes
-    isolated_nodes = list(nx.isolates(pruned_G))
-    pruned_G.remove_nodes_from(isolated_nodes)
-
-    return pruned_G
-
-
-def read_network(network, shapefile):
-    """
-    Reads a network from a saved file or builds a network from a shapefile.
-
-    Args:
-        network: Path to the saved network file (pickle format). If provided,
-                  the function will read the network from this file.
-        shapefile: Path to the shapefile to build the network from. This is
-                   used if the `network` parameter is not provided.
-    Returns:
-        A NetworkX Graph object representing the network.
-    """
-
-    # Check if a saved network file is provided
-    if network:
-        print("Reading network from saved file: ", network)
-        # Read the network from the saved file and convert it to an undirected
-        # graph
-        with open(network, 'rb') as f:
-            G = nx.Graph(pickle.load(f)).to_undirected()
-    else:
-        # If no saved network file is provided, build the network from the
-        # shapefile
-        print("Building network from shapefile:", shapefile)
-        print("WARNING: This can take a while with very large files!")
-        # Read the shapefile
-        # rivers = gpd.read_file(shapefile)
-        rivers = pyogrio.read_dataframe(shapefile)
-        # print(rivers.head())
-        # Convert the GeoDataFrame to a NetworkX Graph object
-        G = momepy.gdf_to_nx(rivers, approach="primal", directed=False,
-                             multigraph=False)
-
-    return G
 
 
 def parse_subgraph_from_points(params, point_coords, pop_coords, G):
@@ -1006,240 +932,6 @@ def vectorize_mat(mat):
         index += 1
 
     return vec
-
-
-def get_stream_mats(points, graph, len_col):
-    """
-    Computes pairwise stream distances and 0/1 incidence matrix for StreamTree
-    calculations.
-
-    Args:
-        points (dict): Dictionary of point indices and their corresponding node
-                       IDs in the graph.
-        graph (networkx.Graph): NetworkX graph object representing the stream
-                                network.
-        len_col (str): Attribute name for the length of the edges in the graph.
-
-    Returns:
-        tuple: Pair of numpy.ndarray representing the pairwise stream distance
-               matrix and incidence matrix.
-    """
-    dist = np.zeros((len(points), len(points)))
-    inc = np.zeros((nCr(len(points), 2), len(graph.edges())), dtype=int)
-
-    # Establish as NaN
-    dist[:] = np.nan
-
-    def dijkstra_weight(left, right, attributes):
-        # Calculates weights for Dijkstra's shortest path algorithm by
-        # inverting the edge length with a small constant to avoid division by
-        # zero.
-        epsilon = 1e-9
-        return 1 / (attributes[len_col] + epsilon)
-
-    index = 0
-    for ia, ib in itertools.combinations(range(0, len(points)), 2):
-        path = nx.bidirectional_dijkstra(graph, points.values()[ia],
-                                         points.values()[ib],
-                                         weight=dijkstra_weight)
-        if path:
-            dist[ia, ib] = float(sum(path_edge_attributes(graph, path[1],
-                                                          len_col)))
-            dist[ib, ia] = dist[ia, ib]
-
-        # Incidence matrix: assign 1 if edge is in the path, 0 otherwise
-        for ie, edge in enumerate(graph.edges()):
-            if find_pair(path[1], edge[0], edge[1]):
-                inc[index, ie] = 1
-            else:
-                inc[index, ie] = 0
-        index += 1
-
-    np.fill_diagonal(dist, 0.0)
-    return dist, inc
-
-
-def find_pair(lst, x, y):
-    """
-    Check if two elements are consecutive in a list, irrespective of their
-    order.
-
-    Args:
-        lst (list): The list to search for the pair.
-        x (Any): The first element of the pair.
-        y (Any): The second element of the pair.
-
-    Returns:
-        bool: True if the elements are consecutive in the list, False otherwise
-    """
-    if x not in lst or y not in lst:
-        return False
-    elif abs(lst.index(x) - lst.index(y)) == 1:
-        return True
-    else:
-        return False
-
-
-def nCr(n, k):
-    """
-    Calculate the number of combinations, n choose k.
-
-    Args:
-        n (int): The number of elements.
-        k (int): The number of elements to choose.
-
-    Returns:
-        int: The number of possible combinations.
-    """
-    f = math.factorial
-    return f(n) // f(k) // f(n - k)
-
-
-def path_edge_attributes(graph, path, attribute):
-    """
-    Get the attribute values for edges in a given path.
-
-    Args:
-        graph (NetworkX Graph): The graph containing the edges.
-        path (list): The list of nodes forming the path.
-        attribute (str): The edge attribute to get the values for.
-
-    Returns:
-        list: A list of attribute values for the edges in the path.
-    """
-    return [graph[u][v][attribute] for (u, v) in zip(path, path[1:])]
-
-
-def path_subgraph(graph, nodes, method, id_col, len_col):
-    """
-    Find and extract paths between points from a graph.
-
-    Args:
-        graph (NetworkX Graph): The input graph.
-        nodes (dict): A dictionary of nodes to extract paths between.
-        method (callable): The method to build the subgraph.
-        id_col (str): The column name for node ID.
-        len_col (str): The column name for edge length.
-
-    Returns:
-        NetworkX Graph: A subgraph containing the extracted paths.
-    """
-    k = nx.Graph()
-
-    def dijkstra_weight(left, right, attributes):
-        # Calculates weights for Dijkstra's shortest path algorithm by
-        # inverting the edge length with a small constant to avoid division by
-        # zero.
-        epsilon = 1e-9
-        return 1 / (attributes[len_col] + epsilon)
-
-    p1 = list(nodes.values())[0]
-    for p2 in list(nodes.values())[1:]:
-        try:
-            # Find the shortest path between the two points
-            path = nx.bidirectional_dijkstra(graph, p1, p2,
-                                             weight=dijkstra_weight)
-
-            # Traverse the nodes in the path to build a minimal set of edges
-            method(k, graph, nodes.values(), id_col, len_col, path[1])
-
-            if p1 not in k:
-                k.add_node(p1)
-            if p2 not in k:
-                k.add_node(p2)
-
-        except NodeNotFound as e:
-            print("Node not found:", e)
-        except Exception as e:
-            traceback.print_exc()
-            print("Something unexpected happened:", e)
-            sys.exit(1)
-    return k
-
-
-def extract_full_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
-    """
-    Extracts the full subgraph from the given nodes.
-
-    Args:
-        subgraph (NetworkX Graph): The subgraph to be modified.
-        graph (NetworkX Graph): The input graph.
-        nodelist (list): The list of nodes.
-        id_col (str): The column name for node ID.
-        len_col (str): The column name for edge length.
-        path (list): The path between nodes.
-    """
-    # Iterate through the nodes in the path
-    for first, second in zip(path, path[1:]):
-        # Add nodes to the subgraph if they are not already present
-        if first not in subgraph:
-            subgraph.add_node(first)
-        if second not in subgraph:
-            subgraph.add_node(second)
-
-        # Add the edge between the nodes with the corresponding edge data
-        dat = graph.get_edge_data(first, second)
-        subgraph.add_edge(first, second, **dat)
-
-
-def extract_minimal_subgraph(subgraph, graph, nodelist, id_col, len_col, path):
-    """
-    Extracts a simplified subgraph from paths, keeping only terminal and
-    junction nodes.
-
-    Args:
-        subgraph (NetworkX Graph): The subgraph to be modified.
-        graph (NetworkX Graph): The input graph.
-        nodelist (list): The list of nodes.
-        id_col (str): The column name for edge ID.
-        len_col (str): The column name for edge length.
-        path (list): The path between nodes.
-    """
-    curr_edge = {id_col: list(), len_col: 0.0}
-    curr_start = None
-
-    # Iterate through each pair of nodes in the path
-    for first, second in zip(path, path[1:]):
-        if not curr_start:
-            curr_start = first
-            if first in nodelist or len(graph[first]) > 2:
-                subgraph.add_node(first)
-
-        # Add path attributes to current edge
-        dat = graph.get_edge_data(first, second)
-        curr_edge[id_col].extend([dat[id_col]] if not
-                                 isinstance(dat[id_col], list) else
-                                 dat[id_col])
-        curr_edge[len_col] = float(curr_edge[len_col]) + float(dat[len_col])
-
-        # If the second node is a STOP node (in nodelist or is a junction)
-        if second in nodelist or len(graph[second]) > 2:
-            # Add node to subgraph
-            subgraph.add_node(second)
-            # Link current attribute data
-            subgraph.add_edge(curr_start, second, **curr_edge)
-            # Empty edge attributes and set current second to curr_start
-            curr_edge = {id_col: list(), len_col: 0}
-            curr_start = second
-        else:
-            # Otherwise, continue building the current edge
-            continue
-
-
-def snap_to_node(graph, pos):
-    """
-    Finds the closest node to the given [x, y] coordinates in the graph.
-
-    Args:
-        graph (NetworkX Graph): The input graph.
-        pos (tuple): A tuple of [x, y] coordinates.
-
-    Returns:
-        tuple: The closest node to the input coordinates.
-    """
-    nodes = np.array(graph.nodes())
-    node_pos = np.argmin(np.sum((nodes - pos) ** 2, axis=1))
-    return tuple(nodes[node_pos])
 
 
 def write_geodataframe(gdf, output_prefix, output_driver):

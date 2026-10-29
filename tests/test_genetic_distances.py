@@ -141,7 +141,9 @@ def test_jost_calculation_v4(mock_snps, mock_popmap):
                                         popmap=mock_popmap, dat=mock_dat,
                                         seqs=mock_snps, loc_agg="ARITH",
                                         global_het=True)
-    expected_fst_values = np.array([[0.0, 0.326], [0.326, 0.0]])
+    # Per locus (Jost 2008, n = 2 subpopulations): 0.4, 0 and 1; their
+    # harmonic mean (without the 0) is 4/7
+    expected_fst_values = np.array([[0.0, 4 / 7], [4 / 7, 0.0]])
     np.testing.assert_allclose(fst_result, expected_fst_values, atol=0.01)
 
 
@@ -150,7 +152,9 @@ def test_jost_calculation_v5(mock_snps, mock_popmap):
                                         popmap=mock_popmap, dat=mock_dat,
                                         seqs=mock_snps, loc_agg="HARM",
                                         global_het=True)
-    expected_fst_values = np.array([[0.0, 0.326], [0.326, 0.0]])
+    # Per locus (Jost 2008, n = 2 subpopulations): 0.4, 0 and 1; their
+    # harmonic mean (without the 0) is 4/7
+    expected_fst_values = np.array([[0.0, 4 / 7], [4 / 7, 0.0]])
     np.testing.assert_allclose(fst_result, expected_fst_values, atol=0.01)
 
 
@@ -188,3 +192,42 @@ def test_pop_pdist(mock_indmat, mock_popmap, mock_seqs, mock_dat):
                                         popmap=mock_popmap, dat=mock_dat,
                                         seqs=mock_seqs, pop_agg="ARITH")
     np.testing.assert_allclose(result_matrix, expected_matrix, atol=1e-3)
+
+
+def test_jost_pairwise_with_more_populations(mock_snps):
+    # Pairwise D uses Jost's n = 2 (the two populations compared), whatever
+    # the number of populations: two populations fixed for different
+    # alleles have D = 1, and identical ones D = 0
+    snps = {'Ind1': ['A/A'], 'Ind2': ['A/A'], 'Ind3': ['T/T'],
+            'Ind4': ['T/T'], 'Ind5': ['A/A'], 'Ind6': ['A/A']}
+    popmap = SortedDict({'Pop1': ['Ind1', 'Ind2'], 'Pop2': ['Ind3', 'Ind4'],
+                         'Pop3': ['Ind5', 'Ind6']})
+    d = gendist.get_pop_genmat(dist="JOST", indmat=None, popmap=popmap,
+                               dat=None, seqs=snps, loc_agg="ARITH",
+                               global_het=True)
+    np.testing.assert_allclose(d, [[0, 1, 0], [1, 0, 1], [0, 1, 0]],
+                               atol=1e-12)
+
+
+def test_weir_cockerham_unequal_sample_sizes():
+    # Weir & Cockerham's (1984) theta for populations of unequal sizes (2
+    # and 6 individuals) equals scikit-allel's weir_cockerham_fst (1.3.13)
+    # on the same genotypes: 0.4924657534246576 (with the old n_c, which
+    # halved the sample size correction, it was underestimated)
+    gts = {
+        "a1": ["A/A", "A/T", "T/T", "A/A", "A/T"],
+        "a2": ["A/T", "A/A", "T/T", "A/A", "T/T"],
+        "b1": ["T/T", "A/T", "A/A", "A/T", "A/A"],
+        "b2": ["T/T", "T/T", "A/T", "A/A", "A/A"],
+        "b3": ["A/T", "T/T", "A/A", "T/T", "A/T"],
+        "b4": ["T/T", "A/T", "A/A", "A/T", "A/A"],
+        "b5": ["T/T", "T/T", "A/T", "A/A", "A/A"],
+        "b6": ["A/T", "T/T", "A/A", "T/T", "A/T"],
+    }
+    popmap = SortedDict({"A": ["a1", "a2"],
+                         "B": ["b1", "b2", "b3", "b4", "b5", "b6"]})
+    fst = gendist.get_pop_genmat("FST", None, popmap, None, gts)
+    assert fst[0, 1] == pytest.approx(0.4924657534246576, abs=1e-12)
+    lin = gendist.get_pop_genmat("LINFST", None, popmap, None, gts)
+    assert lin[0, 1] == pytest.approx(
+        0.4924657534246576 / (1 - 0.4924657534246576), abs=1e-12)
