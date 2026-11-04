@@ -610,3 +610,44 @@ def test_paths_follow_river_length():
     k = funcs.path_subgraph(G, points, funcs.extract_full_subgraph,
                             "EDGE_ID", "LENGTH_KM")
     assert {d["EDGE_ID"] for _, _, d in k.edges(data=True)} == {1, 2}
+
+
+@pytest.mark.parametrize("dist,concat", [
+    ("LINFST", "none"), ("LINFST", "loc"), ("FST", "loc"), ("JOST", "none"),
+    ("CHORD", "none"), ("PDIST", "all"),
+])
+def test_population_distances_matches_workflow(dist, concat, tmp_path,
+                                               monkeypatch):
+    # The same matrix as the workflow's popGenDistMat.txt (--run GENDIST)
+    import autostreamtree.cli as cli
+    data = os.path.join(os.path.dirname(autostreamtree.__file__), "data")
+    vcf = os.path.join(data, "test_sub100.vcf.gz")
+    popmap = os.path.join(data, "test.popmap")
+    out = str(tmp_path / "out")
+    monkeypatch.setattr(sys, "argv", [
+        "autostreamtree", "-s", os.path.join(data, "test.shp"),
+        "-i", os.path.join(data, "test.coords"), "-v", vcf, "-p", popmap,
+        "-r", "GENDIST", "-d", dist, "-C", concat, "-o", out])
+    with pytest.raises(SystemExit) as done:   # the workflow exits here
+        cli.main()
+    assert done.value.code in (None, 0)
+    expected = pd.read_csv(f"{out}.popGenDistMat.txt", sep="\t",
+                           index_col=0)
+    result = funcs.population_distances(vcf, popmap, dist=dist,
+                                        concat=concat)
+    assert list(result.index) == list(expected.index)
+    assert list(result.columns) == list(expected.columns)
+    np.testing.assert_allclose(result.to_numpy(), expected.to_numpy(),
+                               rtol=0, atol=1e-12)
+
+
+def test_population_distances_popmap_dict():
+    # A dict popmap; individuals missing from the VCF are left out
+    data = os.path.join(os.path.dirname(autostreamtree.__file__), "data")
+    vcf = os.path.join(data, "test_sub100.vcf.gz")
+    popmap = funcs.read_popmap(os.path.join(data, "test.popmap"))
+    a = funcs.population_distances(vcf, popmap)
+    b = funcs.population_distances(vcf, {**popmap, "not_in_vcf": "x"})
+    pd.testing.assert_frame_equal(a, b)
+    with pytest.raises(ValueError, match="two populations"):
+        funcs.population_distances(vcf, {"not_in_vcf": "x"})

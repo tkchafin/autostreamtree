@@ -231,3 +231,19 @@ def test_weir_cockerham_unequal_sample_sizes():
     lin = gendist.get_pop_genmat("LINFST", None, popmap, None, gts)
     assert lin[0, 1] == pytest.approx(
         0.4924657534246576 / (1 - 0.4924657534246576), abs=1e-12)
+
+
+def test_pop_genmat_warns_only_for_negative_distances(capsys):
+    # Negative FST is set to 0 with a warning; no warning otherwise
+    popmap = SortedDict({"a": ["a1", "a2"], "b": ["b1", "b2"],
+                         "c": ["c1", "c2"]})
+    same = {"a1": ["A/A"], "a2": ["A/T"], "b1": ["A/A"], "b2": ["A/T"],
+            "c1": ["T/T"], "c2": ["T/T"]}
+    mat = gendist.get_pop_genmat("FST", None, popmap, None, same)
+    assert mat[0, 1] == 0.0 and mat[0, 2] > 0
+    assert "Coercing" in capsys.readouterr().out
+    apart = {"a1": ["A/A"], "a2": ["A/A"], "b1": ["T/T"], "b2": ["T/T"],
+             "c1": ["A/T"], "c2": ["A/T"]}
+    mat = gendist.get_pop_genmat("FST", None, popmap, None, apart)
+    assert (mat[np.triu_indices(3, 1)] > 0).all()
+    assert "Coercing" not in capsys.readouterr().out

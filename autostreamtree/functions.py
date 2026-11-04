@@ -609,6 +609,58 @@ def get_gendist_mats(params, point_coords, popmap, seqs):
     return gen, pop_gen
 
 
+def population_distances(vcf, popmap, dist="LINFST", concat="none",
+                         pop_agg="ARITH", loc_agg="ARITH", ploidy=2,
+                         het=False, global_het=False):
+    """
+    Pairwise genetic distances among populations from a VCF, as the
+    workflow computes them (--run GENDIST with -p/--pop), for use from
+    other packages.
+
+    Args:
+        vcf (str): Path to the VCF file.
+        popmap (str or dict): Population map: a file with an individual and
+            its population on each line, or a dict {individual: population}.
+            Individuals that are not in the VCF are left out.
+        dist (str): Distance metric, as -d/--dist ("PDIST", "FST",
+            "LINFST", "JOST", "HARMD", "CHORD" or "GST").
+        concat (str): How SNPs are combined, as -C/--concat ("none", "loc"
+            to join the SNPs of each locus (CHROM), or "all").
+        pop_agg (str): How individual distances (PDIST) are aggregated per
+            pair of populations, as --pop_agg.
+        loc_agg (str): How loci are aggregated, as --loc_agg.
+        ploidy (int): 2 (--diploid) or 1 (--haploid).
+        het (bool): As --het.
+        global_het (bool): As --global_het.
+
+    Returns:
+        pandas.DataFrame: The distances, with the populations (sorted by
+        name) as rows and columns.
+    """
+    if not isinstance(popmap, dict):
+        popmap = read_popmap(popmap)
+    with VariantFile(vcf) as fh:
+        in_vcf = set(fh.header.samples)
+    pops = SortedDict()
+    for ind, pop in popmap.items():
+        if ind in in_vcf:
+            pops.setdefault(pop, []).append(ind)
+    if len(pops) < 2:
+        raise ValueError("Fewer than two populations have individuals in "
+                         "the VCF")
+    inds = SortedDict((ind, None) for p in pops.values() for ind in p)
+    seqs = read_vcf(vcf, concat=concat, popmap=pops)
+    gen = None
+    if dist in ["PDIST", "TN84", "TN93", "K2P", "JC69"]:
+        gen = gendist.get_genmat(dist, inds, seqs, ploidy=ploidy, het=het,
+                                 loc_agg=loc_agg)
+    pop_gen = gendist.get_pop_genmat(dist, gen, pops, inds, seqs,
+                                     pop_agg=pop_agg, loc_agg=loc_agg,
+                                     ploidy=ploidy, global_het=global_het)
+    names = list(pops.keys())
+    return pd.DataFrame(pop_gen, index=names, columns=names)
+
+
 def get_point_table(points):
     """Returns a pandas DataFrame from a dictionary of points.
 
